@@ -1,5 +1,4 @@
 ﻿using GLogic.Components;
-using GLogic.Components.Common;
 
 namespace GLogic.Jobs;
 
@@ -28,6 +27,8 @@ public static class Update
         var input1 = EntityManager.GetIoComponent(ioComponent.Input1);
         var input2 = EntityManager.GetIoComponent(ioComponent.Input2);
         bool value = false;
+        var earlyUpdate = ioComponent with { LastFrame = frame + 1 };
+        EntityManager.UpdateIoComponent(earlyUpdate);
 
         switch (ioComponent.IoType)
         {
@@ -88,8 +89,8 @@ public static class Update
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        var toUpdate = ioComponent with { Value = value, LastFrame = ioComponent.LastFrame + 1 };
-        EntityManager.UpdateIoComponent(toUpdate);
+        var lateUpdate = ioComponent with { Value = value };
+        EntityManager.UpdateIoComponent(lateUpdate);
         
         return value;
     }
