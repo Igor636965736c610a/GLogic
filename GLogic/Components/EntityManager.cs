@@ -32,8 +32,8 @@ public static class EntityManager
             _ioComponents[index] = new IoComponent
             {
                 Entity = entity,
-                Input1 = info.Input1,
-                Input2 = info.Input2,
+                TopInput = info.Input1,
+                BottomInput = info.Input2,
                 IoType = info.IoType,
                 LastFrame = info.Frame,
                 Value = false
@@ -52,8 +52,8 @@ public static class EntityManager
             _ioComponents.Add(new IoComponent
             {
                 Entity = entity,
-                Input1 = info.Input1,
-                Input2 = info.Input2,
+                TopInput = info.Input1,
+                BottomInput = info.Input2,
                 IoType = info.IoType,
                 LastFrame = info.Frame,
                 Value = false

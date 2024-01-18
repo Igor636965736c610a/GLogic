@@ -8,9 +8,7 @@ public static class Update
     {
         foreach (var ioComponent in EntityManager.IterIoComponents())
         {
-            var value = PenetrateIoComponent(ioComponent, frame);
-            var toUpdate = ioComponent with { Value = value, LastFrame = ioComponent.LastFrame + 1 };
-            EntityManager.UpdateIoComponent(toUpdate);
+            PenetrateIoComponent(ioComponent, frame);
         }
     }
 
@@ -20,13 +18,13 @@ public static class Update
         {
             return false;
         }
-        if (ioComponent.LastFrame > frame)
+        if (ioComponent.LastFrame == frame + 1)
         {
             return ioComponent.Value;
         }
-        var input1 = EntityManager.GetIoComponent(ioComponent.Input1);
-        var input2 = EntityManager.GetIoComponent(ioComponent.Input2);
-        bool value = false;
+        var input1 = EntityManager.GetIoComponent(ioComponent.TopInput);
+        var input2 = EntityManager.GetIoComponent(ioComponent.BottomInput);
+        bool value;
         var earlyUpdate = ioComponent with { LastFrame = frame + 1 };
         EntityManager.UpdateIoComponent(earlyUpdate);
 
