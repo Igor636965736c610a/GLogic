@@ -24,11 +24,11 @@ internal static class Program
         {
             while (SDL.SDL_PollEvent(out var e) != 0)
             {
-                SDL.SDL_GetMouseState(out int cursorX, out int cursorY);
+                var mouseButton = SDL.SDL_GetMouseState(out int cursorX, out int cursorY);
 
                 if (e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN)
                 {
-                    UserActionsHandler.HandleMousePollEvent(cursorX, cursorY);
+                    UserActionsHandler.HandleMousePollEvent(cursorX, cursorY, mouseButton);
                 }
                 
                 if (e.type == SDL.SDL_EventType.SDL_QUIT)

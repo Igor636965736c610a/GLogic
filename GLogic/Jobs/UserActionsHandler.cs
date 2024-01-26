@@ -1,3 +1,5 @@
+using SDL2;
+
 namespace GLogic.Jobs;
 
 public static class UserActionsHandler
@@ -9,14 +11,21 @@ public static class UserActionsHandler
         ChosenLGate = LGate.None;
     }
 
-    public static void HandleMousePollEvent(int cursorX, int cursorY)
+    public static void HandleMousePollEvent(int cursorX, int cursorY, uint mouseButton)
+    {
+        if (mouseButton == SDL.SDL_BUTTON_LEFT)
+        {
+            LeftClick(cursorX, cursorY);
+        }
+    }
+
+    private static void LeftClick(int cursorX, int cursorY)
     {
         if (cursorX <= Menu.Width)
         {
             SetChosenLGate(cursorX, cursorY);
         }
     }
-
     private static void SetChosenLGate(int cursorX, int cursorY)
     {
         var i = 0;
