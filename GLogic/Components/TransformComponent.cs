@@ -1,10 +1,10 @@
-﻿using System.Numerics;
+﻿using GLogic.Components.Common;
 
 namespace GLogic.Components;
 
 public struct TransformComponent
 {
     public Entity Entity;
-    public Vector2 Position;
-    public Vector2 Size;
+    public Vector2Int Position;
+    public Vector2Int Size;
 }

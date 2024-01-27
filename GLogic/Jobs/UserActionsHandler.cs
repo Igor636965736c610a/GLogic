@@ -17,6 +17,10 @@ public static class UserActionsHandler
         {
             LeftClick(cursorX, cursorY);
         }
+        if (mouseButton == SDL.SDL_BUTTON_RIGHT)
+        {
+                        
+        }
     }
 
     private static void LeftClick(int cursorX, int cursorY)
