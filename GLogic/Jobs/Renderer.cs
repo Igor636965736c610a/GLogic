@@ -14,8 +14,8 @@ public sealed class Renderer
             var newZoom = _zoom + value;
             _zoom = newZoom switch
             {
-                < 0 => 0,
-                > 1000 => 1000,
+                < 0 => 0,           //in
+                > 1000 => 1000,     //out
                 _ => newZoom
             };
         }
