@@ -9,8 +9,8 @@ public static class EntityManager
     private static readonly Queue<uint> FreeIds = new();
     private const int MinFreeIds = 512;
 
-    private static readonly List<TransformComponent> _transformComponents = new();
-    private static readonly List<IoComponent> _ioComponents = new();
+    private static readonly List<TransformComponent> TransformComponents = new();
+    private static readonly List<IoComponent> IoComponents = new();
 
     public static Entity CreateEntity(InitEntityInfo info)
     {
@@ -25,11 +25,11 @@ public static class EntityManager
             id = IdStructure.IdWithNewGeneration(id);
             index = (int)IdStructure.Index(id);
             Generations[index] = IdStructure.Generation(id);
-            _transformComponents[index] = new TransformComponent
+            TransformComponents[index] = new TransformComponent
             {
                 Entity = entity
             };
-            _ioComponents[index] = new IoComponent
+            IoComponents[index] = new IoComponent
             {
                 Entity = entity,
                 TopInput = info.Input1,
@@ -45,11 +45,11 @@ public static class EntityManager
             id = (uint)index;
             entity = new Entity { Id = id };
             Generations.Add(0);
-            _transformComponents.Add(new TransformComponent
+            TransformComponents.Add(new TransformComponent
             {
                 Entity = entity
             });
-            _ioComponents.Add(new IoComponent
+            IoComponents.Add(new IoComponent
             {
                 Entity = entity,
                 TopInput = info.Input1,
@@ -84,20 +84,20 @@ public static class EntityManager
     }
 
     public static TransformComponent GetTransformComponent(Entity entity)
-        => _transformComponents[(int)IdStructure.Index(entity.Id)];
+        => TransformComponents[(int)IdStructure.Index(entity.Id)];
 
     public static IoComponent GetIoComponent(Entity entity)
-        => _ioComponents[(int)IdStructure.Index(entity.Id)];
+        => IoComponents[(int)IdStructure.Index(entity.Id)];
 
     public static IEnumerable<TransformComponent> IterTransformComponents()
-        => _transformComponents;
+        => TransformComponents;
 
     public static IEnumerable<IoComponent> IterIoComponents()
-        => _ioComponents;
+        => IoComponents;
 
     public static void UpdateIoComponent(IoComponent ioComponent)
     {
         var index = (int)IdStructure.Index(ioComponent.Entity.Id);
-        _ioComponents[index] = ioComponent;
+        IoComponents[index] = ioComponent;
     }
 }

@@ -49,10 +49,15 @@ public static class Menu
     }
     public static IEnumerable<MenuCheckRect> MenuOptions()
     {
-        for (int i = 30; i <= 635; i+=55)
+        for (var i = 0; i <= Enum.GetNames(typeof(LGate)).Length - 2; i++)
         {
-            yield return new MenuCheckRect(new Vector2Int(10, i), new Vector2Int(130, 55));
+            var y = 30 + 55 * i;
+            yield return new MenuCheckRect(new Vector2Int(10, y), new Vector2Int(130, 55));
         }
+        // for (int i = 30; i <= 635; i+=55)
+        // {
+        //     yield return new MenuCheckRect(new Vector2Int(10, i), new Vector2Int(130, 55));
+        // }
     }
 }
 
