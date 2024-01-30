@@ -22,8 +22,8 @@ public static class Update
         {
             return ioComponent.Value;
         }
-        var input1 = EntityManager.GetIoComponent(ioComponent.TopInput);
-        var input2 = EntityManager.GetIoComponent(ioComponent.BottomInput);
+        var input1 = EntityManager.GetIoComponent(ioComponent.ConnectionOne);
+        var input2 = EntityManager.GetIoComponent(ioComponent.ConnectionTwo);
         bool value;
         var earlyUpdate = ioComponent with { LastFrame = frame + 1 };
         EntityManager.UpdateIoComponent(earlyUpdate);

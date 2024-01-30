@@ -5,8 +5,8 @@ namespace GLogic.Components;
 public struct IoComponent
 {
     public Entity Entity;
-    public Entity TopInput;
-    public Entity BottomInput;
+    public Entity ConnectionOne;
+    public Entity ConnectionTwo;
     public bool Value;
     public IoType IoType;
     public uint LastFrame;

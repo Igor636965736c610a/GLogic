@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using GLogic.Components;
+using GLogic.Components.Common;
 using SDL2;
 
 namespace GLogic.Jobs;
@@ -6,7 +8,7 @@ namespace GLogic.Jobs;
 public static class UserActionsHandler
 {
     public static LGate ChosenLGate { get; private set; }
-    public static Entity? MovedLGate { get; private set; } 
+    public static Entity LGateToMove { get; private set; } 
     
     static UserActionsHandler()
     {
@@ -15,51 +17,68 @@ public static class UserActionsHandler
     
     #region Click
     
-    public static void HandleMouseUpPollEvent(int cursorX, int cursorY, uint mouseButton)
+    public static void HandleMouseUpPollEvent(Vector2Int cursor, uint mouseButton)
+    {
+        LGateToMove = new Entity { Id = IdStructure.MakeInvalidId() };
+    }
+    public static void HandleMouseDownPollEvent(Vector2Int cursor, uint mouseButton, IEnumerable<Entity> entitiesInArea)
     {
         if (mouseButton == SDL.SDL_BUTTON_LEFT)
         {
-            LeftClickUp(cursorX, cursorY);
+            LeftClickDown(cursor, entitiesInArea);
         }
     }
-    public static void HandleMouseDownPollEvent(int cursorX, int cursorY, uint mouseButton)
+    
+    private static void LeftClickDown(Vector2Int cursor, IEnumerable<Entity> entitiesInArea)
     {
-        if (mouseButton == SDL.SDL_BUTTON_LEFT)
+        if (cursor.X <= Menu.Width)
         {
-            LeftClickDown(cursorX, cursorY);
+            SetChosenLGate(cursor);
+        }
+        else if (ChosenLGate == LGate.None)
+        {
+            MarkSomeEntity(cursor, entitiesInArea);
+        }
+        else
+        {
+            UserActions(cursor);
         }
     }
-    public static void SetMovedLGateToNone()
-        => MovedLGate = null;
+    private static void MarkSomeEntity(Vector2Int cursor, IEnumerable<Entity> entitiesInArea)
+    {
+        var markedEntity = new Entity { Id = IdStructure.MakeInvalidId() };
+        foreach (var entity in entitiesInArea)
+        {
+            var transformComponent = EntityManager.GetTransformComponent(entity);
+            if (cursor.X > transformComponent.Position.X
+                && cursor.X < transformComponent.Position.X + transformComponent.Size.X
+                && cursor.Y > transformComponent.Position.Y
+                && cursor.Y < transformComponent.Position.Y + transformComponent.Size.Y)
+            {
+                markedEntity = transformComponent.Entity;
+                Debug.Assert(EntityManager.IsAlive(entity), "Marking entity witch is not alive");
+                break;
+            }
+        }
 
-    private static void LeftClickDown(int cursorX, int cursorY)
-    {
-        if (cursorX <= Menu.Width)
-        {
-            SetChosenLGate(cursorX, cursorY);
-        }
-    }
-    private static void LeftClickUp(int cursorX, int cursorY)
-    {
-        if (ChosenLGate != LGate.None || cursorX <= Menu.Width)
-            return;
+        LGateToMove = markedEntity;
         
-        var transformComponents = EntityManager.IterTransformComponents();
-        MovedLGate = transformComponents.FirstOrDefault(x => 
-            EntityManager.IsAlive(x.Entity)
-            && cursorX > x.Position.X 
-            && cursorX < x.Position.X + x.Size.X
-            && cursorY > x.Position.Y
-            && cursorY < x.Position.Y + x.Size.Y).Entity;
+        // var transformComponents = EntityManager.IterTransformComponents();
+        // LGateToMove = transformComponents.FirstOrDefault(x => 
+        //     EntityManager.IsAlive(x.Entity)
+        //     && cursorX > x.Position.X 
+        //     && cursorX < x.Position.X + x.Size.X
+        //     && cursorY > x.Position.Y
+        //     && cursorY < x.Position.Y + x.Size.Y).Entity;
     }
-    private static void SetChosenLGate(int cursorX, int cursorY)
+    private static void SetChosenLGate(Vector2Int cursor)
     {
         var i = 0;
         foreach (var option in Menu.MenuOptions())
         {
-            if (cursorX >= option.Position.X && cursorX <= option.Position.X + option.Size.X
-                                             && cursorY >= option.Position.Y 
-                                             && cursorY < option.Position.Y + option.Size.Y)
+            if (cursor.X >= option.Position.X && cursor.X <= option.Position.X + option.Size.X
+                                             && cursor.Y >= option.Position.Y 
+                                             && cursor.Y < option.Position.Y + option.Size.Y)
             {
                 if (ChosenLGate == (LGate)i)
                 {
@@ -73,6 +92,73 @@ public static class UserActionsHandler
                 Console.WriteLine(ChosenLGate.ToStringFast());
             }
             i++;
+        }
+    }
+    private static void UserActions(Vector2Int cursor)
+    {
+        switch (ChosenLGate)
+        {
+            case LGate.AND:
+            {
+                EntityService.AddLGate(cursor, IoType.AND, false);
+                break;
+            }
+            case LGate.OR:
+            {
+                EntityService.AddLGate(cursor, IoType.OR, false);
+                break;
+            }
+            case LGate.NOT:
+            {
+                EntityService.AddLGate(cursor, IoType.NOT, false);
+                break;
+            }
+            case LGate.XOR:
+            {
+                EntityService.AddLGate(cursor, IoType.XOR, false);
+                break;
+            }
+            case LGate.NAND:
+            {
+                EntityService.AddLGate(cursor, IoType.NAND, false);
+                break;
+            }
+            case LGate.NOR:
+            {
+                EntityService.AddLGate(cursor, IoType.NOR, false);
+                break;
+            }
+            case LGate.XNOR:
+            {
+                EntityService.AddLGate(cursor, IoType.XNOR, false);
+                break;
+            }
+            case LGate.Input1:
+            {
+                EntityService.AddLGate(cursor, IoType.Input, true);
+                break;
+            };
+            case LGate.Input0:
+            {
+                EntityService.AddLGate(cursor, IoType.Input, false);
+                break;
+            }
+            case LGate.Output:
+            {
+                EntityService.AddLGate(cursor, IoType.Output, false);
+                break;
+            }
+            case LGate.Wire:
+                break;
+            case LGate.Delete:
+                break;
+            case LGate.None:
+            {
+                Debug.Fail("Critical error while creating entity");
+                throw new InvalidProgramException("Critical error while creating entity");
+            }
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
     

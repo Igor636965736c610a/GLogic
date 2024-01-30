@@ -1,4 +1,7 @@
-﻿using GLogic.Jobs;
+﻿using System.Diagnostics;
+using System.Numerics;
+using GLogic.Components.Common;
+using GLogic.Jobs;
 using SDL2;
 
 namespace GLogic;
@@ -23,27 +26,34 @@ internal static class Program
         var quit = false;
         while (!quit)
         {
+            appRenderer.UpdateEntitiesToRender();
             while (SDL.SDL_PollEvent(out var e) != 0)
             {
                 var mouseButton = SDL.SDL_GetMouseState(out int cursorX, out int cursorY);
+                var cursor = new Vector2Int(cursorX, cursorY);
                 if (e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)
                 {
-                    UserActionsHandler.HandleMouseUpPollEvent(cursorX, cursorY, mouseButton);
+                    UserActionsHandler.HandleMouseUpPollEvent(cursor, mouseButton);
                 }
                 if (e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN)
                 {
-                    UserActionsHandler.HandleMouseDownPollEvent(cursorX, cursorY, mouseButton);
+                    UserActionsHandler.HandleMouseDownPollEvent(cursor, mouseButton, appRenderer.EntitiesToRender);
                 }
                 if (e.type == SDL.SDL_EventType.SDL_QUIT)
                 {
                     quit = true;
                 }
             }
+            
             var relativeMouseState = SDL.SDL_GetRelativeMouseState(out int relativeX, out int relativeY);
             if (relativeMouseState != 0 && SDL.SDL_BUTTON(SDL.SDL_BUTTON_LEFT) != 0)
             {
                 Console.WriteLine("Left button held");
             }
+
+            SDL.SDL_SetRenderDrawColor(renderer, 1, 1, 1, 255); //testing
+            SDL.SDL_RenderClear(renderer);                              //testing
+            appRenderer.RenderEntities(renderer);                       //testing
             
             Menu.Draw(renderer);
         }

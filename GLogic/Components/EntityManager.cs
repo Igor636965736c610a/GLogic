@@ -27,36 +27,40 @@ public static class EntityManager
             Generations[index] = IdStructure.Generation(id);
             TransformComponents[index] = new TransformComponent
             {
-                Entity = entity
+                Entity = entity,
+                Position = info.TransformComponentInfo.Position,
+                Size = info.TransformComponentInfo.Size,
             };
             IoComponents[index] = new IoComponent
             {
                 Entity = entity,
-                TopInput = info.Input1,
-                BottomInput = info.Input2,
-                IoType = info.IoType,
-                LastFrame = info.Frame,
-                Value = false
+                ConnectionOne = info.IoComponentInfo.ConnectionOne,
+                ConnectionTwo = info.IoComponentInfo.ConnectionTwo,
+                IoType = info.IoComponentInfo.IoType,
+                LastFrame = info.IoComponentInfo.Frame,
+                Value = info.IoComponentInfo.Value,
             };
         }
         else
         {
             index = Generations.Count;
-            id = (uint)index;
+            id = IdStructure.MakeEntityId((uint)index);
             entity = new Entity { Id = id };
             Generations.Add(0);
             TransformComponents.Add(new TransformComponent
             {
-                Entity = entity
+                Entity = entity,
+                Position = info.TransformComponentInfo.Position,
+                Size = info.TransformComponentInfo.Size,
             });
             IoComponents.Add(new IoComponent
             {
                 Entity = entity,
-                TopInput = info.Input1,
-                BottomInput = info.Input2,
-                IoType = info.IoType,
-                LastFrame = info.Frame,
-                Value = false
+                ConnectionOne = info.IoComponentInfo.ConnectionOne,
+                ConnectionTwo = info.IoComponentInfo.ConnectionTwo,
+                IoType = info.IoComponentInfo.IoType,
+                LastFrame = info.IoComponentInfo.Frame,
+                Value = info.IoComponentInfo.Value,
             });
         }
         
@@ -77,9 +81,12 @@ public static class EntityManager
 
     public static bool IsAlive(Entity entity)
     {
+        if (!IdStructure.IsValid(entity.Id))
+        {
+            return false;
+        }
         var index = (int)IdStructure.Index(entity.Id);
         Debug.Assert(index < Generations.Count);
-        Debug.Assert(Generations[index] == IdStructure.Generation(entity.Id));
         return Generations[index] == IdStructure.Generation(entity.Id);
     }
 

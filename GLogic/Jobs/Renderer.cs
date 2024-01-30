@@ -1,10 +1,16 @@
-﻿using GLogic.Components;
+﻿using System.Collections.Immutable;
+using GLogic.Components;
 using GLogic.Components.Common;
+using SDL2;
 
 namespace GLogic.Jobs;
 
 public sealed class Renderer : IRendererConfig
 {
+    public Renderer()
+    {
+        EntitiesToRender = ImmutableList<Entity>.Empty;
+    }
     private int _zoom = 0;
     public int Zoom
     {
@@ -20,10 +26,17 @@ public sealed class Renderer : IRendererConfig
             };
         }
     }
+
+    public ImmutableList<Entity> EntitiesToRender { get; private set; }
     public Area WindowSize = new(1280, 720);
     public Area RenderArea = new(1480, 920); 
     public Vector2Int CameraShift { get; private set; }
-    public IEnumerable<Entity> EntitiesToRender()
+
+    public void UpdateEntitiesToRender()
+    {
+        EntitiesToRender = GetEntitiesToRender().ToImmutableList();
+    }
+    private IEnumerable<Entity> GetEntitiesToRender()
     {
         var transformComponents = EntityManager.IterTransformComponents();
         var min = new Vector2Int { X = CameraShift.X - Zoom, Y = CameraShift.Y - Zoom };
@@ -43,6 +56,37 @@ public sealed class Renderer : IRendererConfig
             }
         }
     }
+    public void RenderEntities(IntPtr renderer)
+    {
+        SDL.SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        var frontEntities = RenderBackgroundEntities(renderer).ToImmutableList();
+        RenderFrontEntities(frontEntities, renderer);
+    }
+    private IEnumerable<Entity> RenderBackgroundEntities(IntPtr renderer) // It return front entities to render
+    {
+        foreach (var entity in EntitiesToRender)
+        {
+            if (EntityManager.GetIoComponent(entity).IoType == IoType.Wire)
+            {
+                yield return entity;
+                continue;
+            }
+
+            var transformComp = EntityManager.GetTransformComponent(entity);
+            var rect = new SDL.SDL_Rect
+            {
+                x = transformComp.Position.X,
+                y = transformComp.Position.Y,
+                w = transformComp.Size.X + Zoom,
+                h = transformComp.Size.Y + Zoom,
+            };
+            SDL.SDL_RenderFillRect(renderer, ref rect);
+        }
+    }
+    private void RenderFrontEntities(IEnumerable<Entity> entities, IntPtr renderer)
+    {
+        
+    }
     public void ZoomIn()
         => Zoom -= 10;
     public void ZoomOut()
@@ -53,3 +97,10 @@ public sealed class Renderer : IRendererConfig
     }
 }
 public readonly record struct Area(int Width, int High);
+
+public interface IRendererConfig
+{
+    void ZoomIn();
+    void ZoomOut();
+    void ShiftCamera(Vector2Int shiftVector);
+}
