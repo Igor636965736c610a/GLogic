@@ -30,6 +30,7 @@ internal static class Program
             while (SDL.SDL_PollEvent(out var e) != 0)
             {
                 var mouseButton = SDL.SDL_GetMouseState(out int cursorX, out int cursorY);
+                Console.WriteLine($"{cursorX} {cursorY}");
                 var cursor = new Vector2Int(cursorX, cursorY);
                 if (e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)
                 {

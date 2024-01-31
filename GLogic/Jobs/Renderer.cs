@@ -10,9 +10,10 @@ public sealed class Renderer : IRendererConfig
     public Renderer()
     {
         EntitiesToRender = ImmutableList<Entity>.Empty;
+        _zoom = 1;
     }
-    private int _zoom = 0;
-    public int Zoom
+    private static float _zoom;
+    public static float Zoom
     {
         get => _zoom;
         private set
@@ -20,8 +21,8 @@ public sealed class Renderer : IRendererConfig
             var newZoom = _zoom + value;
             _zoom = newZoom switch
             {
-                < 0 => 0,           //in
-                > 1000 => 1000,     //out
+                < 0.1f => 0.1f,           //in
+                > 1f => 1f,     //out
                 _ => newZoom
             };
         }
@@ -30,7 +31,7 @@ public sealed class Renderer : IRendererConfig
     public ImmutableList<Entity> EntitiesToRender { get; private set; }
     public Area WindowSize = new(1280, 720);
     public Area RenderArea = new(1480, 920); 
-    public Vector2Int CameraShift { get; private set; }
+    public static Vector2Int CameraShift { get; private set; }
 
     public void UpdateEntitiesToRender()
     {
@@ -39,16 +40,16 @@ public sealed class Renderer : IRendererConfig
     private IEnumerable<Entity> GetEntitiesToRender()
     {
         var transformComponents = EntityManager.IterTransformComponents();
-        var min = new Vector2Int { X = CameraShift.X - Zoom, Y = CameraShift.Y - Zoom };
-        var max = new Vector2Int { X = CameraShift.X + RenderArea.Width + Zoom, Y = CameraShift.Y + RenderArea.High + Zoom };
+        var min = new Vector2Int { X = CameraShift.X, Y = CameraShift.Y };
+        var max = new Vector2Int { X = CameraShift.X + RenderArea.Width, Y = CameraShift.Y + RenderArea.High };
         foreach (var transformComponent in transformComponents)
         {
             if (!EntityManager.IsAlive(transformComponent.Entity))
                 continue;
             var center = new Vector2Int
             {
-                X = transformComponent.Position.X + transformComponent.Size.X / 2,
-                Y = transformComponent.Position.Y + transformComponent.Size.Y / 2,
+                X = (int)(transformComponent.Position.X * Zoom) + (int)(transformComponent.Size.X * Zoom) / 2,
+                Y = (int)(transformComponent.Position.Y * Zoom) + (int)(transformComponent.Size.Y * Zoom) / 2,
             };
             if (center.X > min.X && center.X < max.X && center.Y > min.Y && center.Y < max.Y) //AABB
             {
@@ -75,10 +76,10 @@ public sealed class Renderer : IRendererConfig
             var transformComp = EntityManager.GetTransformComponent(entity);
             var rect = new SDL.SDL_Rect
             {
-                x = transformComp.Position.X,
-                y = transformComp.Position.Y,
-                w = transformComp.Size.X + Zoom,
-                h = transformComp.Size.Y + Zoom,
+                x = (int)(transformComp.Position.X * Zoom),
+                y = (int)(transformComp.Position.Y * Zoom),
+                w = (int)(transformComp.Size.X * Zoom),
+                h = (int)(transformComp.Size.Y * Zoom),
             };
             SDL.SDL_RenderFillRect(renderer, ref rect);
         }
@@ -88,9 +89,9 @@ public sealed class Renderer : IRendererConfig
         
     }
     public void ZoomIn()
-        => Zoom -= 10;
+        => Zoom -= 0.1f;
     public void ZoomOut()
-        => Zoom += 10;
+        => Zoom += 0.1f;
     public void ShiftCamera(Vector2Int shiftVector)
     {
         CameraShift = new Vector2Int { X = CameraShift.X + shiftVector.X, Y = CameraShift.Y + shiftVector.Y };

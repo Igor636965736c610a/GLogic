@@ -2,8 +2,8 @@ namespace GLogic.Components.Common;
 
 public struct Vector2Int
 {
-    public int X { get; set; }
-    public int Y { get; set; }
+    public int X { get; init; }
+    public int Y { get; init; }
 
     public Vector2Int(int x, int y)
     {

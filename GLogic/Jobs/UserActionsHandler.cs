@@ -19,7 +19,10 @@ public static class UserActionsHandler
     
     public static void HandleMouseUpPollEvent(Vector2Int cursor, uint mouseButton)
     {
-        LGateToMove = new Entity { Id = IdStructure.MakeInvalidId() };
+        if (mouseButton == SDL.SDL_BUTTON_LEFT)
+        {
+            LGateToMove = new Entity { Id = IdStructure.MakeInvalidId() };
+        }
     }
     public static void HandleMouseDownPollEvent(Vector2Int cursor, uint mouseButton, IEnumerable<Entity> entitiesInArea)
     {
@@ -50,10 +53,14 @@ public static class UserActionsHandler
         foreach (var entity in entitiesInArea)
         {
             var transformComponent = EntityManager.GetTransformComponent(entity);
-            if (cursor.X > transformComponent.Position.X
-                && cursor.X < transformComponent.Position.X + transformComponent.Size.X
-                && cursor.Y > transformComponent.Position.Y
-                && cursor.Y < transformComponent.Position.Y + transformComponent.Size.Y)
+            var positionX = transformComponent.Position.X * Renderer.Zoom;
+            var positionY = transformComponent.Position.Y * Renderer.Zoom;
+            var sizeX = transformComponent.Size.X * Renderer.Zoom;
+            var sizeY = transformComponent.Size.Y * Renderer.Zoom;
+            if (cursor.X > positionX
+                && cursor.X < positionX + sizeX
+                && cursor.Y > positionY
+                && cursor.Y < positionY + sizeY)
             {
                 markedEntity = transformComponent.Entity;
                 Debug.Assert(EntityManager.IsAlive(entity), "Marking entity witch is not alive");
