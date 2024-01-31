@@ -67,7 +67,7 @@ public sealed class Renderer : IRendererConfig
     {
         foreach (var entity in EntitiesToRender)
         {
-            if (EntityManager.GetIoComponent(entity).IoType == IoType.Wire)
+            if (EntityManager.GetIoComponent(entity).IoType != IoType.Wire)
             {
                 yield return entity;
                 continue;
@@ -86,7 +86,18 @@ public sealed class Renderer : IRendererConfig
     }
     private void RenderFrontEntities(IEnumerable<Entity> entities, IntPtr renderer)
     {
-        
+        foreach (var entity in entities)
+        {
+            var transformComp = EntityManager.GetTransformComponent(entity);
+            var rect = new SDL.SDL_Rect
+            {
+                x = (int)(transformComp.Position.X * Zoom),
+                y = (int)(transformComp.Position.Y * Zoom),
+                w = (int)(transformComp.Size.X * Zoom),
+                h = (int)(transformComp.Size.Y * Zoom),
+            };
+            SDL.SDL_RenderFillRect(renderer, ref rect);
+        }
     }
     public void ZoomIn()
         => Zoom -= 0.1f;
