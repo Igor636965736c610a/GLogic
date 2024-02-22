@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using GLogic.Components;
 using GLogic.Components.Common;
+using GLogic.Components.System;
 using SDL2;
 
 namespace GLogic.Jobs;
@@ -8,11 +9,13 @@ namespace GLogic.Jobs;
 public static class UserActionsHandler
 {
     public static LGate ChosenLGate { get; private set; }
-    public static Entity LGateToMove { get; private set; } 
-    
+    public static Entity LGateToMove { get; private set; }
+    public static bool MouseRightButtonState { get; private set; }
+
     static UserActionsHandler()
     {
         ChosenLGate = LGate.None;
+        MouseRightButtonState = false;
     }
     
     #region Click
@@ -23,16 +26,25 @@ public static class UserActionsHandler
         {
             LGateToMove = new Entity { Id = IdStructure.MakeInvalidId() };
         }
-    }
-    public static void HandleMouseDownPollEvent(Vector2Int cursor, uint mouseButton, IEnumerable<Entity> entitiesInArea)
-    {
-        if (mouseButton == SDL.SDL_BUTTON_LEFT)
+
+        if (mouseButton == SDL.SDL_BUTTON_RIGHT)
         {
-            LeftClickDown(cursor, entitiesInArea);
+            MouseRightButtonState = false;
+        }
+    }
+    public static void HandleMouseDownPollEvent(Vector2Int cursor, uint mouseButton)
+    {
+        if (mouseButton == SDL.SDL_BUTTON_LEFT && !MouseRightButtonState)
+        {
+            LeftClickDown(cursor);
+        }
+        if (mouseButton == SDL.SDL_BUTTON_RIGHT)
+        {
+            MouseRightButtonState = true;
         }
     }
     
-    private static void LeftClickDown(Vector2Int cursor, IEnumerable<Entity> entitiesInArea)
+    private static void LeftClickDown(Vector2Int cursor)
     {
         if (cursor.X <= Menu.Width)
         {
@@ -40,21 +52,24 @@ public static class UserActionsHandler
         }
         else if (ChosenLGate == LGate.None)
         {
-            MarkSomeEntity(cursor, entitiesInArea);
+            MarkSomeEntity(cursor);
         }
         else
         {
             UserActions(cursor);
         }
     }
-    private static void MarkSomeEntity(Vector2Int cursor, IEnumerable<Entity> entitiesInArea)
+    private static void MarkSomeEntity(Vector2Int cursor)
     {
         var markedEntity = new Entity { Id = IdStructure.MakeInvalidId() };
-        foreach (var entity in entitiesInArea)
+        foreach (var transformComponent in EntityManager.IterTransformComponents())
         {
-            var transformComponent = EntityManager.GetTransformComponent(entity);
-            var positionX = transformComponent.Position.X * Renderer.Zoom;
-            var positionY = transformComponent.Position.Y * Renderer.Zoom;
+            if (!EntityManager.IsAlive(transformComponent.Entity))
+            {
+                continue;
+            }
+            var positionX = transformComponent.Position.X * Renderer.Zoom; //cursor instead of this
+            var positionY = transformComponent.Position.Y * Renderer.Zoom; //cursor instead of this
             var sizeX = transformComponent.Size.X * Renderer.Zoom;
             var sizeY = transformComponent.Size.Y * Renderer.Zoom;
             if (cursor.X > positionX
@@ -63,12 +78,13 @@ public static class UserActionsHandler
                 && cursor.Y < positionY + sizeY)
             {
                 markedEntity = transformComponent.Entity;
-                Debug.Assert(EntityManager.IsAlive(entity), "Marking entity witch is not alive");
+                Debug.Assert(EntityManager.IsAlive(transformComponent.Entity), "Marking entity witch is not alive");
                 break;
             }
         }
 
         LGateToMove = markedEntity;
+        //Console.WriteLine(LGateToMove.Id);
         
         // var transformComponents = EntityManager.IterTransformComponents();
         // LGateToMove = transformComponents.FirstOrDefault(x => 
@@ -81,7 +97,7 @@ public static class UserActionsHandler
     private static void SetChosenLGate(Vector2Int cursor)
     {
         var i = 0;
-        foreach (var option in Menu.MenuOptions())
+        foreach (var option in Menu.MenuOptions)
         {
             if (cursor.X >= option.Position.X && cursor.X <= option.Position.X + option.Size.X
                                              && cursor.Y >= option.Position.Y 
@@ -156,9 +172,17 @@ public static class UserActionsHandler
                 break;
             }
             case LGate.Wire:
+            {
+                //test//
+               // Renderer._zoom -= 0.1f;
                 break;
+            }
             case LGate.Delete:
+            {
+                //test//
+                //Renderer._zoom += 0.1f;
                 break;
+            }
             case LGate.None:
             {
                 Debug.Fail("Critical error while creating entity");
@@ -173,7 +197,20 @@ public static class UserActionsHandler
 
     #region Held
 
-    
+    public static void HandleMouseWheel(Vector2Int cursor, int wheelY, IRendererConfig rendererConfig)
+    {
+        rendererConfig.ChangeRelativelyToCursorZoom((float)(wheelY * 0.1), cursor);
+    }
+
+    #endregion
+
+    #region MouseHeld
+
+    public static void HandleMouseRightHeldAction(Vector2Int relativeCursorPosition, IRendererConfig rendererConfig)
+    {
+        Debug.Assert(MouseRightButtonState);
+        rendererConfig.ShiftCamera(relativeCursorPosition);
+    }
 
     #endregion
 }

@@ -1,4 +1,5 @@
 ﻿using GLogic.Components;
+using GLogic.Components.System;
 
 namespace GLogic.Jobs;
 
@@ -27,8 +28,9 @@ public static class Update
         bool value;
         var earlyUpdate = ioComponent with { LastFrame = frame + 1 };
         EntityManager.UpdateIoComponent(earlyUpdate);
+        var entityType = EntityManager.GetEntityTypeComponent(ioComponent.Entity);
 
-        switch (ioComponent.IoType)
+        switch (entityType.Type)
         {
             case IoType.AND:
             {

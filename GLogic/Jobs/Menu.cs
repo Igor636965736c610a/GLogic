@@ -11,17 +11,19 @@ public static class Menu
     private static readonly SDL.SDL_Color MenuColor = new() { r = 50, g = 50, b = 50, a = 255 };
     private static readonly SDL.SDL_Color TextColor = new() { r = 255, g = 255, b = 255, a = 255 };
     private static readonly SDL.SDL_Color ChosenLGateColor = new() { r = 198, g = 65, b = 36, a = 255 };
+    private static readonly IntPtr Font;
 
     public const int Width = 150;
-    public const int High = 720;
+    public const int Height = 720;
+    public static IEnumerable<MenuCheckRect> MenuOptions { get; }
 
     public static void Draw(IntPtr renderer)
     {
-        var menuRect = new SDL.SDL_Rect { x = 0, y = 0, w = Width, h = High };
+        var menuRect = new SDL.SDL_Rect { x = 0, y = 0, w = Width, h = Height };
         SDL.SDL_SetRenderDrawColor(renderer, MenuColor.r, MenuColor.g, MenuColor.b, MenuColor.a);
         SDL.SDL_RenderFillRect(renderer, ref menuRect);
         var i = 0;
-        foreach (var menuOption in MenuOptions())
+        foreach (var menuOption in MenuOptions)
         {
             var rectColor = i % 2 == 0
                 ? FirstRectColor
@@ -35,10 +37,9 @@ public static class Menu
             };
             SDL.SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
             SDL.SDL_RenderFillRect(renderer, ref rect);
-            var font = SDL_ttf.TTF_OpenFont("Oswald-Light.ttf", 100);
             var option = (LGate)i;
-            var textColor = (LGate)i == UserActionsHandler.ChosenLGate ? ChosenLGateColor : TextColor;
-            var surface = SDL_ttf.TTF_RenderText_Solid(font, option.ToStringFast(), textColor);
+            var textColor = option == UserActionsHandler.ChosenLGate ? ChosenLGateColor : TextColor;
+            var surface = SDL_ttf.TTF_RenderText_Solid(Font, option.ToStringFast(), textColor);
             var texture = SDL.SDL_CreateTextureFromSurface(renderer, surface);
             SDL.SDL_RenderCopy(renderer, texture, (nint)null, ref rect);
             SDL.SDL_FreeSurface(surface);
@@ -47,7 +48,7 @@ public static class Menu
         }
         SDL.SDL_RenderPresent(renderer);
     }
-    public static IEnumerable<MenuCheckRect> MenuOptions()
+    private static IEnumerable<MenuCheckRect> GetMenuOptions()
     {
         for (var i = 0; i <= Enum.GetNames(typeof(LGate)).Length - 2; i++)
         {
@@ -55,9 +56,13 @@ public static class Menu
             yield return new MenuCheckRect(new Vector2Int(10, y), new Vector2Int(130, 55));
         }
     }
+    static Menu()
+    {
+        Font = SDL_ttf.TTF_OpenFont("Oswald-Light.ttf", 100);
+        MenuOptions = GetMenuOptions().ToList();
+    }
 }
-
-public record MenuCheckRect(Vector2Int Position, Vector2Int Size);
+public readonly record struct MenuCheckRect(Vector2Int Position, Vector2Int Size);
 
 [EnumExtensions]
 public enum LGate
