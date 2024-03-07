@@ -6,12 +6,19 @@ using SDL2;
 
 namespace GLogic.Jobs;
 
-public static class UserActionsHandler
+public class UserActionsHandler
 {
+    private readonly IRendererConfig _rendererConfig;
     public static LGate ChosenLGate { get; private set; }
     public static Entity LGateToMove { get; private set; }
     public static bool MouseRightButtonState { get; private set; }
+    public static bool ShiftKeyState { get; private set; }
 
+    public UserActionsHandler(IRendererConfig rendererConfig)
+    {
+        _rendererConfig = rendererConfig;
+    }
+    
     static UserActionsHandler()
     {
         ChosenLGate = LGate.None;
@@ -20,7 +27,7 @@ public static class UserActionsHandler
     
     #region Click
     
-    public static void HandleMouseUpPollEvent(Vector2Int cursor, uint mouseButton)
+    public void HandleMouseUpPollEvent(Vector2Int cursor, uint mouseButton)
     {
         if (mouseButton == SDL.SDL_BUTTON_LEFT)
         {
@@ -32,7 +39,7 @@ public static class UserActionsHandler
             MouseRightButtonState = false;
         }
     }
-    public static void HandleMouseDownPollEvent(Vector2Int cursor, uint mouseButton)
+    public void HandleMouseDownPollEvent(Vector2Int cursor, uint mouseButton)
     {
         if (mouseButton == SDL.SDL_BUTTON_LEFT && !MouseRightButtonState)
         {
@@ -43,8 +50,22 @@ public static class UserActionsHandler
             MouseRightButtonState = true;
         }
     }
+    public void HandleKeyDownEvent(SDL.SDL_Keycode key)
+    {
+        if (key == SDL.SDL_Keycode.SDLK_LSHIFT)
+        {
+            ShiftKeyState = true;
+        }
+    }
+    public void HandleKeyUpEvent(SDL.SDL_Keycode key)
+    {
+        if (key == SDL.SDL_Keycode.SDLK_LSHIFT)
+        {
+            ShiftKeyState = false;
+        }
+    }
     
-    private static void LeftClickDown(Vector2Int cursor)
+    private void LeftClickDown(Vector2Int cursor)
     {
         if (cursor.X <= Menu.Width)
         {
@@ -59,7 +80,7 @@ public static class UserActionsHandler
             UserActions(cursor);
         }
     }
-    private static void MarkSomeEntity(Vector2Int cursor)
+    private void MarkSomeEntity(Vector2Int cursor)
     {
         var markedEntity = new Entity { Id = IdStructure.MakeInvalidId() };
         foreach (var transformComponent in EntityManager.IterTransformComponents())
@@ -68,8 +89,8 @@ public static class UserActionsHandler
             {
                 continue;
             }
-            var positionX = transformComponent.Position.X * Renderer.Zoom; //cursor instead of this
-            var positionY = transformComponent.Position.Y * Renderer.Zoom; //cursor instead of this
+            var positionX = transformComponent.Position.X * Renderer.Zoom;
+            var positionY = transformComponent.Position.Y * Renderer.Zoom;
             var sizeX = transformComponent.Size.X * Renderer.Zoom;
             var sizeY = transformComponent.Size.Y * Renderer.Zoom;
             if (cursor.X > positionX
@@ -84,15 +105,6 @@ public static class UserActionsHandler
         }
 
         LGateToMove = markedEntity;
-        //Console.WriteLine(LGateToMove.Id);
-        
-        // var transformComponents = EntityManager.IterTransformComponents();
-        // LGateToMove = transformComponents.FirstOrDefault(x => 
-        //     EntityManager.IsAlive(x.Entity)
-        //     && cursorX > x.Position.X 
-        //     && cursorX < x.Position.X + x.Size.X
-        //     && cursorY > x.Position.Y
-        //     && cursorY < x.Position.Y + x.Size.Y).Entity;
     }
     private static void SetChosenLGate(Vector2Int cursor)
     {
@@ -117,70 +129,80 @@ public static class UserActionsHandler
             i++;
         }
     }
-    private static void UserActions(Vector2Int cursor)
+    private void UserActions(Vector2Int cursor)
     {
+        var adjustedCursorPosition = Renderer.ShiftCursorRelatively(cursor, EntityService.RectLGateSize);
+        if (ShiftKeyState)
+        {
+            var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea, adjustedCursorPosition,
+                _rendererConfig.RenderArea.ResizeRelatively(Renderer.Zoom, Renderer.CameraShift));
+            
+            if (!overlap)
+            {
+                return;
+            }
+            Debug.Assert(entityInOverlapArea.HasValue);
+            
+            adjustedCursorPosition = EntityService.AdjustEntityPosition(adjustedCursorPosition, entityInOverlapArea.Value);
+        }
         switch (ChosenLGate)
         {
             case LGate.AND:
             {
-                EntityService.AddLGate(cursor, IoType.AND, false);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.AND, false);
                 break;
             }
             case LGate.OR:
             {
-                EntityService.AddLGate(cursor, IoType.OR, false);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.OR, false);
                 break;
             }
             case LGate.NOT:
             {
-                EntityService.AddLGate(cursor, IoType.NOT, false);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.NOT, false);
                 break;
             }
             case LGate.XOR:
             {
-                EntityService.AddLGate(cursor, IoType.XOR, false);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.XOR, false);
                 break;
             }
             case LGate.NAND:
             {
-                EntityService.AddLGate(cursor, IoType.NAND, false);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.NAND, false);
                 break;
             }
             case LGate.NOR:
             {
-                EntityService.AddLGate(cursor, IoType.NOR, false);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.NOR, false);
                 break;
             }
             case LGate.XNOR:
             {
-                EntityService.AddLGate(cursor, IoType.XNOR, false);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.XNOR, false);
                 break;
             }
             case LGate.Input1:
             {
-                EntityService.AddLGate(cursor, IoType.Input, true);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.Input, true);
                 break;
-            };
+            }
             case LGate.Input0:
             {
-                EntityService.AddLGate(cursor, IoType.Input, false);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.Input, false);
                 break;
             }
             case LGate.Output:
             {
-                EntityService.AddLGate(cursor, IoType.Output, false);
+                EntityService.AddLGate(adjustedCursorPosition, IoType.Output, false);
                 break;
             }
             case LGate.Wire:
             {
-                //test//
-               // Renderer._zoom -= 0.1f;
                 break;
             }
             case LGate.Delete:
             {
-                //test//
-                //Renderer._zoom += 0.1f;
                 break;
             }
             case LGate.None:
@@ -197,7 +219,7 @@ public static class UserActionsHandler
 
     #region Held
 
-    public static void HandleMouseWheel(Vector2Int cursor, int wheelY, IRendererConfig rendererConfig)
+    public void HandleMouseWheel(Vector2Int cursor, int wheelY, IRendererConfig rendererConfig)
     {
         rendererConfig.ChangeRelativelyToCursorZoom((float)(wheelY * 0.1), cursor);
     }
@@ -206,7 +228,7 @@ public static class UserActionsHandler
 
     #region MouseHeld
 
-    public static void HandleMouseRightHeldAction(Vector2Int relativeCursorPosition, IRendererConfig rendererConfig)
+    public void HandleMouseRightHeldAction(Vector2Int relativeCursorPosition, IRendererConfig rendererConfig)
     {
         Debug.Assert(MouseRightButtonState);
         rendererConfig.ShiftCamera(relativeCursorPosition);

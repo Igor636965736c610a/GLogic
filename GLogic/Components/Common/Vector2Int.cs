@@ -1,6 +1,6 @@
 namespace GLogic.Components.Common;
 
-public struct Vector2Int
+public readonly struct Vector2Int
 {
     public int X { get; init; }
     public int Y { get; init; }

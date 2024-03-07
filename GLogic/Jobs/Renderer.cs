@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using GLogic.Components;
 using GLogic.Components.Common;
 using GLogic.Components.System;
@@ -8,12 +10,12 @@ namespace GLogic.Jobs;
 
 public sealed class Renderer : IRendererConfig
 {
-    static Renderer()
+    public Renderer()
     {
         _zoom = 1f;
     }
-    private static float _zoom;
-    public static float Zoom
+    private float _zoom;
+    public float Zoom
     {
         get => _zoom;
         private set
@@ -26,10 +28,9 @@ public sealed class Renderer : IRendererConfig
             };
         }
     }
-
-    public Area WindowSize = new(new Vector2Int(0, 0), new Vector2Int(1280, 720));
-    public Area RenderArea = new(new Vector2Int(-200, -200), new Vector2Int(1680, 1120));
-    public static Vector2Int CameraShift { get; set; }
+    public Area WindowSize { get; } = new(new Vector2Int(0, 0), new Vector2Int(1280, 720));
+    public Area RenderArea { get; } = new(new Vector2Int(-200, -200), new Vector2Int(1680, 1120));
+    public Vector2Int CameraShift { get; private set; }
     
     public void RenderEntities(IntPtr renderer)
     {
@@ -42,23 +43,19 @@ public sealed class Renderer : IRendererConfig
     }
     private void RenderFrontEntities(IntPtr renderer)
     {
-        var entities = ArchetypeManager.IterLGateComponents();
-
         var renderArea = RenderArea.ResizeRelatively(Zoom, CameraShift);
         
-        foreach (var entity in EntityQuery.AABB_Entities(entities.Select(x => x.Entity), renderArea))
+        foreach (var entity in EntityQuery.AABB_Entities(ArchetypeManager.IterLGateComponents().Select(x => x.Entity), renderArea))
         {
-            var transformComp = EntityManager.GetTransformComponent(entity);
-            var rect = transformComp.ResizeRelatively(Zoom, CameraShift);
-            var sdlRect = new SDL.SDL_Rect
-            {
-                x = rect.Position.X,
-                y = rect.Position.Y,
-                w = rect.Size.X,
-                h = rect.Size.Y,
-            };
+            RenderEntity(entity, renderer);
+        }
+        if (UserActionsHandler.ChosenLGate == LGate.Wire)
+        {
             
-            SDL.SDL_RenderFillRect(renderer, ref sdlRect);
+        }
+        else if (UserActionsHandler.ChosenLGate != LGate.None)
+        {
+            RenderChosenLGate(renderer, renderArea);
         }
     }
 
@@ -78,6 +75,85 @@ public sealed class Renderer : IRendererConfig
     {
         CameraShift = new Vector2Int(CameraShift.X + shiftVector.X, CameraShift.Y + shiftVector.Y);
     }
+    
+    public Vector2Int ShiftCursorRelatively(Vector2Int cursor, Vector2Int rectSize)
+    {
+        return new Vector2Int
+        {
+            X = (int)((cursor.X - CameraShift.X) / Zoom - (rectSize.X / 2f)),
+            Y = (int)((cursor.Y - CameraShift.Y) / Zoom - (rectSize.Y / 2f)),
+        };
+    }
+    
+    private void RenderChosenLGate(IntPtr renderer, Area area)
+    {
+        SDL.SDL_GetMouseState(out int x, out int y);
+        var chosenLGatePosition = ShiftCursorRelatively(new Vector2Int(x, y), EntityService.RectLGateSize);
+        SDL.SDL_SetRenderDrawColor(renderer, 181, 14, 0, 8);
+        if (!UserActionsHandler.ShiftKeyState)
+        {
+            if (!IdStructure.IsValid(EntityService.CheckArea(chosenLGatePosition).Id))
+            {
+                SDL.SDL_SetRenderDrawColor(renderer, 201, 242, 155, 1);
+            }
+            RenderRect(renderer, chosenLGatePosition);
+            
+            return;
+        }
+        
+        var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea, chosenLGatePosition,
+            area);
+        
+        if (!overlap)
+        {
+            return;
+        }
+        Debug.Assert(entityInOverlapArea.HasValue);
+
+        var adjustedPosition = EntityService.AdjustEntityPosition(chosenLGatePosition, entityInOverlapArea.Value);
+        if (!IdStructure.IsValid(EntityService.CheckArea(adjustedPosition).Id))
+        {
+            SDL.SDL_SetRenderDrawColor(renderer, 201, 242, 155, 1);
+        }
+
+        RenderRect(renderer, adjustedPosition);
+    }
+
+    private void RenderRect(IntPtr renderer, Vector2Int position)
+    {
+        var chosenLGate =
+            new TransformComponent { Position = position, Size = EntityService.RectLGateSize, Entity = new Entity { Id = IdStructure.MakeInvalidId() } }
+                .ResizeRelatively(Zoom, CameraShift);
+        var sdlRect = new SDL.SDL_Rect
+        {
+            x = chosenLGate.Position.X,
+            y = chosenLGate.Position.Y,
+            w = chosenLGate.Size.X,
+            h = chosenLGate.Size.Y,
+        };
+        
+        SDL.SDL_RenderFillRect(renderer, ref sdlRect);
+    }
+
+    private void RenderWithChosenWire(Area renderArea, IntPtr renderer)
+    {
+        
+    }
+
+    private void RenderEntity(Entity entity, IntPtr renderer)
+    {
+        var transformComp = EntityManager.GetTransformComponent(entity);
+        var rect = transformComp.ResizeRelatively(Zoom, CameraShift);
+        var sdlRect = new SDL.SDL_Rect
+        {
+            x = rect.Position.X,
+            y = rect.Position.Y,
+            w = rect.Size.X,
+            h = rect.Size.Y,
+        };
+            
+        SDL.SDL_RenderFillRect(renderer, ref sdlRect);
+    }
 }
 
 public readonly record struct Area(Vector2Int Position, Vector2Int Size)
@@ -94,6 +170,8 @@ public readonly record struct Area(Vector2Int Position, Vector2Int Size)
 
 public interface IRendererConfig
 {
+    Area WindowSize { get; }
+    Area RenderArea { get; }
     void ChangeRelativelyToCursorZoom(float factor, Vector2Int cursor);
     void ShiftCamera(Vector2Int shiftVector);
 }
