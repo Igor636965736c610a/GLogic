@@ -108,8 +108,8 @@ public static class EntityService
         {
             Position = new Vector2Int(position.X - 20, position.Y - 10),
             Size = new Vector2Int(
-                position.X + RectLGateSize.X + 40,
-                position.Y + RectLGateSize.Y + 20)
+                RectLGateSize.X + 40,
+                RectLGateSize.Y + 20)
         };
     }
     
