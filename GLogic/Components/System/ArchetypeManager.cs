@@ -23,6 +23,7 @@ public static class ArchetypeManager
         uint id;
         int index;
         WireComponent wireComponent;
+        
         Debug.Assert(EntityManager.IsAlive(initWireComponent.Entity));
         if (WireFreeIds.Count > MinFreeIds)
         {
@@ -58,9 +59,11 @@ public static class ArchetypeManager
     public static LGateComponent CreateLGateArchetype(InitLGateComponent initLGateComponent)
     {
         Debug.Assert(EntityManager.IsAlive(initLGateComponent.Entity));
+        
         uint id;
         int index;
         LGateComponent lGateComponent;
+        
         if (LGateFreeIds.Count > MinFreeIds)
         {
             id = WireFreeIds.Dequeue();

@@ -55,7 +55,7 @@ public sealed class Renderer : IRendererConfig
         }
         else if (UserActionsHandler.ChosenLGate != LGate.None)
         {
-            RenderChosenLGate(renderer, renderArea);
+            RenderChosenLGate(renderer);
         }
     }
 
@@ -76,7 +76,7 @@ public sealed class Renderer : IRendererConfig
         CameraShift = new Vector2Int(CameraShift.X + shiftVector.X, CameraShift.Y + shiftVector.Y);
     }
     
-    public Vector2Int ShiftCursorRelatively(Vector2Int cursor, Vector2Int rectSize)
+    public Vector2Int GetRelativeShiftedCursor(Vector2Int cursor, Vector2Int rectSize)
     {
         return new Vector2Int
         {
@@ -85,10 +85,10 @@ public sealed class Renderer : IRendererConfig
         };
     }
     
-    private void RenderChosenLGate(IntPtr renderer, Area area)
+    private void RenderChosenLGate(IntPtr renderer)
     {
         SDL.SDL_GetMouseState(out int x, out int y);
-        var chosenLGatePosition = ShiftCursorRelatively(new Vector2Int(x, y), EntityService.RectLGateSize);
+        var chosenLGatePosition = GetRelativeShiftedCursor(new Vector2Int(x, y), EntityService.RectLGateSize);
         SDL.SDL_SetRenderDrawColor(renderer, 181, 14, 0, 8);
         if (!UserActionsHandler.ShiftKeyState)
         {
@@ -101,8 +101,9 @@ public sealed class Renderer : IRendererConfig
             return;
         }
         
-        var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea, chosenLGatePosition,
-            area);
+        var overlapArea = EntityService.GetLGateOverlapArea(chosenLGatePosition);
+
+        var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea, overlapArea);
         
         if (!overlap)
         {
@@ -168,10 +169,17 @@ public readonly record struct Area(Vector2Int Position, Vector2Int Size)
     }
 }
 
-public interface IRendererConfig
+public interface IRendererConfig : IRendererStateAccess
+{
+    void ChangeRelativelyToCursorZoom(float factor, Vector2Int cursor);
+    void ShiftCamera(Vector2Int shiftVector);
+    Vector2Int GetRelativeShiftedCursor(Vector2Int cursor, Vector2Int rectSize);
+}
+
+public interface IRendererStateAccess
 {
     Area WindowSize { get; }
     Area RenderArea { get; }
-    void ChangeRelativelyToCursorZoom(float factor, Vector2Int cursor);
-    void ShiftCamera(Vector2Int shiftVector);
+    public Vector2Int CameraShift { get; }
+    public float Zoom { get; }
 }

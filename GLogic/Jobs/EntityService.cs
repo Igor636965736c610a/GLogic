@@ -38,14 +38,19 @@ public static class EntityService
             });
     }
 
-    public static bool GetEntityWithBiggestOverlap([NotNullWhen(true)]out TransformComponent? transformComponent, Vector2Int position, Area overlapArea)
+    public static void RemoveEntity()
+    {
+        
+    }
+    
+    public static bool GetEntityWithBiggestOverlap([NotNullWhen(true)]out TransformComponent? transformComponent, Area overlapArea)
     {
         transformComponent = null;
         var overlap = 0;
         foreach (var entity in EntityQuery.AABB_Entities(ArchetypeManager.IterLGateComponents().Select(x => x.Entity), overlapArea))
         {
             var transformComp = EntityManager.GetTransformComponent(entity);
-            var newOverlap = CalculateOverlap(position, transformComp.Position);
+            var newOverlap = CalculateOverlap(overlapArea, transformComp.Position);
             if (newOverlap > overlap)
             {
                 overlap = newOverlap;
@@ -64,13 +69,15 @@ public static class EntityService
         if (xDiff > adjustedYDiffToX)
         {
             (Func<int, int, int> predicate, int yBound) yAxis =
-                entityInOverlapArea.Position.Y < adjustedEntityPosition.Y ? 
-                    (Math.Min, entityInOverlapArea.Position.Y + RectLGateSize.Y) :
-                    (Math.Max, entityInOverlapArea.Position.Y - RectLGateSize.Y);
+                entityInOverlapArea.Position.Y < adjustedEntityPosition.Y
+                    ? (Math.Min, entityInOverlapArea.Position.Y + RectLGateSize.Y)
+                    : (Math.Max, entityInOverlapArea.Position.Y - RectLGateSize.Y);
             
-            return new Vector2Int { 
+            return new Vector2Int 
+            { 
                 X = AdjustEntityAxis(entityInOverlapArea.Position.X, adjustedEntityPosition.X, RectLGateSize.X), 
-                Y = yAxis.predicate(yAxis.yBound, AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, yDiff)), };
+                Y = yAxis.predicate(yAxis.yBound, AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, yDiff)),
+            };
         }
         else //(xDiff < adjustedYDiffToX)
         {
@@ -86,12 +93,24 @@ public static class EntityService
             };
         }
     }
+    
     public static Entity CheckArea(Vector2Int position)
     {
         var entities = ArchetypeManager.IterLGateComponents();
 
         return EntityQuery.AABB_Entities(entities.Select(x => x.Entity), new Area(position, RectLGateSize))
             .FirstOrDefault(new Entity { Id = IdStructure.MakeInvalidId() });
+    }
+
+    public static Area GetLGateOverlapArea(Vector2Int position)
+    {
+        return new Area
+        {
+            Position = new Vector2Int(position.X - 20, position.Y - 10),
+            Size = new Vector2Int(
+                position.X + RectLGateSize.X + 40,
+                position.Y + RectLGateSize.Y + 20)
+        };
     }
     
     private static int AdjustEntityAxis(int targetRectAxis, int observerRectAxis, int length)
@@ -101,10 +120,10 @@ public static class EntityService
             : targetRectAxis + length;
     }
     
-    private static int CalculateOverlap(Vector2Int target, Vector2Int observer)
+    private static int CalculateOverlap(Area targetArea, Vector2Int observer)
     {
-        float overlapX = Math.Max(0, Math.Min(target.X + RectLGateSize.X + 20, observer.X + RectLGateSize.X) - Math.Max(target.X - 20, observer.X));
-        float overlapY = Math.Max(0, Math.Min(target.Y + RectLGateSize.Y + 10, observer.Y + RectLGateSize.Y) - Math.Max(target.Y - 10, observer.Y));
+        float overlapX = Math.Max(0, Math.Min(targetArea.Position.X + targetArea.Size.X, observer.X + RectLGateSize.X) - Math.Max(targetArea.Position.X, observer.X));
+        float overlapY = Math.Max(0, Math.Min(targetArea.Position.Y + targetArea.Size.Y, observer.Y + RectLGateSize.Y) - Math.Max(targetArea.Position.Y, observer.Y));
 
         return Math.Abs((int)(overlapX * overlapY));
     }

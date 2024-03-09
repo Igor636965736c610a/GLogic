@@ -19,17 +19,18 @@ public static class IdStructure
     
     public static uint Index(uint entityId)
     {
-        return entityId & IdStructure.EntityIndexMask;
+        return entityId & EntityIndexMask;
     }
 
     public static byte Generation(uint entityId)
     {
-        return (byte)((entityId >> (int)IdStructure.EntityIndexBits) & IdStructure.EntityGenerationMask);
+        return (byte)((entityId >> (int)EntityIndexBits) & EntityGenerationMask);
     }
 
     public static uint IdWithNewGeneration(uint entityId)
     {
         var generation = (uint)Generation(entityId) + 1;
+        
         return Index(entityId) | (generation << (int)EntityIndexBits);
     }
 

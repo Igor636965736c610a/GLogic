@@ -83,26 +83,9 @@ public class UserActionsHandler
     private void MarkSomeEntity(Vector2Int cursor)
     {
         var markedEntity = new Entity { Id = IdStructure.MakeInvalidId() };
-        foreach (var transformComponent in EntityManager.IterTransformComponents())
-        {
-            if (!EntityManager.IsAlive(transformComponent.Entity))
-            {
-                continue;
-            }
-            var positionX = transformComponent.Position.X * Renderer.Zoom;
-            var positionY = transformComponent.Position.Y * Renderer.Zoom;
-            var sizeX = transformComponent.Size.X * Renderer.Zoom;
-            var sizeY = transformComponent.Size.Y * Renderer.Zoom;
-            if (cursor.X > positionX
-                && cursor.X < positionX + sizeX
-                && cursor.Y > positionY
-                && cursor.Y < positionY + sizeY)
-            {
-                markedEntity = transformComponent.Entity;
-                Debug.Assert(EntityManager.IsAlive(transformComponent.Entity), "Marking entity witch is not alive");
-                break;
-            }
-        }
+        var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor, EntityService.RectLGateSize);
+        
+        
 
         LGateToMove = markedEntity;
     }
@@ -131,11 +114,12 @@ public class UserActionsHandler
     }
     private void UserActions(Vector2Int cursor)
     {
-        var adjustedCursorPosition = Renderer.ShiftCursorRelatively(cursor, EntityService.RectLGateSize);
+        var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor, EntityService.RectLGateSize);
         if (ShiftKeyState)
         {
-            var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea, adjustedCursorPosition,
-                _rendererConfig.RenderArea.ResizeRelatively(Renderer.Zoom, Renderer.CameraShift));
+            var overlapArea = EntityService.GetLGateOverlapArea(adjustedCursorPosition);
+            var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea,
+                overlapArea);
             
             if (!overlap)
             {
