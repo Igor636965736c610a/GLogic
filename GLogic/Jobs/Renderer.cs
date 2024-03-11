@@ -84,9 +84,10 @@ public sealed class Renderer : IRendererConfig
         SDL.SDL_GetMouseState(out int x, out int y);
         var chosenLGatePosition = EntityService.CenterRectPositionToCursor(GetRelativeShiftedCursor(new Vector2Int(x, y)));
         SDL.SDL_SetRenderDrawColor(renderer, 181, 14, 0, 8);
+        
         if (!UserActionsHandler.ShiftKeyState)
         {
-            if (!IdStructure.IsValid(EntityService.CheckArea(chosenLGatePosition).Id))
+            if (!IdStructure.IsValid(EntityService.CheckArea(chosenLGatePosition, ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id))
             {
                 SDL.SDL_SetRenderDrawColor(renderer, 201, 242, 155, 1);
             }
@@ -96,7 +97,11 @@ public sealed class Renderer : IRendererConfig
         }
         
         var overlapArea = EntityService.GetLGateOverlapArea(chosenLGatePosition);
-        var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea, overlapArea);
+        var overlap = EntityService.GetEntityWithBiggestOverlap(
+            out TransformComponent? entityInOverlapArea, 
+            overlapArea,
+            ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+            );
         
         if (!overlap)
         {
@@ -105,7 +110,11 @@ public sealed class Renderer : IRendererConfig
         Debug.Assert(entityInOverlapArea.HasValue);
 
         var adjustedPosition = EntityService.AdjustEntityPosition(chosenLGatePosition, entityInOverlapArea.Value);
-        if (!IdStructure.IsValid(EntityService.CheckArea(adjustedPosition).Id))
+        
+        if (!IdStructure.IsValid(EntityService.CheckArea(
+                adjustedPosition, 
+                ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id)
+            )
         {
             SDL.SDL_SetRenderDrawColor(renderer, 201, 242, 155, 1);
         }
@@ -116,7 +125,12 @@ public sealed class Renderer : IRendererConfig
     private void RenderRect(IntPtr renderer, Vector2Int position)
     {
         var chosenLGate =
-            new TransformComponent { Position = position, Size = EntityService.RectLGateSize, Entity = new Entity { Id = IdStructure.MakeInvalidId() } }
+            new TransformComponent
+                {
+                    Position = position, 
+                    Size = EntityService.RectLGateSize, 
+                    Entity = new Entity { Id = IdStructure.MakeInvalidId() }
+                }
                 .ResizeRelatively(Zoom, CameraShift);
         
         var sdlRect = new SDL.SDL_Rect

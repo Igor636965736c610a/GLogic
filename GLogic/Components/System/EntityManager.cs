@@ -153,4 +153,10 @@ public static class EntityManager
         var index = (int)IdStructure.Index(ioComponent.Entity.Id);
         IoComponents[index] = ioComponent;
     }
+
+    public static void UpdateTransformComponent(TransformComponent transformComponent)
+    {
+        var index = (int)IdStructure.Index(transformComponent.Entity.Id); //TODO Assertions
+        TransformComponents[index] = transformComponent;
+    }
 }

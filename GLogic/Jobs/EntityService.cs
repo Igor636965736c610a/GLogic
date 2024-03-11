@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using GLogic.Components;
 using GLogic.Components.Common;
 using GLogic.Components.Init;
@@ -19,17 +20,19 @@ public static class EntityService
     public static void AddLGate(Vector2Int position, IoType ioType, bool value)
     {
         Debug.Assert(ioType != IoType.Wire);
-        if (IdStructure.IsValid(CheckArea(position).Id))
+        if (IdStructure.IsValid(CheckArea(position, ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id))
         {
             return;
         }
         var initIoComponent = new InitIoComponentInfo(
             new Entity { Id = IdStructure.MakeInvalidId() },
             new Entity { Id = IdStructure.MakeInvalidId() }, 0, value);
+        
         var initTransformComponent = new InitTransformComponentInfo(position, RectLGateSize);
         var initEntity = new InitEntityInfo(initTransformComponent, initIoComponent, ioType);
         var entity = EntityManager.CreateEntity(initEntity);
         var lGateArchetype = ArchetypeManager.CreateLGateArchetype(new InitLGateComponent { Entity = entity });
+        
         EntityManager.CreateArchetypeForEntity(new InitArchetype
             {
                 ArchetypeOption = ArchetypeOption.LGate, 
@@ -42,6 +45,7 @@ public static class EntityService
     {
         var lGates = ArchetypeManager.IterLGateComponents();
         var entityToDelete = EntityQuery.AABB_Entity(lGates.Select(x => x.Entity), position);
+        
         if (!IdStructure.IsValid(entityToDelete.Id))
         {
             var wires = ArchetypeManager.IterWireComponents();
@@ -57,11 +61,11 @@ public static class EntityService
         }
     }
     
-    public static bool GetEntityWithBiggestOverlap([NotNullWhen(true)]out TransformComponent? transformComponent, Area overlapArea)
+    public static bool GetEntityWithBiggestOverlap([NotNullWhen(true)]out TransformComponent? transformComponent, Area overlapArea, IEnumerable<Entity> entities)
     {
         transformComponent = null;
         var overlap = 0;
-        foreach (var entity in EntityQuery.AABB_Entities(ArchetypeManager.IterLGateComponents().Select(x => x.Entity), overlapArea))
+        foreach (var entity in EntityQuery.AABB_Entities(entities, overlapArea))
         {
             var transformComp = EntityManager.GetTransformComponent(entity);
             var newOverlap = CalculateOverlap(overlapArea, transformComp.Position);
@@ -108,11 +112,10 @@ public static class EntityService
         }
     }
     
-    public static Entity CheckArea(Vector2Int position)
+    public static Entity CheckArea(Vector2Int position, IEnumerable<Entity> entities)
     {
-        var entities = ArchetypeManager.IterLGateComponents();
-
-        return EntityQuery.AABB_Entities(entities.Select(x => x.Entity), new Area(position, RectLGateSize))
+        return EntityQuery
+            .AABB_Entities(entities, new Area(position, RectLGateSize))
             .FirstOrDefault(new Entity { Id = IdStructure.MakeInvalidId() });
     }
 
@@ -123,13 +126,34 @@ public static class EntityService
             Position = new Vector2Int(position.X - 20, position.Y - 10),
             Size = new Vector2Int(
                 RectLGateSize.X + 40,
-                RectLGateSize.Y + 20)
+                RectLGateSize.Y + 20
+                )
         };
     }
     
     public static Vector2Int CenterRectPositionToCursor(Vector2Int position)
     {
         return new Vector2Int(position.X - RectLGateSize.X / 2, position.Y - RectLGateSize.Y / 2);
+    }
+
+    public static void UpdateEntityPosition(Entity entity, Vector2Int newPosition)
+    {
+        if (!IdStructure.IsValid(entity.Id))
+        {
+            throw new InvalidProgramException("Shifting removed entity");
+        }
+
+        var transformComponent = EntityManager.GetTransformComponent(entity);
+        Debug.Assert(IdStructure.IsValid(transformComponent.Entity.Id));
+
+        transformComponent.Position = newPosition;
+
+        Debug.Assert(!IdStructure.IsValid(CheckArea(
+            transformComponent.Position,
+            ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != entity.Id)).Id)
+        );
+        
+        EntityManager.UpdateTransformComponent(transformComponent);
     }
     
     private static int AdjustEntityAxis(int targetRectAxis, int observerRectAxis, int length)
