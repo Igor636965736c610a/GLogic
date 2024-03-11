@@ -37,8 +37,8 @@ public static class Menu
             };
             SDL.SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
             SDL.SDL_RenderFillRect(renderer, ref rect);
-            var option = (LGate)i;
-            var textColor = option == UserActionsHandler.ChosenLGate ? ChosenLGateColor : TextColor;
+            var option = (MenuOption)i;
+            var textColor = option == UserActionsHandler.ChosenMenuOption ? ChosenLGateColor : TextColor;
             var surface = SDL_ttf.TTF_RenderText_Solid(Font, option.ToStringFast(), textColor);
             var texture = SDL.SDL_CreateTextureFromSurface(renderer, surface);
             SDL.SDL_RenderCopy(renderer, texture, (nint)null, ref rect);
@@ -50,7 +50,7 @@ public static class Menu
     }
     private static IEnumerable<MenuCheckRect> GetMenuOptions()
     {
-        for (var i = 0; i <= Enum.GetNames(typeof(LGate)).Length - 2; i++)
+        for (var i = 0; i <= Enum.GetNames(typeof(MenuOption)).Length - 2; i++)
         {
             var y = 30 + 55 * i;
             yield return new MenuCheckRect(new Vector2Int(10, y), new Vector2Int(130, 55));
@@ -65,7 +65,7 @@ public static class Menu
 public readonly record struct MenuCheckRect(Vector2Int Position, Vector2Int Size);
 
 [EnumExtensions]
-public enum LGate
+public enum MenuOption
 {
     AND,
     OR,

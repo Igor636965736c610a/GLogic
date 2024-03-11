@@ -9,7 +9,7 @@ namespace GLogic.Jobs;
 public class UserActionsHandler
 {
     private readonly IRendererConfig _rendererConfig;
-    public static LGate ChosenLGate { get; private set; }
+    public static MenuOption ChosenMenuOption { get; private set; }
     public static Entity LGateToMove { get; private set; }
     public static bool MouseRightButtonState { get; private set; }
     public static bool ShiftKeyState { get; private set; }
@@ -21,7 +21,7 @@ public class UserActionsHandler
     
     static UserActionsHandler()
     {
-        ChosenLGate = LGate.None;
+        ChosenMenuOption = MenuOption.None;
         MouseRightButtonState = false;
     }
     
@@ -71,7 +71,7 @@ public class UserActionsHandler
         {
             SetChosenLGate(cursor);
         }
-        else if (ChosenLGate == LGate.None)
+        else if (ChosenMenuOption == MenuOption.None)
         {
             MarkSomeEntity(cursor);
         }
@@ -83,7 +83,7 @@ public class UserActionsHandler
     private void MarkSomeEntity(Vector2Int cursor)
     {
         var markedEntity = new Entity { Id = IdStructure.MakeInvalidId() };
-        var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor, EntityService.RectLGateSize);
+        var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
         
         
 
@@ -98,98 +98,115 @@ public class UserActionsHandler
                                              && cursor.Y >= option.Position.Y 
                                              && cursor.Y < option.Position.Y + option.Size.Y)
             {
-                if (ChosenLGate == (LGate)i)
+                if (ChosenMenuOption == (MenuOption)i)
                 {
-                    ChosenLGate = LGate.None;
+                    ChosenMenuOption = MenuOption.None;
                 }
                 else
                 {
-                    ChosenLGate = (LGate)i;
+                    ChosenMenuOption = (MenuOption)i;
                 }
                 
-                Console.WriteLine(ChosenLGate.ToStringFast());
+                Console.WriteLine(ChosenMenuOption.ToStringFast());
             }
             i++;
         }
     }
     private void UserActions(Vector2Int cursor)
     {
-        var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor, EntityService.RectLGateSize);
-        if (ShiftKeyState)
+        var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
+        switch (ChosenMenuOption)
         {
-            var overlapArea = EntityService.GetLGateOverlapArea(adjustedCursorPosition);
-            var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea,
-                overlapArea);
-            
-            if (!overlap)
+            case MenuOption.AND:
             {
-                return;
-            }
-            Debug.Assert(entityInOverlapArea.HasValue);
-            
-            adjustedCursorPosition = EntityService.AdjustEntityPosition(adjustedCursorPosition, entityInOverlapArea.Value);
-        }
-        switch (ChosenLGate)
-        {
-            case LGate.AND:
-            {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.AND, false);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute)
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.AND, false);
+                
                 break;
             }
-            case LGate.OR:
+            case MenuOption.OR:
             {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.OR, false);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute)
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.OR, false);
+                
                 break;
             }
-            case LGate.NOT:
+            case MenuOption.NOT:
             {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.NOT, false);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute) 
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.NOT, false);
+                
                 break;
             }
-            case LGate.XOR:
+            case MenuOption.XOR:
             {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.XOR, false);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute)
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.XOR, false);
+                
                 break;
             }
-            case LGate.NAND:
+            case MenuOption.NAND:
             {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.NAND, false);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute)
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.NAND, false);
+                
                 break;
             }
-            case LGate.NOR:
+            case MenuOption.NOR:
             {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.NOR, false);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute)
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.NOR, false);
+                
                 break;
             }
-            case LGate.XNOR:
+            case MenuOption.XNOR:
             {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.XNOR, false);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute)
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.XNOR, false);
+                
                 break;
             }
-            case LGate.Input1:
+            case MenuOption.Input1:
             {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.Input, true);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute)
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.Input, true);
+                
                 break;
             }
-            case LGate.Input0:
+            case MenuOption.Input0:
             {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.Input, false);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute)
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.Input, false);
+                
                 break;
             }
-            case LGate.Output:
+            case MenuOption.Output:
             {
-                EntityService.AddLGate(adjustedCursorPosition, IoType.Output, false);
+                var newAdjustedCursorPosition = AdjustCursorPositionWhileAddingEntity(adjustedCursorPosition);
+                if (newAdjustedCursorPosition.execute)
+                    EntityService.AddLGate(newAdjustedCursorPosition.position, IoType.Output, false);
+                
                 break;
             }
-            case LGate.Wire:
+            case MenuOption.Wire:
             {
                 break;
             }
-            case LGate.Delete:
+            case MenuOption.Delete:
             {
+                EntityService.RemoveEntity(adjustedCursorPosition);
                 break;
             }
-            case LGate.None:
+            case MenuOption.None:
             {
                 Debug.Fail("Critical error while creating entity");
                 throw new InvalidProgramException("Critical error while creating entity");
@@ -198,7 +215,29 @@ public class UserActionsHandler
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
+
+    private (bool execute, Vector2Int position) AdjustCursorPositionWhileAddingEntity(Vector2Int position)
+    {
+        position = EntityService.CenterRectPositionToCursor(position);
+        
+        if (ShiftKeyState)
+        {
+            var overlapArea = EntityService.GetLGateOverlapArea(position);
+            var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea,
+                overlapArea);
+            
+            if (!overlap)
+            {
+                return (false, position);
+            }
+            Debug.Assert(entityInOverlapArea.HasValue);
+            
+            return (true, EntityService.AdjustEntityPosition(position, entityInOverlapArea.Value));
+        }
+
+        return (true, position);
+    }
+
     #endregion
 
     #region Held

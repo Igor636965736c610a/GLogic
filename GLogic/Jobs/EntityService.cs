@@ -38,9 +38,20 @@ public static class EntityService
             });
     }
 
-    public static void RemoveEntity()
+    public static void RemoveEntity(Vector2Int position)
     {
+        var lGates = ArchetypeManager.IterLGateComponents();
+        var entityToDelete = EntityQuery.AABB_Entity(lGates.Select(x => x.Entity), position);
+        if (!IdStructure.IsValid(entityToDelete.Id))
+        {
+            var wires = ArchetypeManager.IterWireComponents();
+            foreach(var wireComponent in EntityQuery.AABB_Entities(wires.Select(x => x.Entity), position))
+            {
+                // TODO
+            }
+        }
         
+        EntityManager.RemoveEntity(entityToDelete);
     }
     
     public static bool GetEntityWithBiggestOverlap([NotNullWhen(true)]out TransformComponent? transformComponent, Area overlapArea)
@@ -111,6 +122,11 @@ public static class EntityService
                 RectLGateSize.X + 40,
                 RectLGateSize.Y + 20)
         };
+    }
+    
+    public static Vector2Int CenterRectPositionToCursor(Vector2Int position)
+    {
+        return new Vector2Int(position.X - RectLGateSize.X / 2, position.Y - RectLGateSize.Y / 2);
     }
     
     private static int AdjustEntityAxis(int targetRectAxis, int observerRectAxis, int length)

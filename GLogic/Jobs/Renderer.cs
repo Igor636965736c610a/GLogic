@@ -49,14 +49,8 @@ public sealed class Renderer : IRendererConfig
         {
             RenderEntity(entity, renderer);
         }
-        if (UserActionsHandler.ChosenLGate == LGate.Wire)
-        {
-            
-        }
-        else if (UserActionsHandler.ChosenLGate != LGate.None)
-        {
-            RenderChosenLGate(renderer);
-        }
+
+        RenderChosenMenuOption(renderer);
     }
 
     public void ChangeRelativelyToCursorZoom(float factor, Vector2Int cursor)
@@ -76,19 +70,19 @@ public sealed class Renderer : IRendererConfig
         CameraShift = new Vector2Int(CameraShift.X + shiftVector.X, CameraShift.Y + shiftVector.Y);
     }
     
-    public Vector2Int GetRelativeShiftedCursor(Vector2Int cursor, Vector2Int rectSize)
+    public Vector2Int GetRelativeShiftedCursor(Vector2Int cursor)
     {
         return new Vector2Int
         {
-            X = (int)((cursor.X - CameraShift.X) / Zoom - (rectSize.X / 2f)),
-            Y = (int)((cursor.Y - CameraShift.Y) / Zoom - (rectSize.Y / 2f)),
+            X = (int)((cursor.X - CameraShift.X) / Zoom),
+            Y = (int)((cursor.Y - CameraShift.Y) / Zoom),
         };
     }
     
     private void RenderChosenLGate(IntPtr renderer)
     {
         SDL.SDL_GetMouseState(out int x, out int y);
-        var chosenLGatePosition = GetRelativeShiftedCursor(new Vector2Int(x, y), EntityService.RectLGateSize);
+        var chosenLGatePosition = EntityService.CenterRectPositionToCursor(GetRelativeShiftedCursor(new Vector2Int(x, y)));
         SDL.SDL_SetRenderDrawColor(renderer, 181, 14, 0, 8);
         if (!UserActionsHandler.ShiftKeyState)
         {
@@ -102,7 +96,6 @@ public sealed class Renderer : IRendererConfig
         }
         
         var overlapArea = EntityService.GetLGateOverlapArea(chosenLGatePosition);
-
         var overlap = EntityService.GetEntityWithBiggestOverlap(out TransformComponent? entityInOverlapArea, overlapArea);
         
         if (!overlap)
@@ -125,6 +118,7 @@ public sealed class Renderer : IRendererConfig
         var chosenLGate =
             new TransformComponent { Position = position, Size = EntityService.RectLGateSize, Entity = new Entity { Id = IdStructure.MakeInvalidId() } }
                 .ResizeRelatively(Zoom, CameraShift);
+        
         var sdlRect = new SDL.SDL_Rect
         {
             x = chosenLGate.Position.X,
@@ -155,6 +149,78 @@ public sealed class Renderer : IRendererConfig
             
         SDL.SDL_RenderFillRect(renderer, ref sdlRect);
     }
+
+    private void RenderChosenMenuOption(IntPtr renderer)
+    {
+        switch (UserActionsHandler.ChosenMenuOption)
+        {
+            case MenuOption.AND:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.OR:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.NOT:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.XOR:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.NAND:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.NOR:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.XNOR:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.Input1:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.Input0:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.Output:
+            {
+                RenderChosenLGate(renderer);
+                break;
+            }
+            case MenuOption.Wire:
+            {
+                break;
+            }
+            case MenuOption.Delete:
+            {
+                break;
+            }
+            case MenuOption.None:
+            {
+                break;
+            }
+            default:
+                throw new ArgumentOutOfRangeException();
+        }   
+    }
+
 }
 
 public readonly record struct Area(Vector2Int Position, Vector2Int Size)
@@ -173,7 +239,7 @@ public interface IRendererConfig : IRendererStateAccess
 {
     void ChangeRelativelyToCursorZoom(float factor, Vector2Int cursor);
     void ShiftCamera(Vector2Int shiftVector);
-    Vector2Int GetRelativeShiftedCursor(Vector2Int cursor, Vector2Int rectSize);
+    Vector2Int GetRelativeShiftedCursor(Vector2Int cursor);
 }
 
 public interface IRendererStateAccess
