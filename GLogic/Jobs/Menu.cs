@@ -33,7 +33,7 @@ public static class Menu
                 x = menuOption.Position.X,
                 y = menuOption.Position.Y,
                 w = menuOption.Size.X,
-                h = menuOption.Size.Y,
+                h = menuOption.Size.Y
             };
             SDL.SDL_SetRenderDrawColor(renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
             SDL.SDL_RenderFillRect(renderer, ref rect);
@@ -46,8 +46,10 @@ public static class Menu
             SDL.SDL_DestroyTexture(texture);
             i++;
         }
+
         SDL.SDL_RenderPresent(renderer);
     }
+
     private static IEnumerable<MenuCheckRect> GetMenuOptions()
     {
         for (var i = 0; i <= Enum.GetNames(typeof(MenuOption)).Length - 2; i++)
@@ -56,12 +58,14 @@ public static class Menu
             yield return new MenuCheckRect(new Vector2Int(10, y), new Vector2Int(130, 55));
         }
     }
+
     static Menu()
     {
         Font = SDL_ttf.TTF_OpenFont("Oswald-Light.ttf", 100);
         MenuOptions = GetMenuOptions().ToList();
     }
 }
+
 public readonly record struct MenuCheckRect(Vector2Int Position, Vector2Int Size);
 
 [EnumExtensions]
@@ -79,5 +83,5 @@ public enum MenuOption
     Output,
     Wire,
     Delete,
-    None,
+    None
 }

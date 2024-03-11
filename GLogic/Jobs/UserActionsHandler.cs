@@ -20,15 +20,15 @@ public sealed class UserActionsHandler
         _rendererConfig = rendererConfig;
         LGateToMove = new Entity { Id = IdStructure.MakeInvalidId() };
     }
-    
+
     static UserActionsHandler()
     {
         ChosenMenuOption = MenuOption.None;
         MouseRightButtonState = false;
     }
-    
+
     #region MouseClick
-    
+
     public void HandleMouseUpPollEvent(Vector2Int cursor, uint mouseButton)
     {
         if (mouseButton == SDL.SDL_BUTTON_LEFT)
@@ -42,20 +42,22 @@ public sealed class UserActionsHandler
             MouseRightButtonState = false;
         }
     }
+
     public void HandleMouseDownPollEvent(Vector2Int cursor, uint mouseButton)
     {
         if (mouseButton == SDL.SDL_BUTTON_LEFT && !MouseRightButtonState)
         {
             LeftClickDown(cursor);
-            
+
             MouseLeftButtonState = true;
         }
-        
+
         if (mouseButton == SDL.SDL_BUTTON_RIGHT)
         {
             MouseRightButtonState = true;
         }
     }
+
     public void HandleKeyDownEvent(SDL.SDL_Keycode key)
     {
         if (key == SDL.SDL_Keycode.SDLK_LSHIFT)
@@ -63,6 +65,7 @@ public sealed class UserActionsHandler
             ShiftKeyState = true;
         }
     }
+
     public void HandleKeyUpEvent(SDL.SDL_Keycode key)
     {
         if (key == SDL.SDL_Keycode.SDLK_LSHIFT)
@@ -70,7 +73,7 @@ public sealed class UserActionsHandler
             ShiftKeyState = false;
         }
     }
-    
+
     private void LeftClickDown(Vector2Int cursor)
     {
         if (cursor.X <= Menu.Width)
@@ -86,29 +89,31 @@ public sealed class UserActionsHandler
             UserActions(cursor);
         }
     }
+
     private void MarkSomeEntity(Vector2Int cursor)
     {
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
-        
+
         var markedEntity = EntityQuery.AABB_Entity(
-            ArchetypeManager.IterLGateComponents().Select(x => x.Entity), 
+            ArchetypeManager.IterLGateComponents().Select(x => x.Entity),
             adjustedCursorPosition
-            );
-        
+        );
+
         LGateToMove = markedEntity;
         Console.WriteLine(LGateToMove.Id);
     }
+
     private static void SetChosenLGate(Vector2Int cursor)
     {
         var i = 0;
         foreach (var option in Menu.MenuOptions)
         {
             if (
-                cursor.X >= option.Position.X 
+                cursor.X >= option.Position.X
                 && cursor.X <= option.Position.X + option.Size.X
-                && cursor.Y >= option.Position.Y 
+                && cursor.Y >= option.Position.Y
                 && cursor.Y < option.Position.Y + option.Size.Y
-                )
+            )
             {
                 if (ChosenMenuOption == (MenuOption)i)
                 {
@@ -118,12 +123,14 @@ public sealed class UserActionsHandler
                 {
                     ChosenMenuOption = (MenuOption)i;
                 }
-                
+
                 Console.WriteLine(ChosenMenuOption.ToStringFast());
             }
+
             i++;
         }
     }
+
     private void UserActions(Vector2Int cursor)
     {
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
@@ -132,15 +139,15 @@ public sealed class UserActionsHandler
             case MenuOption.AND:
             {
                 adjustedCursorPosition = EntityService.CenterRectPositionToCursor(adjustedCursorPosition);
-                
+
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -148,23 +155,23 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.AND, false);
-                
+
                 break;
             }
             case MenuOption.OR:
             {
                 adjustedCursorPosition = EntityService.CenterRectPositionToCursor(adjustedCursorPosition);
-                
+
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -172,23 +179,23 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                    
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.OR, false);
-                
+
                 break;
             }
             case MenuOption.NOT:
             {
                 adjustedCursorPosition = EntityService.CenterRectPositionToCursor(adjustedCursorPosition);
-                
+
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -196,23 +203,23 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                   
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.NOT, false);
-                
+
                 break;
             }
             case MenuOption.XOR:
             {
                 adjustedCursorPosition = EntityService.CenterRectPositionToCursor(adjustedCursorPosition);
-                
+
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -220,23 +227,23 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                    
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.XOR, false);
-                
+
                 break;
             }
             case MenuOption.NAND:
             {
                 adjustedCursorPosition = EntityService.CenterRectPositionToCursor(adjustedCursorPosition);
-                
+
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -244,23 +251,23 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                    
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.NAND, false);
-                
+
                 break;
             }
             case MenuOption.NOR:
             {
                 adjustedCursorPosition = EntityService.CenterRectPositionToCursor(adjustedCursorPosition);
-                
+
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -268,23 +275,23 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.NOR, false);
-                
+
                 break;
             }
             case MenuOption.XNOR:
             {
                 adjustedCursorPosition = EntityService.CenterRectPositionToCursor(adjustedCursorPosition);
-                
+
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -292,23 +299,23 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                   
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.XNOR, false);
-                
+
                 break;
             }
             case MenuOption.Input1:
             {
                 adjustedCursorPosition = EntityService.CenterRectPositionToCursor(adjustedCursorPosition);
-                
+
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -316,23 +323,23 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                    
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.Input, true);
-                
+
                 break;
             }
             case MenuOption.Input0:
             {
                 adjustedCursorPosition = EntityService.CenterRectPositionToCursor(adjustedCursorPosition);
-                
+
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -340,9 +347,9 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.Input, false);
-                
+
                 break;
             }
             case MenuOption.Output:
@@ -351,11 +358,11 @@ public sealed class UserActionsHandler
                 if (ShiftKeyState)
                 {
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
-                        adjustedCursorPosition, 
+                        adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
                         ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-                        );
-                    
+                    );
+
                     if (!newAdjustedCursorPosition.canPut)
                     {
                         return;
@@ -363,9 +370,9 @@ public sealed class UserActionsHandler
 
                     adjustedCursorPosition = newAdjustedCursorPosition.position;
                 }
-                
+
                 EntityService.AddLGate(adjustedCursorPosition, IoType.Output, false);
-                
+
                 break;
             }
             case MenuOption.Wire:
@@ -387,25 +394,27 @@ public sealed class UserActionsHandler
         }
     }
 
-    private (bool canPut, Vector2Int position) AdjustDisplayLGatePosition(Vector2Int position, Area overlapArea, IEnumerable<Entity> entities)
+    private (bool canPut, Vector2Int position) AdjustDisplayLGatePosition(Vector2Int position, Area overlapArea,
+        IEnumerable<Entity> entities)
     {
         var overlap = EntityService.GetEntityWithBiggestOverlap(
-            out TransformComponent? entityInOverlapArea,
-            overlapArea, 
+            out var entityInOverlapArea,
+            overlapArea,
             entities
-            );
-        
+        );
+
         if (!overlap)
         {
             return (false, position);
         }
+
         Debug.Assert(entityInOverlapArea.HasValue);
-        
+
         return (true, EntityService.AdjustEntityPosition(position, entityInOverlapArea.Value));
     }
 
     #endregion
-    
+
     #region MouseHeld
 
     public void HandleMouseHeldAction(Vector2Int relativeCursorPosition)
@@ -419,13 +428,14 @@ public sealed class UserActionsHandler
             HandleMouseLeftHeldAction();
         }
     }
-    
+
     private void HandleMouseRightHeldAction(Vector2Int relativeCursorPosition)
     {
         Debug.Assert(MouseRightButtonState);
+
         _rendererConfig.ShiftCamera(relativeCursorPosition);
     }
-    
+
     private void HandleMouseLeftHeldAction()
     {
         if (!IdStructure.IsValid(LGateToMove.Id))
@@ -433,30 +443,30 @@ public sealed class UserActionsHandler
             return;
         }
 
-        SDL.SDL_GetMouseState(out int x, out int y);
+        SDL.SDL_GetMouseState(out var x, out var y);
         var adjustedPosition = EntityService.CenterRectPositionToCursor(
             _rendererConfig.GetRelativeShiftedCursor(new Vector2Int(x, y))
-            );
-        
+        );
+
         if (ShiftKeyState)
         {
             var newAdjustedPosition = AdjustDisplayLGatePosition(
-                adjustedPosition, 
+                adjustedPosition,
                 EntityService.GetLGateOverlapArea(adjustedPosition),
                 ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != LGateToMove.Id)
-                );
-            
+            );
+
             if (!newAdjustedPosition.canPut)
             {
                 return;
             }
 
             if (!IdStructure.IsValid(
-                    EntityService.CheckArea(newAdjustedPosition.position, 
+                    EntityService.CheckArea(newAdjustedPosition.position,
                         ArchetypeManager.IterLGateComponents()
-                        .Select(x => x.Entity)
-                        .Where(z => z.Id != LGateToMove.Id)).Id
-                    )
+                            .Select(x => x.Entity)
+                            .Where(z => z.Id != LGateToMove.Id)).Id
+                )
                )
             {
                 EntityService.UpdateEntityPosition(LGateToMove, newAdjustedPosition.position);
@@ -465,17 +475,17 @@ public sealed class UserActionsHandler
         else
         {
             var newAdjustedPosition = AdjustDisplayLGatePosition(
-                adjustedPosition, 
+                adjustedPosition,
                 new Area(adjustedPosition, EntityService.RectLGateSize),
                 ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != LGateToMove.Id)
-                );
+            );
 
             if (!IdStructure.IsValid(
-                    EntityService.CheckArea(newAdjustedPosition.position, 
+                    EntityService.CheckArea(newAdjustedPosition.position,
                         ArchetypeManager.IterLGateComponents()
                             .Select(x => x.Entity)
                             .Where(x => x.Id != LGateToMove.Id)).Id
-                    )
+                )
                )
             {
                 EntityService.UpdateEntityPosition(LGateToMove, newAdjustedPosition.position);

@@ -15,13 +15,13 @@ public struct TransformComponent
         {
             Position = new Vector2Int
             {
-                X = (int)Math.Round((Position.X * zoom) + cameraShift.X, 0),
-                Y = (int)Math.Round((Position.Y * zoom) + cameraShift.Y, 0),
+                X = (int)Math.Round(Position.X * zoom + cameraShift.X, 0),
+                Y = (int)Math.Round(Position.Y * zoom + cameraShift.Y, 0)
             },
             Size = new Vector2Int
             {
                 X = (int)Math.Round(Size.X * zoom, 0),
-                Y = (int)Math.Round(Size.Y * zoom, 0),
+                Y = (int)Math.Round(Size.Y * zoom, 0)
             }
         };
         // return new Area

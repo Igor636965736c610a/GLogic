@@ -31,7 +31,7 @@ public static class EntityManager
             {
                 Entity = entity,
                 Position = info.TransformComponentInfo.Position,
-                Size = info.TransformComponentInfo.Size,
+                Size = info.TransformComponentInfo.Size
             };
             IoComponents[index] = new IoComponent
             {
@@ -39,12 +39,12 @@ public static class EntityManager
                 ConnectionOne = info.IoComponentInfo.ConnectionOne,
                 ConnectionTwo = info.IoComponentInfo.ConnectionTwo,
                 LastFrame = info.IoComponentInfo.Frame,
-                Value = info.IoComponentInfo.Value,
+                Value = info.IoComponentInfo.Value
             };
             EntityTypeComponents[index] = new EntityTypeComponent
             {
                 Entity = entity,
-                Type = info.IoType,
+                Type = info.IoType
             };
         }
         else
@@ -57,7 +57,7 @@ public static class EntityManager
             {
                 Entity = entity,
                 Position = info.TransformComponentInfo.Position,
-                Size = info.TransformComponentInfo.Size,
+                Size = info.TransformComponentInfo.Size
             });
             IoComponents.Add(new IoComponent
             {
@@ -65,12 +65,12 @@ public static class EntityManager
                 ConnectionOne = info.IoComponentInfo.ConnectionOne,
                 ConnectionTwo = info.IoComponentInfo.ConnectionTwo,
                 LastFrame = info.IoComponentInfo.Frame,
-                Value = info.IoComponentInfo.Value,
+                Value = info.IoComponentInfo.Value
             });
             EntityTypeComponents.Add(new EntityTypeComponent
             {
                 Entity = entity,
-                Type = info.IoType,
+                Type = info.IoType
             });
         }
 
@@ -88,9 +88,9 @@ public static class EntityManager
             {
                 Entity = initArchetype.Entity,
                 ArchetypeOption = initArchetype.ArchetypeOption,
-                IndexOfArchetypeOption = initArchetype.ArchetypeIndex,
+                IndexOfArchetypeOption = initArchetype.ArchetypeIndex
             });
-            
+
             Debug.Assert(ArchetypeManager.Archetypes.Count - 1 == index);
         }
         else
@@ -99,7 +99,7 @@ public static class EntityManager
             {
                 Entity = initArchetype.Entity,
                 ArchetypeOption = initArchetype.ArchetypeOption,
-                IndexOfArchetypeOption = initArchetype.ArchetypeIndex,
+                IndexOfArchetypeOption = initArchetype.ArchetypeIndex
             };
         }
 
@@ -131,22 +131,34 @@ public static class EntityManager
     }
 
     public static TransformComponent GetTransformComponent(Entity entity)
-        => TransformComponents[(int)IdStructure.Index(entity.Id)];
+    {
+        return TransformComponents[(int)IdStructure.Index(entity.Id)];
+    }
 
     public static IoComponent GetIoComponent(Entity entity)
-        => IoComponents[(int)IdStructure.Index(entity.Id)];
+    {
+        return IoComponents[(int)IdStructure.Index(entity.Id)];
+    }
 
     public static EntityTypeComponent GetEntityTypeComponent(Entity entity)
-        => EntityTypeComponents[(int)IdStructure.Index(entity.Id)];
+    {
+        return EntityTypeComponents[(int)IdStructure.Index(entity.Id)];
+    }
 
     public static IEnumerable<TransformComponent> IterTransformComponents()
-        => TransformComponents;
+    {
+        return TransformComponents;
+    }
 
     public static IEnumerable<IoComponent> IterIoComponents()
-        => IoComponents;
+    {
+        return IoComponents;
+    }
 
     public static IEnumerable<EntityTypeComponent> IterEntityTypeComponents()
-        => EntityTypeComponents;
+    {
+        return EntityTypeComponents;
+    }
 
     public static void UpdateIoComponent(IoComponent ioComponent)
     {

@@ -2,4 +2,5 @@
 
 namespace GLogic.Components.Init;
 
-public record InitEntityInfo(InitTransformComponentInfo TransformComponentInfo, InitIoComponentInfo IoComponentInfo, IoType IoType);
+public record InitEntityInfo(InitTransformComponentInfo TransformComponentInfo, InitIoComponentInfo IoComponentInfo,
+    IoType IoType);

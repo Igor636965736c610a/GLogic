@@ -10,5 +10,5 @@ public struct Archetype
 public enum ArchetypeOption
 {
     Wire,
-    LGate,
+    LGate
 }

@@ -19,10 +19,12 @@ public static class Update
         {
             return false;
         }
+
         if (ioComponent.LastFrame == frame + 1)
         {
             return ioComponent.Value;
         }
+
         var input1 = EntityManager.GetIoComponent(ioComponent.ConnectionOne);
         var input2 = EntityManager.GetIoComponent(ioComponent.ConnectionTwo);
         bool value;
@@ -84,14 +86,16 @@ public static class Update
                 {
                     value = PenetrateIoComponent(input2, frame);
                 }
+
                 break;
             }
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
         var lateUpdate = ioComponent with { Value = value };
         EntityManager.UpdateIoComponent(lateUpdate);
-        
+
         return value;
     }
 }

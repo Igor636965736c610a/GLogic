@@ -10,20 +10,20 @@ public static class ArchetypeManager
     private static readonly Queue<uint> WireFreeIds = new(MinFreeIds * 2);
     private static readonly List<byte> LGateGenerations = new();
     private static readonly Queue<uint> LGateFreeIds = new(MinFreeIds * 2);
-    
+
     public static readonly List<Archetype> Archetypes = new(); // Entity indexes == Archetype indexes
-    
+
     private static readonly List<WireComponent> WireComponents = new();
     private static readonly List<LGateComponent> LGateComponents = new();
-    
+
     private const int MinFreeIds = 512;
-    
+
     public static WireComponent CreateWireArchetype(InitWireComponent initWireComponent)
     {
         uint id;
         int index;
         WireComponent wireComponent;
-        
+
         Debug.Assert(EntityManager.IsAlive(initWireComponent.Entity));
         if (WireFreeIds.Count > MinFreeIds)
         {
@@ -34,7 +34,7 @@ public static class ArchetypeManager
             wireComponent = new WireComponent
             {
                 Id = id,
-                Entity = initWireComponent.Entity,
+                Entity = initWireComponent.Entity
             };
 
             WireComponents[index] = wireComponent;
@@ -47,23 +47,23 @@ public static class ArchetypeManager
             wireComponent = new WireComponent
             {
                 Id = id,
-                Entity = initWireComponent.Entity,
+                Entity = initWireComponent.Entity
             };
-            
+
             WireComponents.Add(wireComponent);
         }
 
         return wireComponent;
     }
-    
+
     public static LGateComponent CreateLGateArchetype(InitLGateComponent initLGateComponent)
     {
         Debug.Assert(EntityManager.IsAlive(initLGateComponent.Entity));
-        
+
         uint id;
         int index;
         LGateComponent lGateComponent;
-        
+
         if (LGateFreeIds.Count > MinFreeIds)
         {
             id = WireFreeIds.Dequeue();
@@ -73,7 +73,7 @@ public static class ArchetypeManager
             lGateComponent = new LGateComponent
             {
                 Id = id,
-                Entity = initLGateComponent.Entity,
+                Entity = initLGateComponent.Entity
             };
 
             LGateComponents[index] = lGateComponent;
@@ -86,9 +86,9 @@ public static class ArchetypeManager
             lGateComponent = new LGateComponent
             {
                 Id = id,
-                Entity = initLGateComponent.Entity,
+                Entity = initLGateComponent.Entity
             };
-            
+
             LGateComponents.Add(lGateComponent);
         }
 
@@ -103,7 +103,7 @@ public static class ArchetypeManager
         var newGeneration = IdStructure.IdWithNewGeneration(wireComponent.Id);
         WireGenerations[index] = IdStructure.Generation(newGeneration);
     }
-    
+
     // Only while removing an entity
     public static void RemoveLGateArchetype(LGateComponent lGateComponent)
     {
@@ -114,8 +114,12 @@ public static class ArchetypeManager
     }
 
     public static IEnumerable<WireComponent> IterWireComponents()
-        => WireComponents;
-    
+    {
+        return WireComponents;
+    }
+
     public static IEnumerable<LGateComponent> IterLGateComponents()
-        => LGateComponents;
+    {
+        return LGateComponents;
+    }
 }

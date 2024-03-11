@@ -13,7 +13,7 @@ internal static class Program
 
         SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING);
         SDL_ttf.TTF_Init();
-        
+
         var appRenderer = new Renderer();
         var userActionHandler = new UserActionsHandler(appRenderer);
         var window = SDL.SDL_CreateWindow(
@@ -24,7 +24,7 @@ internal static class Program
             appRenderer.WindowSize.Size.Y,
             SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN);
         var sdlRenderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-        
+
         const int fps = 60;
         const int desiredDelta = 1000 / fps;
 
@@ -32,44 +32,49 @@ internal static class Program
         while (!quit)
         {
             var startLoop = SDL.SDL_GetTicks();
-            
+
             while (SDL.SDL_PollEvent(out var e) != 0)
             {
                 if (e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)
                 {
                     userActionHandler.HandleMouseUpPollEvent(new Vector2Int(e.button.x, e.button.y), e.button.button);
                 }
+
                 if (e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN)
                 {
                     userActionHandler.HandleMouseDownPollEvent(new Vector2Int(e.button.x, e.button.y), e.button.button);
                 }
+
                 if (e.type == SDL.SDL_EventType.SDL_KEYDOWN)
                 {
                     userActionHandler.HandleKeyDownEvent(e.key.keysym.sym);
                 }
+
                 if (e.type == SDL.SDL_EventType.SDL_KEYUP)
                 {
                     userActionHandler.HandleKeyUpEvent(e.key.keysym.sym);
                 }
+
                 if (e.type == SDL.SDL_EventType.SDL_QUIT)
                 {
                     quit = true;
                 }
+
                 if (e.type == SDL.SDL_EventType.SDL_MOUSEWHEEL)
                 {
-                    SDL.SDL_GetMouseState(out int cursorX, out int cursorY);
+                    SDL.SDL_GetMouseState(out var cursorX, out var cursorY);
                     var cursor = new Vector2Int(cursorX, cursorY);
                     userActionHandler.HandleMouseWheel(cursor, e.wheel.y);
                 }
             }
-            
-            SDL.SDL_GetRelativeMouseState(out int relativeX, out int relativeY);
+
+            SDL.SDL_GetRelativeMouseState(out var relativeX, out var relativeY);
             userActionHandler.HandleMouseHeldAction(new Vector2Int(relativeX, relativeY));
-            
+
             SDL.SDL_SetRenderDrawColor(sdlRenderer, 1, 1, 1, 255);
             SDL.SDL_RenderClear(sdlRenderer);
             appRenderer.RenderEntities(sdlRenderer);
-            
+
             Menu.Draw(sdlRenderer);
 
             var delta = SDL.SDL_GetTicks() - startLoop;

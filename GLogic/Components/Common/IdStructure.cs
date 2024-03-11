@@ -4,7 +4,7 @@ public static class IdStructure
 {
     public const uint EntityIndexBits = 23;
     public const uint EntityIndexMask = (1 << (int)EntityIndexBits) - 1;
-    
+
     public const uint EntityGenerationBits = 8;
     public const uint EntityGenerationMask = (1 << (int)EntityGenerationBits) - 1;
 
@@ -14,9 +14,10 @@ public static class IdStructure
         {
             throw new ArgumentOutOfRangeException("Index exceeds allowed bits");
         }
+
         return (index & EntityIndexMask) | 0U;
     }
-    
+
     public static uint Index(uint entityId)
     {
         return entityId & EntityIndexMask;
@@ -30,7 +31,7 @@ public static class IdStructure
     public static uint IdWithNewGeneration(uint entityId)
     {
         var generation = (uint)Generation(entityId) + 1;
-        
+
         return Index(entityId) | (generation << (int)EntityIndexBits);
     }
 

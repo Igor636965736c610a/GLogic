@@ -14,7 +14,9 @@ public sealed class Renderer : IRendererConfig
     {
         _zoom = 1f;
     }
+
     private float _zoom;
+
     public float Zoom
     {
         get => _zoom;
@@ -28,24 +30,28 @@ public sealed class Renderer : IRendererConfig
             };
         }
     }
+
     public Area WindowSize { get; } = new(new Vector2Int(0, 0), new Vector2Int(1280, 720));
     public Area RenderArea { get; } = new(new Vector2Int(-200, -200), new Vector2Int(1680, 1120));
     public Vector2Int CameraShift { get; private set; }
-    
+
     public void RenderEntities(IntPtr renderer)
     {
         SDL.SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         RenderBackgroundEntities(renderer);
         RenderFrontEntities(renderer);
     }
+
     private void RenderBackgroundEntities(IntPtr renderer)
     {
     }
+
     private void RenderFrontEntities(IntPtr renderer)
     {
         var renderArea = RenderArea.ResizeRelatively(Zoom, CameraShift);
-        
-        foreach (var entity in EntityQuery.AABB_Entities(ArchetypeManager.IterLGateComponents().Select(x => x.Entity), renderArea))
+
+        foreach (var entity in EntityQuery.AABB_Entities(ArchetypeManager.IterLGateComponents().Select(x => x.Entity),
+                     renderArea))
         {
             RenderEntity(entity, renderer);
         }
@@ -57,64 +63,69 @@ public sealed class Renderer : IRendererConfig
     {
         var previousZoom = Zoom;
         Zoom += factor;
-        
+
         CameraShift = new Vector2Int
         {
-            X = (int)(cursor.X - (Zoom / previousZoom) * (cursor.X - CameraShift.X)),
-            Y = (int)(cursor.Y - (Zoom / previousZoom) * (cursor.Y - CameraShift.Y)),
+            X = (int)(cursor.X - Zoom / previousZoom * (cursor.X - CameraShift.X)),
+            Y = (int)(cursor.Y - Zoom / previousZoom * (cursor.Y - CameraShift.Y))
         };
     }
-    
+
     public void ShiftCamera(Vector2Int shiftVector)
     {
         CameraShift = new Vector2Int(CameraShift.X + shiftVector.X, CameraShift.Y + shiftVector.Y);
     }
-    
+
     public Vector2Int GetRelativeShiftedCursor(Vector2Int cursor)
     {
         return new Vector2Int
         {
             X = (int)((cursor.X - CameraShift.X) / Zoom),
-            Y = (int)((cursor.Y - CameraShift.Y) / Zoom),
+            Y = (int)((cursor.Y - CameraShift.Y) / Zoom)
         };
     }
-    
+
     private void RenderChosenLGate(IntPtr renderer)
     {
-        SDL.SDL_GetMouseState(out int x, out int y);
-        var chosenLGatePosition = EntityService.CenterRectPositionToCursor(GetRelativeShiftedCursor(new Vector2Int(x, y)));
+        SDL.SDL_GetMouseState(out var x, out var y);
+        var chosenLGatePosition =
+            EntityService.CenterRectPositionToCursor(GetRelativeShiftedCursor(new Vector2Int(x, y)));
         SDL.SDL_SetRenderDrawColor(renderer, 181, 14, 0, 8);
-        
+
         if (!UserActionsHandler.ShiftKeyState)
         {
-            if (!IdStructure.IsValid(EntityService.CheckArea(chosenLGatePosition, ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id))
+            if (!IdStructure.IsValid(EntityService.CheckArea(
+                    chosenLGatePosition, ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id)
+               )
             {
                 SDL.SDL_SetRenderDrawColor(renderer, 201, 242, 155, 1);
             }
+
             RenderRect(renderer, chosenLGatePosition);
-            
+
             return;
         }
-        
+
         var overlapArea = EntityService.GetLGateOverlapArea(chosenLGatePosition);
         var overlap = EntityService.GetEntityWithBiggestOverlap(
-            out TransformComponent? entityInOverlapArea, 
+            out var entityInOverlapArea,
             overlapArea,
             ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
-            );
-        
+        );
+
         if (!overlap)
         {
             return;
         }
+
         Debug.Assert(entityInOverlapArea.HasValue);
 
         var adjustedPosition = EntityService.AdjustEntityPosition(chosenLGatePosition, entityInOverlapArea.Value);
-        
+
         if (!IdStructure.IsValid(EntityService.CheckArea(
-                adjustedPosition, 
+                adjustedPosition,
                 ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id)
-            )
+           )
         {
             SDL.SDL_SetRenderDrawColor(renderer, 201, 242, 155, 1);
         }
@@ -127,26 +138,25 @@ public sealed class Renderer : IRendererConfig
         var chosenLGate =
             new TransformComponent
                 {
-                    Position = position, 
-                    Size = EntityService.RectLGateSize, 
+                    Position = position,
+                    Size = EntityService.RectLGateSize,
                     Entity = new Entity { Id = IdStructure.MakeInvalidId() }
                 }
                 .ResizeRelatively(Zoom, CameraShift);
-        
+
         var sdlRect = new SDL.SDL_Rect
         {
             x = chosenLGate.Position.X,
             y = chosenLGate.Position.Y,
             w = chosenLGate.Size.X,
-            h = chosenLGate.Size.Y,
+            h = chosenLGate.Size.Y
         };
-        
+
         SDL.SDL_RenderFillRect(renderer, ref sdlRect);
     }
 
     private void RenderWithChosenWire(Area renderArea, IntPtr renderer)
     {
-        
     }
 
     private void RenderEntity(Entity entity, IntPtr renderer)
@@ -158,9 +168,9 @@ public sealed class Renderer : IRendererConfig
             x = rect.Position.X,
             y = rect.Position.Y,
             w = rect.Size.X,
-            h = rect.Size.Y,
+            h = rect.Size.Y
         };
-            
+
         SDL.SDL_RenderFillRect(renderer, ref sdlRect);
     }
 
@@ -232,9 +242,8 @@ public sealed class Renderer : IRendererConfig
             }
             default:
                 throw new ArgumentOutOfRangeException();
-        }   
+        }
     }
-
 }
 
 public readonly record struct Area(Vector2Int Position, Vector2Int Size)
@@ -243,8 +252,9 @@ public readonly record struct Area(Vector2Int Position, Vector2Int Size)
     {
         return new Area
         {
-            Position = new Vector2Int((int)((Position.X - cameraShift.X) / zoom), (int)((Position.Y - cameraShift.Y) / zoom)),
-            Size = new Vector2Int((int)(Size.X / zoom), (int)(Size.Y / zoom)),
+            Position = new Vector2Int((int)((Position.X - cameraShift.X) / zoom),
+                (int)((Position.Y - cameraShift.Y) / zoom)),
+            Size = new Vector2Int((int)(Size.X / zoom), (int)(Size.Y / zoom))
         };
     }
 }
