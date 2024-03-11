@@ -50,8 +50,11 @@ public static class EntityService
                 // TODO
             }
         }
-        
-        EntityManager.RemoveEntity(entityToDelete);
+
+        if (IdStructure.IsValid(entityToDelete.Id))
+        {
+            EntityManager.RemoveEntity(entityToDelete);
+        }
     }
     
     public static bool GetEntityWithBiggestOverlap([NotNullWhen(true)]out TransformComponent? transformComponent, Area overlapArea)

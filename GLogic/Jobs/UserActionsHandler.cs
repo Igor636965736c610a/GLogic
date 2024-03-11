@@ -1,12 +1,11 @@
 using System.Diagnostics;
 using GLogic.Components;
 using GLogic.Components.Common;
-using GLogic.Components.System;
 using SDL2;
 
 namespace GLogic.Jobs;
 
-public class UserActionsHandler
+public sealed class UserActionsHandler
 {
     private readonly IRendererConfig _rendererConfig;
     public static MenuOption ChosenMenuOption { get; private set; }

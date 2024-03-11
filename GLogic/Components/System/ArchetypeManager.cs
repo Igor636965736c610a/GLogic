@@ -7,9 +7,9 @@ namespace GLogic.Components.System;
 public static class ArchetypeManager
 {
     private static readonly List<byte> WireGenerations = new();
-    private static readonly Queue<uint> WireFreeIds = new(1024);
+    private static readonly Queue<uint> WireFreeIds = new(MinFreeIds * 2);
     private static readonly List<byte> LGateGenerations = new();
-    private static readonly Queue<uint> LGateFreeIds = new(1024);
+    private static readonly Queue<uint> LGateFreeIds = new(MinFreeIds * 2);
     
     public static readonly List<Archetype> Archetypes = new(); // Entity indexes == Archetype indexes
     

@@ -7,7 +7,7 @@ namespace GLogic.Components.System;
 public static class EntityManager
 {
     private static readonly List<byte> Generations = new();
-    private static readonly Queue<uint> FreeIds = new(1024);
+    private static readonly Queue<uint> FreeIds = new(MinFreeIds * 2);
     private const int MinFreeIds = 512;
 
     private static readonly List<TransformComponent> TransformComponents = new();
