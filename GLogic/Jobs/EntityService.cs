@@ -41,6 +41,7 @@ public static class EntityService
             Entity = entity,
             ArchetypeIndex = (int)IdStructure.Index(lGateArchetype.Id)
         });
+        Console.WriteLine(entity.Id);
     }
 
     public static void RemoveEntity(Vector2Int position)

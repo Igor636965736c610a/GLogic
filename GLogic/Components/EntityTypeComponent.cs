@@ -11,6 +11,7 @@ public struct EntityTypeComponent
 [EnumExtensions]
 public enum IoType
 {
+    //textured
     AND,
     OR,
     NOT,
@@ -20,5 +21,7 @@ public enum IoType
     XNOR,
     Input,
     Output,
+    //textured
+    
     Wire
 }

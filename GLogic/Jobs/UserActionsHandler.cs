@@ -453,7 +453,7 @@ public sealed class UserActionsHandler
             var newAdjustedPosition = AdjustDisplayLGatePosition(
                 adjustedPosition,
                 EntityService.GetLGateOverlapArea(adjustedPosition),
-                ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != LGateToMove.Id)
+                ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(z => z.Id != LGateToMove.Id)
             );
 
             if (!newAdjustedPosition.canPut)
@@ -477,14 +477,14 @@ public sealed class UserActionsHandler
             var newAdjustedPosition = AdjustDisplayLGatePosition(
                 adjustedPosition,
                 new Area(adjustedPosition, EntityService.RectLGateSize),
-                ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != LGateToMove.Id)
+                ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(z => z.Id != LGateToMove.Id)
             );
 
             if (!IdStructure.IsValid(
                     EntityService.CheckArea(newAdjustedPosition.position,
                         ArchetypeManager.IterLGateComponents()
                             .Select(x => x.Entity)
-                            .Where(x => x.Id != LGateToMove.Id)).Id
+                            .Where(z => z.Id != LGateToMove.Id)).Id
                 )
                )
             {

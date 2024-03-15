@@ -7,16 +7,19 @@ using SDL2;
 SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING);
 SDL_ttf.TTF_Init();
 
-var appRenderer = new Renderer();
-var userActionHandler = new UserActionsHandler(appRenderer);
 var window = SDL.SDL_CreateWindow(
     "GLogic",
     SDL.SDL_WINDOWPOS_CENTERED,
     SDL.SDL_WINDOWPOS_CENTERED,
-    appRenderer.WindowSize.Size.X,
-    appRenderer.WindowSize.Size.Y,
+    Renderer.WindowSize.Size.X,
+    Renderer.WindowSize.Size.Y,
     SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN);
+
 var sdlRenderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+var textures = new TextureStorage(sdlRenderer);
+var appRenderer = new Renderer(sdlRenderer, textures);
+var menu = new Menu(textures);
+var userActionHandler = new UserActionsHandler(appRenderer);
 
 const int fps = 60;
 const int desiredDelta = 1000 / fps;
@@ -66,9 +69,11 @@ while (!quit)
 
     SDL.SDL_SetRenderDrawColor(sdlRenderer, 1, 1, 1, 255);
     SDL.SDL_RenderClear(sdlRenderer);
-    appRenderer.RenderEntities(sdlRenderer);
-
-    Menu.Draw(sdlRenderer);
+    
+    appRenderer.RenderEntities();
+    menu.Render(sdlRenderer);
+    
+    SDL.SDL_RenderPresent(sdlRenderer);
 
     var delta = SDL.SDL_GetTicks() - startLoop;
     if (delta < desiredDelta)

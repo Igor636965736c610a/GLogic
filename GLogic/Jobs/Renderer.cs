@@ -10,13 +10,25 @@ namespace GLogic.Jobs;
 
 public sealed class Renderer : IRendererConfig
 {
-    public Renderer()
+    public Renderer(IntPtr renderer, TextureStorage textureStorage)
     {
+        _renderer = renderer;
+        _textureStorage = textureStorage;
         _zoom = 1f;
     }
 
-    private float _zoom;
+    static Renderer()
+    {
+        LGateRectColor = new SDL.SDL_Color { r = 90, g = 90, b = 90, a = 90 };
+        WindowSize = new(new Vector2Int(0, 0), new Vector2Int(1280, 720));
+        RenderArea = new(new Vector2Int(-200, -200), new Vector2Int(1680, 1120));
+    }
 
+    private static readonly SDL.SDL_Color LGateRectColor;
+    private readonly IntPtr _renderer;
+    private readonly TextureStorage _textureStorage;
+
+    private float _zoom;
     public float Zoom
     {
         get => _zoom;
@@ -31,32 +43,33 @@ public sealed class Renderer : IRendererConfig
         }
     }
 
-    public Area WindowSize { get; } = new(new Vector2Int(0, 0), new Vector2Int(1280, 720));
-    public Area RenderArea { get; } = new(new Vector2Int(-200, -200), new Vector2Int(1680, 1120));
+    public static readonly Area WindowSize;
+    public static readonly Area RenderArea;
     public Vector2Int CameraShift { get; private set; }
 
-    public void RenderEntities(IntPtr renderer)
+    public void RenderEntities()
     {
-        SDL.SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        RenderBackgroundEntities(renderer);
-        RenderFrontEntities(renderer);
+        RenderBackgroundEntities();
+        RenderFrontEntities();
     }
 
-    private void RenderBackgroundEntities(IntPtr renderer)
+    private void RenderBackgroundEntities()
     {
     }
 
-    private void RenderFrontEntities(IntPtr renderer)
+    private void RenderFrontEntities()
     {
         var renderArea = RenderArea.ResizeRelatively(Zoom, CameraShift);
 
         foreach (var entity in EntityQuery.AABB_Entities(ArchetypeManager.IterLGateComponents().Select(x => x.Entity),
                      renderArea))
         {
-            RenderEntity(entity, renderer);
+            var rect = EntityManager.GetTransformComponent(entity).ResizeRelatively(Zoom, CameraShift);
+            var ioType = EntityManager.GetEntityTypeComponent(entity); //TODO
+            RenderLGate(rect, (MenuOption)ioType.Type, LGateRectColor);
         }
 
-        RenderChosenMenuOption(renderer);
+        RenderChosenMenuOption();
     }
 
     public void ChangeRelativelyToCursorZoom(float factor, Vector2Int cursor)
@@ -85,23 +98,32 @@ public sealed class Renderer : IRendererConfig
         };
     }
 
-    private void RenderChosenLGate(IntPtr renderer)
+    private void RenderChosenLGate()
     {
         SDL.SDL_GetMouseState(out var x, out var y);
         var chosenLGatePosition =
             EntityService.CenterRectPositionToCursor(GetRelativeShiftedCursor(new Vector2Int(x, y)));
-        SDL.SDL_SetRenderDrawColor(renderer, 181, 14, 0, 8);
+        SDL.SDL_SetRenderDrawColor(_renderer, 181, 14, 0, 8);
+        Area rect;
+        var rectColor = new SDL.SDL_Color { r = 201, g = 242, b = 155, a = 1 };;
 
         if (!UserActionsHandler.ShiftKeyState)
         {
-            if (!IdStructure.IsValid(EntityService.CheckArea(
+            if (IdStructure.IsValid(EntityService.CheckArea(
                     chosenLGatePosition, ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id)
                )
             {
-                SDL.SDL_SetRenderDrawColor(renderer, 201, 242, 155, 1);
+                rectColor = new SDL.SDL_Color { r = 255, g = 99, b = 71, a = 80 };
             }
+            rect = new TransformComponent
+                    {
+                        Position = chosenLGatePosition,
+                        Size = EntityService.RectLGateSize,
+                        Entity = new Entity { Id = IdStructure.MakeInvalidId() }
+                    }
+                    .ResizeRelatively(Zoom, CameraShift);
 
-            RenderRect(renderer, chosenLGatePosition);
+            RenderLGate(rect, UserActionsHandler.ChosenMenuOption, rectColor);
 
             return;
         }
@@ -122,47 +144,27 @@ public sealed class Renderer : IRendererConfig
 
         var adjustedPosition = EntityService.AdjustEntityPosition(chosenLGatePosition, entityInOverlapArea.Value);
 
-        if (!IdStructure.IsValid(EntityService.CheckArea(
+        if (IdStructure.IsValid(EntityService.CheckArea(
                 adjustedPosition,
                 ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id)
            )
         {
-            SDL.SDL_SetRenderDrawColor(renderer, 201, 242, 155, 1);
+            rectColor = new SDL.SDL_Color { r = 255, g = 99, b = 71, a = 80 };
         }
-
-        RenderRect(renderer, adjustedPosition);
-    }
-
-    private void RenderRect(IntPtr renderer, Vector2Int position)
-    {
-        var chosenLGate =
-            new TransformComponent
+        
+        rect = new TransformComponent
                 {
-                    Position = position,
+                    Position = adjustedPosition,
                     Size = EntityService.RectLGateSize,
                     Entity = new Entity { Id = IdStructure.MakeInvalidId() }
                 }
                 .ResizeRelatively(Zoom, CameraShift);
 
-        var sdlRect = new SDL.SDL_Rect
-        {
-            x = chosenLGate.Position.X,
-            y = chosenLGate.Position.Y,
-            w = chosenLGate.Size.X,
-            h = chosenLGate.Size.Y
-        };
-
-        SDL.SDL_RenderFillRect(renderer, ref sdlRect);
+        RenderLGate(rect, UserActionsHandler.ChosenMenuOption, rectColor);
     }
 
-    private void RenderWithChosenWire(Area renderArea, IntPtr renderer)
+    private void RenderLGate(Area rect, MenuOption lGate, SDL.SDL_Color rectColor)
     {
-    }
-
-    private void RenderEntity(Entity entity, IntPtr renderer)
-    {
-        var transformComp = EntityManager.GetTransformComponent(entity);
-        var rect = transformComp.ResizeRelatively(Zoom, CameraShift);
         var sdlRect = new SDL.SDL_Rect
         {
             x = rect.Position.X,
@@ -170,62 +172,69 @@ public sealed class Renderer : IRendererConfig
             w = rect.Size.X,
             h = rect.Size.Y
         };
-
-        SDL.SDL_RenderFillRect(renderer, ref sdlRect);
+        
+        SDL.SDL_SetRenderDrawColor(_renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
+        SDL.SDL_RenderFillRect(_renderer, ref sdlRect);
+        var texture = _textureStorage.GetLGateTexture(lGate);
+        SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref sdlRect);
     }
 
-    private void RenderChosenMenuOption(IntPtr renderer)
+    private void RenderWithChosenWire(Area renderArea)
+    {
+    }
+
+    private void RenderChosenMenuOption()
     {
         switch (UserActionsHandler.ChosenMenuOption)
         {
             case MenuOption.AND:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.OR:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.NOT:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.XOR:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.NAND:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.NOR:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.XNOR:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.Input1:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.Input0:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.Output:
             {
-                RenderChosenLGate(renderer);
+                RenderChosenLGate();
                 break;
             }
             case MenuOption.Wire:
@@ -268,8 +277,6 @@ public interface IRendererConfig : IRendererStateAccess
 
 public interface IRendererStateAccess
 {
-    Area WindowSize { get; }
-    Area RenderArea { get; }
     public Vector2Int CameraShift { get; }
     public float Zoom { get; }
 }
