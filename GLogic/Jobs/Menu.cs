@@ -40,7 +40,7 @@ public class Menu
             SDL.SDL_RenderFillRect(renderer, ref rect);
             
             var option = (MenuOption)i;
-            var texture = _textureStorage.GetMenuRectTexture(option, UserActionsHandler.ChosenMenuOption == option);
+            var texture = _textureStorage.GetMenuOptionTexture(option, UserActionsHandler.ChosenMenuOption == option);
             
             SDL.SDL_RenderCopy(renderer, texture, (nint)null, ref rect);
 
@@ -84,7 +84,6 @@ public readonly record struct MenuCheckRect(Vector2Int Position, Vector2Int Size
 [EnumExtensions]
 public enum MenuOption
 {
-    //textured
     AND,
     OR,
     NOT,
@@ -97,7 +96,5 @@ public enum MenuOption
     Output,
     Wire,
     Delete,
-    //textured
-    
     None
 }

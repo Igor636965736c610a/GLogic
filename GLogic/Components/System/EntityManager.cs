@@ -39,7 +39,7 @@ public static class EntityManager
                 ConnectionOne = info.IoComponentInfo.ConnectionOne,
                 ConnectionTwo = info.IoComponentInfo.ConnectionTwo,
                 LastFrame = info.IoComponentInfo.Frame,
-                Value = info.IoComponentInfo.Value
+                State = info.IoComponentInfo.State
             };
             EntityTypeComponents[index] = new EntityTypeComponent
             {
@@ -65,7 +65,7 @@ public static class EntityManager
                 ConnectionOne = info.IoComponentInfo.ConnectionOne,
                 ConnectionTwo = info.IoComponentInfo.ConnectionTwo,
                 LastFrame = info.IoComponentInfo.Frame,
-                Value = info.IoComponentInfo.Value
+                State = info.IoComponentInfo.State
             });
             EntityTypeComponents.Add(new EntityTypeComponent
             {

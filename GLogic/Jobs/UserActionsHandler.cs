@@ -2,6 +2,7 @@ using System.Diagnostics;
 using GLogic.Components;
 using GLogic.Components.Common;
 using GLogic.Components.System;
+using GLogic.Jobs.Renderer;
 using SDL2;
 
 namespace GLogic.Jobs;
@@ -94,10 +95,10 @@ public sealed class UserActionsHandler
     {
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
 
-        var markedEntity = EntityQuery.AABB_Entity(
+        var markedEntity = EntityQuery.AABB_Entities(
             ArchetypeManager.IterLGateComponents().Select(x => x.Entity),
             adjustedCursorPosition
-        );
+        ).FirstOrDefault(new Entity { Id = IdStructure.MakeInvalidId() });
 
         LGateToMove = markedEntity;
         Console.WriteLine(LGateToMove.Id);
