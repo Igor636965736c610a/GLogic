@@ -5,6 +5,7 @@ using GLogic.Components;
 using GLogic.Components.Common;
 using GLogic.Components.Init;
 using GLogic.Components.System;
+using GLogic.Jobs.Renderer;
 
 namespace GLogic.Jobs;
 
@@ -47,7 +48,8 @@ public static class EntityService
     public static void RemoveEntity(Vector2Int position)
     {
         var lGates = ArchetypeManager.IterLGateComponents();
-        var entityToDelete = EntityQuery.AABB_Entity(lGates.Select(x => x.Entity), position);
+        var entityToDelete = EntityQuery.AABB_Entities(lGates.Select(x => x.Entity), position)
+            .FirstOrDefault(new Entity { Id = IdStructure.MakeInvalidId() });
 
         if (!IdStructure.IsValid(entityToDelete.Id))
         {

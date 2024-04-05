@@ -6,18 +6,18 @@ using GLogic.Components.Common;
 using GLogic.Components.System;
 using SDL2;
 
-namespace GLogic.Jobs;
+namespace GLogic.Jobs.Renderer;
 
-public sealed class Renderer : IRendererConfig
+public sealed class RendererApi : IRendererConfig
 {
-    public Renderer(IntPtr renderer, TextureStorage textureStorage)
+    public RendererApi(IntPtr renderer, TextureStorage textureStorage)
     {
         _renderer = renderer;
         _textureStorage = textureStorage;
         _zoom = 1f;
     }
 
-    static Renderer()
+    static RendererApi()
     {
         LGateRectColor = new SDL.SDL_Color { r = 90, g = 90, b = 90, a = 90 };
         WindowSize = new(new Vector2Int(0, 0), new Vector2Int(1280, 720));
@@ -69,7 +69,7 @@ public sealed class Renderer : IRendererConfig
             RenderLGate(rect, (MenuOption)ioType.Type, LGateRectColor);
         }
 
-        RenderChosenMenuOption();
+        RenderChosenLGateFromMenuOption();
     }
 
     public void ChangeRelativelyToCursorZoom(float factor, Vector2Int cursor)
@@ -183,7 +183,7 @@ public sealed class Renderer : IRendererConfig
     {
     }
 
-    private void RenderChosenMenuOption()
+    private void RenderChosenLGateFromMenuOption()
     {
         switch (UserActionsHandler.ChosenMenuOption)
         {
@@ -272,11 +272,11 @@ public interface IRendererConfig : IRendererStateAccess
 {
     void ChangeRelativelyToCursorZoom(float factor, Vector2Int cursor);
     void ShiftCamera(Vector2Int shiftVector);
-    Vector2Int GetRelativeShiftedCursor(Vector2Int cursor);
 }
 
 public interface IRendererStateAccess
 {
-    public Vector2Int CameraShift { get; }
-    public float Zoom { get; }
+    Vector2Int CameraShift { get; }
+    float Zoom { get; }
+    Vector2Int GetRelativeShiftedCursor(Vector2Int cursor);
 }

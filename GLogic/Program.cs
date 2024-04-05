@@ -1,5 +1,6 @@
 ﻿using GLogic.Components.Common;
 using GLogic.Jobs;
+using GLogic.Jobs.Renderer;
 using SDL2;
 
 // const int test = args[0] is not null ? Int32.Parse(args[0]) : 60;
@@ -11,13 +12,13 @@ var window = SDL.SDL_CreateWindow(
     "GLogic",
     SDL.SDL_WINDOWPOS_CENTERED,
     SDL.SDL_WINDOWPOS_CENTERED,
-    Renderer.WindowSize.Size.X,
-    Renderer.WindowSize.Size.Y,
+    RendererApi.WindowSize.Size.X,
+    RendererApi.WindowSize.Size.Y,
     SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN);
 
 var sdlRenderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
 var textures = new TextureStorage(sdlRenderer);
-var appRenderer = new Renderer(sdlRenderer, textures);
+var appRenderer = new RendererApi(sdlRenderer, textures);
 var menu = new Menu(textures);
 var userActionHandler = new UserActionsHandler(appRenderer);
 
@@ -69,7 +70,7 @@ while (!quit)
 
     SDL.SDL_SetRenderDrawColor(sdlRenderer, 1, 1, 1, 255);
     SDL.SDL_RenderClear(sdlRenderer);
-    
+
     appRenderer.RenderEntities();
     menu.Render(sdlRenderer);
     
