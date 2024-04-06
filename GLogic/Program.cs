@@ -19,7 +19,6 @@ var window = SDL.SDL_CreateWindow(
 var sdlRenderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
 var textures = new TextureStorage(sdlRenderer);
 var appRenderer = new RendererApi(sdlRenderer, textures);
-var menu = new Menu(textures);
 var userActionHandler = new UserActionsHandler(appRenderer);
 
 const int fps = 60;
@@ -72,7 +71,7 @@ while (!quit)
     SDL.SDL_RenderClear(sdlRenderer);
 
     appRenderer.RenderEntities();
-    menu.Render(sdlRenderer);
+    appRenderer.RenderMenu();
     
     SDL.SDL_RenderPresent(sdlRenderer);
 

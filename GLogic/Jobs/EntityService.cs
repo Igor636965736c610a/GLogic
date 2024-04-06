@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
-using GLogic.Components;
 using GLogic.Components.Common;
-using GLogic.Components.Init;
-using GLogic.Components.System;
 using GLogic.Jobs.Renderer;
+using GLogicECS.Api;
+using GLogicECS.Components;
+using GLogicECS.Components.Common;
+using GLogicECS.Components.Init;
 
 namespace GLogic.Jobs;
 
@@ -20,40 +20,36 @@ public static class EntityService
 
     public static void AddLGate(Vector2Int position, IoType ioType, bool value)
     {
-        Debug.Assert(ioType != IoType.Wire);
-        if (IdStructure.IsValid(CheckArea(position, ArchetypeManager.IterLGateComponents().Select(x => x.Entity))
-                .Id))
+        if (ioType == IoType.Wire)
+        {
+            throw new InvalidProgramException("Invalid IoType - Wire");
+        }
+        if (IdStructure.IsValid(
+                CheckArea(position, ComponentManager
+                    .IterLGateComponents()
+                    .Select(x => x.Entity)).Id
+                )
+            )
         {
             return;
         }
 
-        var initIoComponent = new InitIoComponentInfo(
-            new Entity { Id = IdStructure.MakeInvalidId() },
-            new Entity { Id = IdStructure.MakeInvalidId() }, 0, value);
+        var initTransformComponent = new InitTransformComponent(position, RectLGateSize);
+        var initLGate = new InitLGate(initTransformComponent, ioType, value);
+        var entity = EntityManager.CreateEntity(initLGate);
 
-        var initTransformComponent = new InitTransformComponentInfo(position, RectLGateSize);
-        var initEntity = new InitEntityInfo(initTransformComponent, initIoComponent, ioType);
-        var entity = EntityManager.CreateEntity(initEntity);
-        var lGateArchetype = ArchetypeManager.CreateLGateArchetype(new InitLGateComponent { Entity = entity });
-
-        EntityManager.CreateArchetypeForEntity(new InitArchetype
-        {
-            ArchetypeOption = ArchetypeOption.LGate,
-            Entity = entity,
-            ArchetypeIndex = (int)IdStructure.Index(lGateArchetype.Id)
-        });
         Console.WriteLine(entity.Id);
     }
 
     public static void RemoveEntity(Vector2Int position)
     {
-        var lGates = ArchetypeManager.IterLGateComponents();
+        var lGates = ComponentManager.IterLGateComponents();
         var entityToDelete = EntityQuery.AABB_Entities(lGates.Select(x => x.Entity), position)
-            .FirstOrDefault(new Entity { Id = IdStructure.MakeInvalidId() });
+            .FirstOrDefault(new Entity(IdStructure.MakeInvalidId()));
 
         if (!IdStructure.IsValid(entityToDelete.Id))
         {
-            var wires = ArchetypeManager.IterWireComponents();
+            var wires = ComponentManager.IterWireComponents();
             foreach (var wireComponent in EntityQuery.AABB_Entities(wires.Select(x => x.Entity), position))
             {
                 // TODO
@@ -73,7 +69,7 @@ public static class EntityService
         var overlap = 0;
         foreach (var entity in EntityQuery.AABB_Entities(entities, overlapArea))
         {
-            var transformComp = EntityManager.GetTransformComponent(entity);
+            var transformComp = ComponentManager.GetTransformComponent(entity);
             var newOverlap = CalculateOverlap(overlapArea, transformComp.Position);
             if (newOverlap > overlap)
             {
@@ -152,17 +148,17 @@ public static class EntityService
             throw new InvalidProgramException("Shifting removed entity");
         }
 
-        var transformComponent = EntityManager.GetTransformComponent(entity);
+        var transformComponent = ComponentManager.GetTransformComponent(entity);
         Debug.Assert(IdStructure.IsValid(transformComponent.Entity.Id));
 
         transformComponent.Position = newPosition;
 
         Debug.Assert(!IdStructure.IsValid(CheckArea(
             transformComponent.Position,
-            ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != entity.Id)).Id)
+            ComponentManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != entity.Id)).Id)
         );
 
-        EntityManager.UpdateTransformComponent(transformComponent);
+        ComponentManager.UpdateTransformComponent(transformComponent);
     }
 
     private static int AdjustEntityAxis(int targetRectAxis, int observerRectAxis, int length)

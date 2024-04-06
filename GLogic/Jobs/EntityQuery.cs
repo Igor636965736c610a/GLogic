@@ -1,7 +1,7 @@
-using GLogic.Components;
 using GLogic.Components.Common;
-using GLogic.Components.System;
 using GLogic.Jobs.Renderer;
+using GLogicECS.Api;
+using GLogicECS.Components;
 
 namespace GLogic.Jobs;
 
@@ -11,7 +11,7 @@ public static class EntityQuery
     {
         foreach (var entity in entities)
         {
-            var transformComponent = EntityManager.GetTransformComponent(entity);
+            var transformComponent = ComponentManager.GetTransformComponent(entity);
 
             if (!EntityManager.IsAlive(transformComponent.Entity))
             {
@@ -32,7 +32,7 @@ public static class EntityQuery
     {
         foreach (var entity in entities)
         {
-            var transformComponent = EntityManager.GetTransformComponent(entity);
+            var transformComponent = ComponentManager.GetTransformComponent(entity);
 
             if (!EntityManager.IsAlive(transformComponent.Entity))
             {
