@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
-using GLogic.Components;
+using GLogic.Jobs.Renderer;
+using GLogicECS.Components;
 using NetEscapades.EnumGenerators;
 using SDL2;
 
@@ -16,17 +17,8 @@ public sealed class TextureStorage
         _menuTextures = InitMenuTextures(renderer).ToImmutableArray();
     }
 
-    public IntPtr GetLGateTexture(IoType ioType, bool state, Placement placement)
+    public IntPtr GetLGateTexture(LGate lGate, bool state, Placement placement)
     {
-        var lGate = ConvertIoTypeToLGate(ioType, state);
-        
-        return _lGateTextures[(int)GetLGateTextureIndex(lGate, state, placement)];
-    }
-    
-    public IntPtr GetLGateTexture(MenuOption menuOption, bool state, Placement placement)
-    {
-        var lGate = ConvertMenuOptionToLGate(menuOption);
-        
         return _lGateTextures[(int)GetLGateTextureIndex(lGate, state, placement)];
     }
 
@@ -35,24 +27,7 @@ public sealed class TextureStorage
         return _menuTextures[(int)GetMenuOptionTextureIndex(menuOption, isChecked)];
     }
     
-    public LGateTexture GetLGateTextureIndex(LGate g, bool state, Placement placement)
-    {
-        return (LGateTexture)(
-            (int)g
-            | (int)(state ? LGateTexture.StateOn : LGateTexture.StateOff)
-            | (int)placement
-        );
-    }
-
-    public MenuOptionTexture GetMenuOptionTextureIndex(MenuOptionT mo, bool isChecked)
-    {
-        return (MenuOptionTexture)(
-            (int)mo
-            | (int)(isChecked ? IsChecked.Yes : IsChecked.No)
-        );
-    }
-
-    private LGate ConvertIoTypeToLGate(IoType ioType, bool state) => ioType switch
+    public LGate ConvertToLGate(IoType ioType, bool state) => ioType switch
     {
         IoType.AND => LGate.AND,
         IoType.OR => LGate.OR,
@@ -67,7 +42,7 @@ public sealed class TextureStorage
         _ => throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null)
     };
 
-    private LGate ConvertMenuOptionToLGate(MenuOption menuOption) => menuOption switch
+    public LGate ConvertToLGate(MenuOption menuOption) => menuOption switch
     {
         MenuOption.AND => LGate.AND,
         MenuOption.OR => LGate.OR,
@@ -84,6 +59,23 @@ public sealed class TextureStorage
         MenuOption.None => throw new InvalidOperationException("Accessing a non-existent texture"),
         _ => throw new ArgumentOutOfRangeException(nameof(menuOption), menuOption, null)
     };
+    
+    private LGateTexture GetLGateTextureIndex(LGate g, bool state, Placement placement)
+    {
+        return (LGateTexture)(
+            (int)g
+            | (int)(state ? LGateTexture.StateOn : LGateTexture.StateOff)
+            | (int)placement
+        );
+    }
+
+    private MenuOptionTexture GetMenuOptionTextureIndex(MenuOptionT mo, bool isChecked)
+    {
+        return (MenuOptionTexture)(
+            (int)mo
+            | (int)(isChecked ? IsChecked.Yes : IsChecked.No)
+        );
+    }
 
     private IntPtr[] InitLGateTextures(IntPtr renderer)
     {

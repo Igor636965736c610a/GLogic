@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using GLogic.Components;
 using GLogic.Components.Common;
-using GLogic.Components.System;
+using GLogicECS.Api;
+using GLogicECS.Components.Common;
 using SDL2;
 
 namespace GLogic.Jobs.Renderer;
@@ -19,7 +19,7 @@ public sealed class LGateRenderer
         _textureStorage = textureStorage;
     }
 
-    public void RenderLGate(Area rect, MenuOption lGate, SDL.SDL_Color rectColor)
+    public void RenderLGate(Area rect, LGate lGate, Placement placement, bool state)
     {
         var sdlRect = new SDL.SDL_Rect
         {
@@ -29,9 +29,7 @@ public sealed class LGateRenderer
             h = rect.Size.Y
         };
         
-        SDL.SDL_SetRenderDrawColor(_renderer, rectColor.r, rectColor.g, rectColor.b, rectColor.a);
-        SDL.SDL_RenderFillRect(_renderer, ref sdlRect);
-        var texture = _textureStorage.GetLGateTexture(lGate);
+        var texture = _textureStorage.GetLGateTexture(lGate, state, placement);
         SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref sdlRect);
     }
     
@@ -105,42 +103,52 @@ public sealed class LGateRenderer
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     private void RenderChosenLGate()
     {
         SDL.SDL_GetMouseState(out var x, out var y);
         var chosenLGatePosition =
-            EntityService.CenterRectPositionToCursor(GetRelativeShiftedCursor(new Vector2Int(x, y)));
+            EntityService.CenterRectPositionToCursor(_rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(x, y)));
         SDL.SDL_SetRenderDrawColor(_renderer, 181, 14, 0, 8);
-        Area rect;
-        var rectColor = new SDL.SDL_Color { r = 201, g = 242, b = 155, a = 1 };;
 
-        if (!UserActionsHandler.ShiftKeyState)
+        if (UserActionsHandler.ShiftKeyState)
         {
-            if (IdStructure.IsValid(EntityService.CheckArea(
-                    chosenLGatePosition, ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id)
-               )
-            {
-                rectColor = new SDL.SDL_Color { r = 255, g = 99, b = 71, a = 80 };
-            }
-            rect = new TransformComponent
-                    {
-                        Position = chosenLGatePosition,
-                        Size = EntityService.RectLGateSize,
-                        Entity = new Entity { Id = IdStructure.MakeInvalidId() }
-                    }
-                    .ResizeRelatively(Zoom, CameraShift);
+            RenderAdjustedLGate(chosenLGatePosition);
+        }
+        else
+        {
+            RenderNotAdjustedLGate(chosenLGatePosition);
+        }
+    }
 
-            RenderLGate(rect, UserActionsHandler.ChosenMenuOption, rectColor);
-
-            return;
+    private void RenderNotAdjustedLGate(Vector2Int position)
+    {
+        var placement = Placement.Valid;
+        if (IdStructure.IsValid(EntityService.CheckArea(
+                position, ComponentManager.IterLGateComponents().Select(x => x.Entity)).Id)
+           )
+        {
+            placement = Placement.Invalid;
         }
 
-        var overlapArea = EntityService.GetLGateOverlapArea(chosenLGatePosition);
+        var rect = new Area(position, EntityService.RectLGateSize)
+            .ResizeObjectPlacedOnBackgroundRelatively(
+                _rendererStateAccess.Zoom,
+                _rendererStateAccess.CameraShift
+            );
+
+        var lGate = _textureStorage.ConvertToLGate(UserActionsHandler.ChosenMenuOption);
+        
+        RenderLGate(rect, lGate, placement, false);
+    }
+    private void RenderAdjustedLGate(Vector2Int position)
+    {
+        var placement = Placement.Valid;
+        var overlapArea = EntityService.GetLGateOverlapArea(position);
         var overlap = EntityService.GetEntityWithBiggestOverlap(
             out var entityInOverlapArea,
             overlapArea,
-            ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+            ComponentManager.IterLGateComponents().Select(x => x.Entity)
         );
 
         if (!overlap)
@@ -150,24 +158,24 @@ public sealed class LGateRenderer
 
         Debug.Assert(entityInOverlapArea.HasValue);
 
-        var adjustedPosition = EntityService.AdjustEntityPosition(chosenLGatePosition, entityInOverlapArea.Value);
+        var adjustedPosition = EntityService.AdjustEntityPosition(position, entityInOverlapArea.Value);
 
         if (IdStructure.IsValid(EntityService.CheckArea(
                 adjustedPosition,
-                ArchetypeManager.IterLGateComponents().Select(x => x.Entity)).Id)
+                ComponentManager.IterLGateComponents().Select(x => x.Entity)).Id)
            )
         {
-            rectColor = new SDL.SDL_Color { r = 255, g = 99, b = 71, a = 80 };
+            placement = Placement.Invalid;
         }
         
-        rect = new TransformComponent
-                {
-                    Position = adjustedPosition,
-                    Size = EntityService.RectLGateSize,
-                    Entity = new Entity { Id = IdStructure.MakeInvalidId() }
-                }
-                .ResizeRelatively(Zoom, CameraShift);
+        var rect = new Area(position, EntityService.RectLGateSize)
+            .ResizeObjectPlacedOnBackgroundRelatively(
+                _rendererStateAccess.Zoom,
+                _rendererStateAccess.CameraShift
+            );
+        var lGate = _textureStorage.ConvertToLGate(UserActionsHandler.ChosenMenuOption);
 
-        RenderLGate(rect, UserActionsHandler.ChosenMenuOption, rectColor);
+        RenderLGate(rect, lGate, placement, false);
     }
+    
 }

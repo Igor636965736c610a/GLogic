@@ -1,8 +1,9 @@
 using System.Diagnostics;
-using GLogic.Components;
 using GLogic.Components.Common;
-using GLogic.Components.System;
 using GLogic.Jobs.Renderer;
+using GLogicECS.Api;
+using GLogicECS.Components;
+using GLogicECS.Components.Common;
 using SDL2;
 
 namespace GLogic.Jobs;
@@ -77,7 +78,7 @@ public sealed class UserActionsHandler
 
     private void LeftClickDown(Vector2Int cursor)
     {
-        if (cursor.X <= Menu.Width)
+        if (cursor.X <= MenuRenderer.Width)
         {
             SetChosenLGate(cursor);
         }
@@ -96,7 +97,7 @@ public sealed class UserActionsHandler
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
 
         var markedEntity = EntityQuery.AABB_Entities(
-            ArchetypeManager.IterLGateComponents().Select(x => x.Entity),
+            ComponentManager.IterLGateComponents().Select(x => x.Entity),
             adjustedCursorPosition
         ).FirstOrDefault(new Entity { Id = IdStructure.MakeInvalidId() });
 
@@ -107,7 +108,7 @@ public sealed class UserActionsHandler
     private static void SetChosenLGate(Vector2Int cursor)
     {
         var i = 0;
-        foreach (var option in Menu.MenuOptions)
+        foreach (var option in MenuRenderer.MenuOptions)
         {
             if (
                 cursor.X >= option.Position.X
@@ -146,7 +147,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -170,7 +171,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -194,7 +195,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -218,7 +219,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -242,7 +243,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -266,7 +267,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -290,7 +291,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -314,7 +315,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -338,7 +339,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -361,7 +362,7 @@ public sealed class UserActionsHandler
                     var newAdjustedCursorPosition = AdjustDisplayLGatePosition(
                         adjustedCursorPosition,
                         EntityService.GetLGateOverlapArea(adjustedCursorPosition),
-                        ArchetypeManager.IterLGateComponents().Select(x => x.Entity)
+                        ComponentManager.IterLGateComponents().Select(x => x.Entity)
                     );
 
                     if (!newAdjustedCursorPosition.canPut)
@@ -454,7 +455,7 @@ public sealed class UserActionsHandler
             var newAdjustedPosition = AdjustDisplayLGatePosition(
                 adjustedPosition,
                 EntityService.GetLGateOverlapArea(adjustedPosition),
-                ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(z => z.Id != LGateToMove.Id)
+                ComponentManager.IterLGateComponents().Select(x => x.Entity).Where(z => z.Id != LGateToMove.Id)
             );
 
             if (!newAdjustedPosition.canPut)
@@ -464,7 +465,7 @@ public sealed class UserActionsHandler
 
             if (!IdStructure.IsValid(
                     EntityService.CheckArea(newAdjustedPosition.position,
-                        ArchetypeManager.IterLGateComponents()
+                        ComponentManager.IterLGateComponents()
                             .Select(x => x.Entity)
                             .Where(z => z.Id != LGateToMove.Id)).Id
                 )
@@ -478,12 +479,12 @@ public sealed class UserActionsHandler
             var newAdjustedPosition = AdjustDisplayLGatePosition(
                 adjustedPosition,
                 new Area(adjustedPosition, EntityService.RectLGateSize),
-                ArchetypeManager.IterLGateComponents().Select(x => x.Entity).Where(z => z.Id != LGateToMove.Id)
+                ComponentManager.IterLGateComponents().Select(x => x.Entity).Where(z => z.Id != LGateToMove.Id)
             );
 
             if (!IdStructure.IsValid(
                     EntityService.CheckArea(newAdjustedPosition.position,
-                        ArchetypeManager.IterLGateComponents()
+                        ComponentManager.IterLGateComponents()
                             .Select(x => x.Entity)
                             .Where(z => z.Id != LGateToMove.Id)).Id
                 )
