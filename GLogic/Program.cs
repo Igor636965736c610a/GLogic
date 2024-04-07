@@ -79,7 +79,7 @@ while (!quit)
     if (delta < desiredDelta)
     {
         SDL.SDL_Delay(desiredDelta - delta);
-        Console.WriteLine($"{delta} ---- {desiredDelta}");
+        //Console.WriteLine($"{delta} ---- {desiredDelta}");
     }
     else
     {

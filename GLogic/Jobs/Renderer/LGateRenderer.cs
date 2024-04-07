@@ -168,7 +168,7 @@ public sealed class LGateRenderer
             placement = Placement.Invalid;
         }
         
-        var rect = new Area(position, EntityService.RectLGateSize)
+        var rect = new Area(adjustedPosition, EntityService.RectLGateSize)
             .ResizeObjectPlacedOnBackgroundRelatively(
                 _rendererStateAccess.Zoom,
                 _rendererStateAccess.CameraShift

@@ -162,7 +162,6 @@ public sealed class TextureStorage
     }
 }
 
-[EnumExtensions]
 [Flags]
 public enum LGateTexture
 {
@@ -188,7 +187,6 @@ public enum LGateTexture
     PlacementInvalid = 0b1000_0000,
 }
 
-[EnumExtensions]
 [Flags]
 public enum Placement 
 {
@@ -197,8 +195,7 @@ public enum Placement
     Invalid = LGateTexture.PlacementInvalid
 }
 
-[EnumExtensions]
-[Flags]
+[Flags, EnumExtensions]
 public enum LGate
 {
     AND = LGateTexture.AND,
@@ -213,7 +210,6 @@ public enum LGate
     OUTPUT = LGateTexture.OUTPUT,
 }
 
-[EnumExtensions]
 [Flags]
 public enum MenuOptionTexture
 {
@@ -237,8 +233,7 @@ public enum MenuOptionTexture
     Checked   = 0b10_0000,
 }
 
-[EnumExtensions]
-[Flags]
+[Flags, EnumExtensions]
 public enum MenuOptionT
 {
     AND = MenuOptionTexture.AND,
@@ -256,7 +251,6 @@ public enum MenuOptionT
     None = MenuOptionTexture.None,
 }
 
-[EnumExtensions]
 [Flags]
 public enum IsChecked
 {
