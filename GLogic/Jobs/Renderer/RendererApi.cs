@@ -73,7 +73,7 @@ public sealed class RendererApi : IRendererConfig
             {
                 Position = transformComponent.Position,
                 Size = transformComponent.Size,
-            }.ResizeBackgroundRelatively(Zoom, CameraShift);
+            }.ResizeObjectPlacedOnBackgroundRelatively(Zoom, CameraShift);
             
             var typeComponent = ComponentManager.GetEntityTypeComponent(entity);
             var stateComponent = ComponentManager.GetStateComponent(entity);
