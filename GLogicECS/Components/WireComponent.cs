@@ -1,8 +1,22 @@
-namespace GLogic.Components;
+using GLogicECS.Components;
+
+namespace GLogicECS.Components;
 
 public struct WireComponent
 {
-    public uint Id;
     public Entity Entity;
     public bool Increasing;
+    public uint InputHookNumber;
+    public uint OutputHookNumber;
 }
+
+/*
+
+InputHookNumber0   ---|----+
+                      |------+
+                      |---------+
+    Gate-->           |-----------+-  OutputHookNumber0
+                      |---------+
+                      |------+
+InputHookNumber1   ---|----+  
+*/

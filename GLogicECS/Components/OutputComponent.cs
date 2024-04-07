@@ -1,15 +1,9 @@
-﻿namespace GLogicECS.Components;
+﻿using GLogicECS.Collections;
 
-public struct EntityOutputComponent
+namespace GLogicECS.Components;
+
+public struct OutputComponent
 {
     public Entity Entity;
-    public List<Entity> Outputs;
-    public bool State;
-
-    public EntityOutputComponent(Entity entity, bool state)
-    {
-        Entity = entity;
-        Outputs = new();
-        State = state;
-    }
+    public SmallList<Entity> Outputs;
 }

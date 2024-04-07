@@ -1,6 +1,3 @@
 namespace GLogicECS.Components.Init;
 
-public class InitLGate
-{
-    
-}
+public record InitLGate(InitTransformComponent TransformComponent, IoType IoType, bool State);

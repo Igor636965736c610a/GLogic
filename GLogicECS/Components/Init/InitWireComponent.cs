@@ -1,3 +1,5 @@
-namespace GLogic.Components.Init;
+using GLogicECS.Components;
 
-public record struct InitWireComponent(Entity Entity, bool TopLeftSide, bool TopRightSide);
+namespace GLogicECS.Components.Init;
+
+public record struct InitWireComponent(bool Increasing, uint InputHookNumber, uint OutputHookNumber);
