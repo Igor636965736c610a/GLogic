@@ -1,6 +1,3 @@
 namespace GLogicECS.Components.Init;
 
-public class InitEntity
-{
-    
-}
+internal record InitEntity(InitTransformComponent TransformComponent, IoType IoType, bool State);

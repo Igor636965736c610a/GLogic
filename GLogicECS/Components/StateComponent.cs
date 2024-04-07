@@ -1,6 +1,8 @@
 namespace GLogicECS.Components;
 
-public class StateComponent
+public struct StateComponent
 {
-    
+    public Entity Entity;
+    public bool State;
+    public uint Frame;
 }

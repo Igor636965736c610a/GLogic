@@ -1,15 +1,7 @@
-using GLogicECS.Collections;
+namespace GLogicECS.Components;
 
-namespace GLogicECS.Components.System;
-
-public class InputComponent
+public struct InputComponent
 {
     public Entity Entity;
-    public SmallList<Entity> Inputs;
-
-    public InputComponent(Entity entity, SmallList<Entity> inputs)
-    {
-        Entity = entity;
-        Inputs = inputs;
-    }
+    public Entity[] Inputs;
 }

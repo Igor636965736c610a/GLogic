@@ -1,6 +1,3 @@
 namespace GLogicECS.Components.Init;
 
-public class InitWire
-{
-    
-}
+public record InitWire(InitTransformComponent TransformComponent, InitWireComponent WireComponent);

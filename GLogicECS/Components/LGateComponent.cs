@@ -1,7 +1,8 @@
-namespace GLogic.Components;
+using GLogicECS.Components;
+
+namespace GLogicECS.Components;
 
 public struct LGateComponent
 {
-    public uint Id;
     public Entity Entity;
 }

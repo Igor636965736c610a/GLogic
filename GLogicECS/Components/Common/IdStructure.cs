@@ -1,4 +1,4 @@
-﻿namespace GLogic.Components.Common;
+﻿namespace GLogicECS.Components.Common;
 
 public static class IdStructure
 {

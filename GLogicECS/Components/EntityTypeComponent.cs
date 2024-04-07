@@ -1,6 +1,6 @@
 using NetEscapades.EnumGenerators;
 
-namespace GLogic.Components;
+namespace GLogicECS.Components;
 
 public struct EntityTypeComponent
 {
@@ -22,6 +22,6 @@ public enum IoType
     Input,
     Output,
     //textured
-    
+
     Wire
 }

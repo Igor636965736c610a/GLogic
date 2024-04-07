@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLogic", "GLogic\GLogic.csproj", "{058C4554-1021-4242-94B2-32ECB1F4C819}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLogicGlobal", "GLogicGlobal\GLogicGlobal.csproj", "{64E4B441-772A-4BD3-8D4E-1EED7ED884E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GLogicECS", "GLogicECS\GLogicECS.csproj", "{58730961-0586-4F66-8C06-6396B192DB84}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{058C4554-1021-4242-94B2-32ECB1F4C819}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{058C4554-1021-4242-94B2-32ECB1F4C819}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{058C4554-1021-4242-94B2-32ECB1F4C819}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64E4B441-772A-4BD3-8D4E-1EED7ED884E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64E4B441-772A-4BD3-8D4E-1EED7ED884E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64E4B441-772A-4BD3-8D4E-1EED7ED884E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64E4B441-772A-4BD3-8D4E-1EED7ED884E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58730961-0586-4F66-8C06-6396B192DB84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58730961-0586-4F66-8C06-6396B192DB84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58730961-0586-4F66-8C06-6396B192DB84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58730961-0586-4F66-8C06-6396B192DB84}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
