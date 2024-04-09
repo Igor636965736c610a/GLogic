@@ -123,11 +123,11 @@ public sealed class TextureStorage
         
         var chosenOptionTextColor = new SDL.SDL_Color { r = 255, g = 0, b = 0, a = 255 };
         var standardOptionTextColor = new SDL.SDL_Color { r = 0, g = 0, b = 0, a = 1 };
-        for (int i = 0; i < Enum.GetNames(typeof(MenuOptionTexture)).Length; i++)
+        for (int i = 0; i < Enum.GetNames(typeof(MenuOptionT)).Length; i++)
         {
             var bgColor = i % 2 == 0
                 ? new SDL.SDL_Color { r = 75, g = 75, b = 75, a = 255 }
-                : new SDL.SDL_Color { r = 100, g = 100, b = 100, a = 128 };
+                : new SDL.SDL_Color { r = 100, g = 100, b = 100, a = 255 };
 
             AddMenuOptionTexture(renderer, font, initArray, (MenuOptionT)i, true, chosenOptionTextColor, bgColor);
             

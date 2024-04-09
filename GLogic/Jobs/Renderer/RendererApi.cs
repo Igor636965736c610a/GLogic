@@ -79,10 +79,12 @@ public sealed class RendererApi : IRendererConfig
             var stateComponent = ComponentManager.GetStateComponent(entity);
             var lGate = _textureStorage.ConvertToLGate(typeComponent.Type, stateComponent.State);
 
-            _lGateRenderer.RenderLGate(rect, lGate, Placement.Neutral, stateComponent.State);
+            _lGateRenderer.RenderStaticLGate(rect, lGate, Placement.Neutral, stateComponent.State);
         }
 
         _lGateRenderer.RenderChosenLGateFromMenuOption();
+        
+        
     }
 
     public void ChangeRelativelyToCursorZoom(float factor, Vector2Int cursor)

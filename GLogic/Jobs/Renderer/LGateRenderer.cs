@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using GLogic.Components.Common;
 using GLogicECS.Api;
 using GLogicECS.Components.Common;
@@ -19,7 +18,7 @@ public sealed class LGateRenderer
         _textureStorage = textureStorage;
     }
 
-    public void RenderLGate(Area rect, LGate lGate, Placement placement, bool state)
+    public void RenderStaticLGate(Area rect, LGate lGate, Placement placement, bool state)
     {
         var sdlRect = new SDL.SDL_Rect
         {
@@ -38,144 +37,58 @@ public sealed class LGateRenderer
         switch (UserActionsHandler.ChosenMenuOption)
         {
             case MenuOption.AND:
-            {
-                RenderChosenLGate();
-                break;
-            }
             case MenuOption.OR:
-            {
-                RenderChosenLGate();
-                break;
-            }
             case MenuOption.NOT:
-            {
-                RenderChosenLGate();
-                break;
-            }
             case MenuOption.XOR:
-            {
-                RenderChosenLGate();
-                break;
-            }
             case MenuOption.NAND:
-            {
-                RenderChosenLGate();
-                break;
-            }
             case MenuOption.NOR:
-            {
-                RenderChosenLGate();
-                break;
-            }
             case MenuOption.XNOR:
-            {
-                RenderChosenLGate();
-                break;
-            }
-            case MenuOption.Input1:
-            {
-                RenderChosenLGate();
-                break;
-            }
             case MenuOption.Input0:
-            {
-                RenderChosenLGate();
-                break;
-            }
+            case MenuOption.Input1:
             case MenuOption.Output:
-            {
-                RenderChosenLGate();
+                SDL.SDL_GetMouseState(out var x, out var y);
+                
+                var info = EntityService.GetDynamicLGateParamsToRender(
+                    _rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(x, y)),
+                    ComponentManager.IterLGateComponents().Select(x => x.Entity)
+                );
+                
+                var lGate = _textureStorage.ConvertToLGate(UserActionsHandler.ChosenMenuOption);
+                var rect = new Area(info.position, EntityService.RectLGateSize)
+                    .ResizeObjectPlacedOnBackgroundRelatively(
+                        _rendererStateAccess.Zoom,
+                        _rendererStateAccess.CameraShift
+                    );
+                
+                RenderStaticLGate(rect, lGate, info.placement, false);
                 break;
-            }
             case MenuOption.Wire:
-            {
-                break;
-            }
             case MenuOption.Delete:
-            {
-                break;
-            }
             case MenuOption.None:
-            {
                 break;
-            }
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
 
-    private void RenderChosenLGate()
+    public void RenderShiftingLGate()
     {
-        SDL.SDL_GetMouseState(out var x, out var y);
-        var chosenLGatePosition =
-            EntityService.CenterRectPositionToCursor(_rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(x, y)));
-        SDL.SDL_SetRenderDrawColor(_renderer, 181, 14, 0, 8);
-
-        if (UserActionsHandler.ShiftKeyState)
-        {
-            RenderAdjustedLGate(chosenLGatePosition);
-        }
-        else
-        {
-            RenderNotAdjustedLGate(chosenLGatePosition);
-        }
-    }
-
-    private void RenderNotAdjustedLGate(Vector2Int position)
-    {
-        var placement = Placement.Valid;
-        if (IdStructure.IsValid(EntityService.CheckArea(
-                position, ComponentManager.IterLGateComponents().Select(x => x.Entity)).Id)
-           )
-        {
-            placement = Placement.Invalid;
-        }
-
-        var rect = new Area(position, EntityService.RectLGateSize)
-            .ResizeObjectPlacedOnBackgroundRelatively(
-                _rendererStateAccess.Zoom,
-                _rendererStateAccess.CameraShift
-            );
-
-        var lGate = _textureStorage.ConvertToLGate(UserActionsHandler.ChosenMenuOption);
-        
-        RenderLGate(rect, lGate, placement, false);
-    }
-    private void RenderAdjustedLGate(Vector2Int position)
-    {
-        var placement = Placement.Valid;
-        var overlapArea = EntityService.GetLGateOverlapArea(position);
-        var overlap = EntityService.GetEntityWithBiggestOverlap(
-            out var entityInOverlapArea,
-            overlapArea,
-            ComponentManager.IterLGateComponents().Select(x => x.Entity)
-        );
-
-        if (!overlap)
+        if (!IdStructure.IsValid(UserActionsHandler.LGateToMove.Id))
         {
             return;
         }
 
-        Debug.Assert(entityInOverlapArea.HasValue);
+        SDL.SDL_GetMouseState(out var x, out var y);
 
-        var adjustedPosition = EntityService.AdjustEntityPosition(position, entityInOverlapArea.Value);
-
-        if (IdStructure.IsValid(EntityService.CheckArea(
-                adjustedPosition,
-                ComponentManager.IterLGateComponents().Select(x => x.Entity)).Id)
-           )
-        {
-            placement = Placement.Invalid;
-        }
-        
-        var rect = new Area(adjustedPosition, EntityService.RectLGateSize)
-            .ResizeObjectPlacedOnBackgroundRelatively(
-                _rendererStateAccess.Zoom,
-                _rendererStateAccess.CameraShift
+        var info = EntityService.GetDynamicLGateParamsToRender(
+            _rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(x, y)), 
+            ComponentManager.IterLGateComponents().Select(x => x.Entity)
             );
-        var lGate = _textureStorage.ConvertToLGate(UserActionsHandler.ChosenMenuOption);
-
-        RenderLGate(rect, lGate, placement, false);
+        
+        var rect = new Area(info.position, EntityService.RectLGateSize)
+                 .ResizeObjectPlacedOnBackgroundRelatively(
+                     _rendererStateAccess.Zoom,
+                     _rendererStateAccess.CameraShift
+                 );
     }
-    
 }

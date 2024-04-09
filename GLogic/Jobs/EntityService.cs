@@ -25,7 +25,7 @@ public static class EntityService
             throw new InvalidProgramException("Invalid IoType - Wire");
         }
         if (IdStructure.IsValid(
-                CheckArea(position, ComponentManager
+                AnyEntityInArea(position, ComponentManager
                     .IterLGateComponents()
                     .Select(x => x.Entity)).Id
                 )
@@ -62,7 +62,72 @@ public static class EntityService
         }
     }
 
-    public static bool GetEntityWithBiggestOverlap([NotNullWhen(true)] out TransformComponent? transformComponent,
+    public static void UpdateEntityPosition(Entity entity, Vector2Int newPosition)
+    {
+        if (!IdStructure.IsValid(entity.Id))
+        {
+            throw new InvalidProgramException("Shifting removed entity");
+        }
+
+        var transformComponent = ComponentManager.GetTransformComponent(entity);
+        Debug.Assert(IdStructure.IsValid(transformComponent.Entity.Id));
+
+        transformComponent.Position = newPosition;
+
+        Debug.Assert(!IdStructure.IsValid(AnyEntityInArea(
+            transformComponent.Position,
+            ComponentManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != entity.Id)).Id)
+        );
+
+        ComponentManager.UpdateTransformComponent(transformComponent);
+    }
+    
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    public static (Vector2Int position, Placement placement) GetDynamicLGateParamsToRender(Vector2Int position, IEnumerable<Entity> otherEntities)
+    {
+        var chosenLGatePosition = CenterRectPositionToCursor(position);
+
+        var placement = Placement.Valid;
+        if (UserActionsHandler.ShiftKeyState)
+        {
+            var overlapArea = GetLGateOverlapArea(chosenLGatePosition);
+            var overlap = GetEntityWithBiggestOverlap(
+                out var entityInOverlapArea,
+                overlapArea,
+                otherEntities
+            );
+            
+            if (!overlap)
+            {
+                return (chosenLGatePosition, placement);
+            }
+
+            Debug.Assert(entityInOverlapArea.HasValue);
+            chosenLGatePosition = AdjustEntityPosition(chosenLGatePosition, entityInOverlapArea.Value);
+            placement = GetPlacement(chosenLGatePosition, otherEntities);
+        }
+        else
+        {
+            placement = GetPlacement(chosenLGatePosition, otherEntities);
+        }
+        
+        return (chosenLGatePosition, placement);
+    }
+
+    private static Placement GetPlacement(Vector2Int position, IEnumerable<Entity> otherEntities)
+    {
+        var placement = Placement.Valid;
+        if (IdStructure.IsValid(AnyEntityInArea(
+                position, otherEntities).Id)
+           )
+        {
+            placement = Placement.Invalid;
+        }
+
+        return placement;
+    }
+
+    private static bool GetEntityWithBiggestOverlap([NotNullWhen(true)] out TransformComponent? transformComponent,
         Area overlapArea, IEnumerable<Entity> entities)
     {
         transformComponent = null;
@@ -80,51 +145,79 @@ public static class EntityService
 
         return overlap != 0;
     }
-
-    public static Vector2Int AdjustEntityPosition(Vector2Int adjustedEntityPosition,
+    
+    private static Vector2Int AdjustEntityPosition(Vector2Int adjustedEntityPosition,
         TransformComponent entityInOverlapArea)
     {
         var xDiff = Math.Abs(entityInOverlapArea.Position.X - adjustedEntityPosition.X);
         var yDiff = Math.Abs(entityInOverlapArea.Position.Y - adjustedEntityPosition.Y);
         var adjustedYDiffToX = yDiff * 2;
+
         if (xDiff > adjustedYDiffToX)
         {
-            (Func<int, int, int> predicate, int yBound) yAxis =
-                entityInOverlapArea.Position.Y < adjustedEntityPosition.Y
-                    ? (Math.Min, entityInOverlapArea.Position.Y + RectLGateSize.Y)
-                    : (Math.Max, entityInOverlapArea.Position.Y - RectLGateSize.Y);
+            if (yDiff <= 10)
+            {
+                return entityInOverlapArea.Position with
+                {
+                    X = AdjustEntityAxis(
+                        entityInOverlapArea.Position.X, 
+                        adjustedEntityPosition.X, RectLGateSize.X
+                        )
+                };
+            }
+            var yBound = entityInOverlapArea.Position.Y < adjustedEntityPosition.Y
+                ? entityInOverlapArea.Position.Y + RectLGateSize.Y
+                : entityInOverlapArea.Position.Y - RectLGateSize.Y;
+
+            var newY = AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, yDiff);
+            newY = entityInOverlapArea.Position.Y < adjustedEntityPosition.Y 
+                ? Math.Min(yBound, newY) 
+                : Math.Max(yBound, newY);
 
             return new Vector2Int
             {
                 X = AdjustEntityAxis(entityInOverlapArea.Position.X, adjustedEntityPosition.X, RectLGateSize.X),
-                Y = yAxis.predicate(yAxis.yBound,
-                    AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, yDiff))
+                Y = newY
             };
         }
-        else //(xDiff < adjustedYDiffToX)
+        else // (xDiff < adjustedYDiffToX)
         {
-            (Func<int, int, int> predicate, int xBound) xAxis =
-                entityInOverlapArea.Position.X < adjustedEntityPosition.X
-                    ? (Math.Min, entityInOverlapArea.Position.X + RectLGateSize.X)
-                    : (Math.Max, entityInOverlapArea.Position.X - RectLGateSize.X);
+            if (xDiff <= 10)
+            {
+                return entityInOverlapArea.Position with
+                {
+                    Y = AdjustEntityAxis(
+                        entityInOverlapArea.Position.Y, 
+                        adjustedEntityPosition.Y, RectLGateSize.Y
+                    )
+                };
+            }
+            
+            var xBound = entityInOverlapArea.Position.X < adjustedEntityPosition.X
+                ? entityInOverlapArea.Position.X + RectLGateSize.X
+                : entityInOverlapArea.Position.X - RectLGateSize.X;
+
+            var newX = AdjustEntityAxis(entityInOverlapArea.Position.X, adjustedEntityPosition.X, xDiff);
+            newX = entityInOverlapArea.Position.X < adjustedEntityPosition.X 
+                ? Math.Min(xBound, newX) 
+                : Math.Max(xBound, newX);
 
             return new Vector2Int
             {
-                X = xAxis.predicate(xAxis.xBound,
-                    AdjustEntityAxis(entityInOverlapArea.Position.X, adjustedEntityPosition.X, xDiff)),
+                X = newX,
                 Y = AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, RectLGateSize.Y)
             };
         }
     }
 
-    public static Entity CheckArea(Vector2Int position, IEnumerable<Entity> entities)
+    private static Entity AnyEntityInArea(Vector2Int position, IEnumerable<Entity> entities)
     {
         return EntityQuery
             .AABB_Entities(entities, new Area(position, RectLGateSize))
             .FirstOrDefault(new Entity { Id = IdStructure.MakeInvalidId() });
     }
 
-    public static Area GetLGateOverlapArea(Vector2Int position)
+    private static Area GetLGateOverlapArea(Vector2Int position)
     {
         return new Area
         {
@@ -136,29 +229,9 @@ public static class EntityService
         };
     }
 
-    public static Vector2Int CenterRectPositionToCursor(Vector2Int position)
+    private static Vector2Int CenterRectPositionToCursor(Vector2Int position)
     {
         return new Vector2Int(position.X - RectLGateSize.X / 2, position.Y - RectLGateSize.Y / 2);
-    }
-
-    public static void UpdateEntityPosition(Entity entity, Vector2Int newPosition)
-    {
-        if (!IdStructure.IsValid(entity.Id))
-        {
-            throw new InvalidProgramException("Shifting removed entity");
-        }
-
-        var transformComponent = ComponentManager.GetTransformComponent(entity);
-        Debug.Assert(IdStructure.IsValid(transformComponent.Entity.Id));
-
-        transformComponent.Position = newPosition;
-
-        Debug.Assert(!IdStructure.IsValid(CheckArea(
-            transformComponent.Position,
-            ComponentManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != entity.Id)).Id)
-        );
-
-        ComponentManager.UpdateTransformComponent(transformComponent);
     }
 
     private static int AdjustEntityAxis(int targetRectAxis, int observerRectAxis, int length)

@@ -83,7 +83,7 @@ while (!quit)
     }
     else
     {
-        Console.WriteLine("Performance issue");
+        //Console.WriteLine("Performance issue");
     }
 }
 
