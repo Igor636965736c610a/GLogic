@@ -80,7 +80,7 @@ public sealed class TextureStorage
     private IntPtr[] InitLGateTextures(IntPtr renderer)
     {
         var font = SDL_ttf.TTF_OpenFont("Oswald-Light.ttf", 100);
-        var initArray = new IntPtr[0b1111_1111];
+        var initArray = new IntPtr[0b0111_1111];
 
         for (int i = 0; i < Enum.GetNames(typeof(LGate)).Length; i++)
         {
@@ -165,7 +165,7 @@ public sealed class TextureStorage
 [Flags]
 public enum LGateTexture
 {
-    // gates bits: 0-5
+    // gates bits: 0-4
     AND =    0b0000_0000,
     OR =     0b0000_0001,
     NOT =    0b0000_0010,
@@ -177,14 +177,14 @@ public enum LGateTexture
     INPUT1 = 0b0000_1000,
     OUTPUT = 0b0000_1001,
 
-    // state bits: 6
+    // state bits: 5
     StateOff = 0b0000_0000,
-    StateOn =  0b0010_0000,
+    StateOn =  0b0001_0000,
         
     // placement bits: 6-7
     PlacementNeutral = 0b0000_0000,
-    PlacementValid =   0b0100_0000,
-    PlacementInvalid = 0b1000_0000,
+    PlacementValid =   0b0010_0000,
+    PlacementInvalid = 0b0100_0000,
 }
 
 [Flags]
@@ -213,7 +213,7 @@ public enum LGate
 [Flags]
 public enum MenuOptionTexture
 {
-    // option bits 0 - 5
+    // option bits 0-4
     AND =    0b00_0000,
     OR =     0b00_0001,
     NOT =    0b00_0010,

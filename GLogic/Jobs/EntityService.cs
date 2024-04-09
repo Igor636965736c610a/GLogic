@@ -44,7 +44,8 @@ public static class EntityService
     public static void RemoveEntity(Vector2Int position)
     {
         var lGates = ComponentManager.IterLGateComponents();
-        var entityToDelete = EntityQuery.AABB_Entities(lGates.Select(x => x.Entity), position)
+        var entityToDelete = EntityQuery
+            .AABB_Entities(lGates.Select(x => x.Entity), position)
             .FirstOrDefault(new Entity(IdStructure.MakeInvalidId()));
 
         if (!IdStructure.IsValid(entityToDelete.Id))
