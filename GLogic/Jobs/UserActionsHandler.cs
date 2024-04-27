@@ -20,7 +20,7 @@ public sealed class UserActionsHandler
     public UserActionsHandler(IRendererConfig rendererConfig)
     {
         _rendererConfig = rendererConfig;
-        LGateToMove = new Entity { Id = IdStructure.MakeInvalidId() };
+        LGateToMove = new Entity(IdStructure.MakeInvalidId());
     }
 
     static UserActionsHandler()
@@ -33,30 +33,30 @@ public sealed class UserActionsHandler
 
     public void HandleMouseUpPollEvent(Vector2Int cursor, uint mouseButton)
     {
-        if (mouseButton == SDL.SDL_BUTTON_LEFT)
+        switch (mouseButton)
         {
-            LGateToMove = new Entity { Id = IdStructure.MakeInvalidId() };
-            MouseLeftButtonState = false;
-        }
-
-        if (mouseButton == SDL.SDL_BUTTON_RIGHT)
-        {
-            MouseRightButtonState = false;
+            case SDL.SDL_BUTTON_LEFT:
+                LGateToMove = new Entity(IdStructure.MakeInvalidId());
+                MouseLeftButtonState = false;
+                break;
+            case SDL.SDL_BUTTON_RIGHT:
+                MouseRightButtonState = false;
+                break;
         }
     }
 
     public void HandleMouseDownPollEvent(Vector2Int cursor, uint mouseButton)
     {
-        if (mouseButton == SDL.SDL_BUTTON_LEFT && !MouseRightButtonState)
+        switch (mouseButton)
         {
-            LeftClickDown(cursor);
+            case SDL.SDL_BUTTON_LEFT when !MouseRightButtonState:
+                LeftClickDown(cursor);
 
-            MouseLeftButtonState = true;
-        }
-
-        if (mouseButton == SDL.SDL_BUTTON_RIGHT)
-        {
-            MouseRightButtonState = true;
+                MouseLeftButtonState = true;
+                break;
+            case SDL.SDL_BUTTON_RIGHT:
+                MouseRightButtonState = true;
+                break;
         }
     }
 
@@ -97,9 +97,9 @@ public sealed class UserActionsHandler
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
 
         var markedEntity = EntityQuery.AABB_Entities(
-            ComponentManager.IterLGateComponents().Select(x => x.Entity),
+            ComponentManager.IterLGateComponents(),
             adjustedCursorPosition
-        ).FirstOrDefault(new Entity { Id = IdStructure.MakeInvalidId() });
+        ).FirstOrDefault(new LGateComponent(new Entity(IdStructure.MakeInvalidId()))).Entity;
 
         LGateToMove = markedEntity;
         Console.WriteLine(LGateToMove.Id);
@@ -136,7 +136,7 @@ public sealed class UserActionsHandler
     private void UserActions(Vector2Int cursor)
     {
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
-    
+
         switch (ChosenMenuOption)
         {
             case MenuOption.AND:
@@ -148,25 +148,25 @@ public sealed class UserActionsHandler
             case MenuOption.XNOR:
             case MenuOption.Output:
                 var info1 = EntityService.GetDynamicLGateParamsToRender(
-                    adjustedCursorPosition, 
-                    ComponentManager.IterLGateComponents().Select(x => x.Entity)
-                    );
-                
+                    adjustedCursorPosition,
+                    ComponentManager.IterLGateComponents()
+                );
+
                 adjustedCursorPosition = info1.position;
-                
+
                 if (info1.placement == Placement.Valid)
                 {
                     EntityService.AddLGate(adjustedCursorPosition, GetIoTypeFromMenuOption(ChosenMenuOption), false);
                 }
-                
+
                 break;
             case MenuOption.Input0:
             case MenuOption.Input1:
                 var info2 = EntityService.GetDynamicLGateParamsToRender(
-                    adjustedCursorPosition, 
-                    ComponentManager.IterLGateComponents().Select(x => x.Entity)
-                    );
-                
+                    adjustedCursorPosition,
+                    ComponentManager.IterLGateComponents()
+                );
+
                 adjustedCursorPosition = info2.position;
 
                 if (info2.placement == Placement.Valid)
@@ -174,14 +174,17 @@ public sealed class UserActionsHandler
                     EntityService.AddLGate(
                         adjustedCursorPosition, GetIoTypeFromMenuOption(ChosenMenuOption),
                         ChosenMenuOption == MenuOption.Input1
-                        );
+                    );
                 }
 
                 break;
             case MenuOption.Wire:
+                EntityService.AddWire(adjustedCursorPosition);
+                
                 break;
             case MenuOption.Delete:
                 EntityService.RemoveEntity(adjustedCursorPosition);
+                
                 break;
             case MenuOption.None:
                 Debug.Fail("Critical error while creating entity");
@@ -190,7 +193,7 @@ public sealed class UserActionsHandler
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     private IoType GetIoTypeFromMenuOption(MenuOption menuOption)
     {
         return menuOption switch
@@ -208,7 +211,6 @@ public sealed class UserActionsHandler
             _ => throw new ArgumentOutOfRangeException(nameof(menuOption), menuOption, null)
         };
     }
-    
 
     #endregion
 
@@ -236,20 +238,26 @@ public sealed class UserActionsHandler
     private void HandleMouseLeftHeldAction()
     {
         SDL.SDL_GetMouseState(out var x, out var y);
-        
+
         if (!IdStructure.IsValid(LGateToMove.Id))
         {
             return;
         }
-
+        
         var info = EntityService.GetDynamicLGateParamsToRender(
             _rendererConfig.GetRelativeShiftedCursor(new Vector2Int(x, y)),
-            ComponentManager.IterLGateComponents().Select(x => x.Entity).Where(z => z.Id != LGateToMove.Id)
+            ComponentManager.IterLGateComponents().Where(z => z.Entity.Id != LGateToMove.Id)
         );
 
         if (info.placement == Placement.Valid)
         {
             EntityService.UpdateEntityPosition(LGateToMove, info.position);
+            WireService.UpdateConnectedWiresPosition(LGateToMove);
+        }
+
+        if (info.placement == Placement.Invalid)
+        {
+            // TODO
         }
     }
 

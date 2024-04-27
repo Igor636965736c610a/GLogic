@@ -10,7 +10,7 @@ public sealed class TextureStorage
 {
     private readonly ImmutableArray<IntPtr> _lGateTextures;
     private readonly ImmutableArray<IntPtr> _menuTextures;
-    
+
     public TextureStorage(IntPtr renderer)
     {
         _lGateTextures = InitLGateTextures(renderer).ToImmutableArray();
@@ -18,15 +18,11 @@ public sealed class TextureStorage
     }
 
     public IntPtr GetLGateTexture(LGate lGate, bool state, Placement placement)
-    {
-        return _lGateTextures[(int)GetLGateTextureIndex(lGate, state, placement)];
-    }
+        => _lGateTextures[(int)GetLGateTextureIndex(lGate, state, placement)];
 
     public IntPtr GetMenuOptionTexture(MenuOptionT menuOption, bool isChecked)
-    {
-        return _menuTextures[(int)GetMenuOptionTextureIndex(menuOption, isChecked)];
-    }
-    
+        => _menuTextures[(int)GetMenuOptionTextureIndex(menuOption, isChecked)];
+
     public LGate ConvertToLGate(IoType ioType, bool state) => ioType switch
     {
         IoType.AND => LGate.AND,
@@ -59,35 +55,32 @@ public sealed class TextureStorage
         MenuOption.None => throw new InvalidOperationException("Accessing a non-existent texture"),
         _ => throw new ArgumentOutOfRangeException(nameof(menuOption), menuOption, null)
     };
-    
+
     private LGateTexture GetLGateTextureIndex(LGate g, bool state, Placement placement)
-    {
-        return (LGateTexture)(
+        => (LGateTexture)(
             (int)g
             | (int)(state ? LGateTexture.StateOn : LGateTexture.StateOff)
             | (int)placement
         );
-    }
 
     private MenuOptionTexture GetMenuOptionTextureIndex(MenuOptionT mo, bool isChecked)
-    {
-        return (MenuOptionTexture)(
+        => (MenuOptionTexture)(
             (int)mo
             | (int)(isChecked ? IsChecked.Yes : IsChecked.No)
         );
-    }
 
     private IntPtr[] InitLGateTextures(IntPtr renderer)
     {
         var font = SDL_ttf.TTF_OpenFont("Oswald-Light.ttf", 100);
         var initArray = new IntPtr[0b0111_1111];
 
-        for (int i = 0; i < Enum.GetNames(typeof(LGate)).Length; i++)
+        for (var i = 0; i < Enum.GetNames(typeof(LGate)).Length; i++)
         {
             CreateLGateTextures(renderer, font, initArray, (LGate)i, true);
-        
+
             CreateLGateTextures(renderer, font, initArray, (LGate)i, false);
         }
+
         SDL_ttf.TTF_CloseFont(font);
 
         return initArray;
@@ -95,19 +88,22 @@ public sealed class TextureStorage
 
     private void CreateLGateTextures(IntPtr renderer, IntPtr font, IntPtr[] initArray, LGate gate, bool state)
     {
-        var textColor = state ? new SDL.SDL_Color { r = 255, g = 0, b = 0, a = 255 } : new SDL.SDL_Color { r = 0, g = 0, b = 0, a = 1 };
-        var bgColorInvalid = new SDL.SDL_Color { r = 255, g = 0, b = 0, a = 127 };
-        var bgColorValid = new SDL.SDL_Color { r = 42, g = 214, b = 56, a = 120 };
-        var bgColorNeutral = new SDL.SDL_Color { r = 26, g = 29, b = 49, a = 146 };
-    
+        var textColor = state
+            ? new SDL.SDL_Color { r = 255, g = 0, b = 0, a = 255 }
+            : new SDL.SDL_Color { r = 0, g = 0, b = 0, a = 255 };
+        var bgColorInvalid = new SDL.SDL_Color { r = 255, g = 0, b = 0, a = 215 };
+        var bgColorValid = new SDL.SDL_Color { r = 42, g = 214, b = 56, a = 215 };
+        var bgColorNeutral = new SDL.SDL_Color { r = 26, g = 29, b = 49, a = 215 };
+
         AddLGateTexture(renderer, font, initArray, gate, state, Placement.Invalid, textColor, bgColorInvalid);
-    
+
         AddLGateTexture(renderer, font, initArray, gate, state, Placement.Valid, textColor, bgColorValid);
-    
+
         AddLGateTexture(renderer, font, initArray, gate, state, Placement.Neutral, textColor, bgColorNeutral);
     }
 
-    private void AddLGateTexture(IntPtr renderer, IntPtr font, IntPtr[] initArray, LGate gate, bool state, Placement placement, SDL.SDL_Color textColor, SDL.SDL_Color bgColor)
+    private void AddLGateTexture(IntPtr renderer, IntPtr font, IntPtr[] initArray, LGate gate, bool state,
+        Placement placement, SDL.SDL_Color textColor, SDL.SDL_Color bgColor)
     {
         var surface = SDL_ttf.TTF_RenderText_Shaded(font, gate.ToStringFast(), textColor, bgColor);
         var texture = SDL.SDL_CreateTextureFromSurface(renderer, surface);
@@ -120,19 +116,20 @@ public sealed class TextureStorage
     {
         var font = SDL_ttf.TTF_OpenFont("Oswald-Light.ttf", 100);
         var initArray = new IntPtr[0b11_1111];
-        
+
         var chosenOptionTextColor = new SDL.SDL_Color { r = 255, g = 0, b = 0, a = 255 };
-        var standardOptionTextColor = new SDL.SDL_Color { r = 0, g = 0, b = 0, a = 1 };
-        for (int i = 0; i < Enum.GetNames(typeof(MenuOptionT)).Length; i++)
+        var standardOptionTextColor = new SDL.SDL_Color { r = 0, g = 0, b = 0, a = 255 };
+        for (var i = 0; i < Enum.GetNames(typeof(MenuOptionT)).Length; i++)
         {
             var bgColor = i % 2 == 0
                 ? new SDL.SDL_Color { r = 75, g = 75, b = 75, a = 255 }
                 : new SDL.SDL_Color { r = 100, g = 100, b = 100, a = 255 };
 
             AddMenuOptionTexture(renderer, font, initArray, (MenuOptionT)i, true, chosenOptionTextColor, bgColor);
-            
+
             AddMenuOptionTexture(renderer, font, initArray, (MenuOptionT)i, false, standardOptionTextColor, bgColor);
         }
+
         SDL_ttf.TTF_CloseFont(font);
 
         return initArray;
@@ -166,36 +163,37 @@ public sealed class TextureStorage
 public enum LGateTexture
 {
     // gates bits: 0-4
-    AND =    0b0000_0000,
-    OR =     0b0000_0001,
-    NOT =    0b0000_0010,
-    XOR =    0b0000_0011,
-    NAND =   0b0000_0100,
-    NOR =    0b0000_0101,
-    XNOR =   0b0000_0110,
+    AND = 0b0000_0000,
+    OR = 0b0000_0001,
+    NOT = 0b0000_0010,
+    XOR = 0b0000_0011,
+    NAND = 0b0000_0100,
+    NOR = 0b0000_0101,
+    XNOR = 0b0000_0110,
     INPUT0 = 0b0000_0111,
     INPUT1 = 0b0000_1000,
     OUTPUT = 0b0000_1001,
 
     // state bits: 5
     StateOff = 0b0000_0000,
-    StateOn =  0b0001_0000,
-        
+    StateOn = 0b0001_0000,
+
     // placement bits: 6-7
     PlacementNeutral = 0b0000_0000,
-    PlacementValid =   0b0010_0000,
-    PlacementInvalid = 0b0100_0000,
+    PlacementValid = 0b0010_0000,
+    PlacementInvalid = 0b0100_0000
 }
 
 [Flags]
-public enum Placement 
+public enum Placement
 {
     Neutral = LGateTexture.PlacementNeutral,
-    Valid =   LGateTexture.PlacementValid,
+    Valid = LGateTexture.PlacementValid,
     Invalid = LGateTexture.PlacementInvalid
 }
 
-[Flags, EnumExtensions]
+[Flags]
+[EnumExtensions]
 public enum LGate
 {
     AND = LGateTexture.AND,
@@ -207,33 +205,34 @@ public enum LGate
     XNOR = LGateTexture.XNOR,
     INPUT0 = LGateTexture.INPUT0,
     INPUT1 = LGateTexture.INPUT1,
-    OUTPUT = LGateTexture.OUTPUT,
+    OUTPUT = LGateTexture.OUTPUT
 }
 
 [Flags]
 public enum MenuOptionTexture
 {
     // option bits 0-4
-    AND =    0b00_0000,
-    OR =     0b00_0001,
-    NOT =    0b00_0010,
-    XOR =    0b00_0011,
-    NAND =   0b00_0100,
-    NOR =    0b00_0101,
-    XNOR =   0b00_0110,
+    AND = 0b00_0000,
+    OR = 0b00_0001,
+    NOT = 0b00_0010,
+    XOR = 0b00_0011,
+    NAND = 0b00_0100,
+    NOR = 0b00_0101,
+    XNOR = 0b00_0110,
     Input0 = 0b00_0111,
     Input1 = 0b00_1000,
     Output = 0b00_1001,
-    Wire   = 0b00_1010,
+    Wire = 0b00_1010,
     Delete = 0b00_1011,
-    None   = 0b00_1111,
-    
+    None = 0b00_1111,
+
     // state bits 6
     UnChecked = 0b00_0000,
-    Checked   = 0b10_0000,
+    Checked = 0b10_0000
 }
 
-[Flags, EnumExtensions]
+[Flags]
+[EnumExtensions]
 public enum MenuOptionT
 {
     AND = MenuOptionTexture.AND,
@@ -248,12 +247,12 @@ public enum MenuOptionT
     Output = MenuOptionTexture.Output,
     Wire = MenuOptionTexture.Wire,
     Delete = MenuOptionTexture.Delete,
-    None = MenuOptionTexture.None,
+    None = MenuOptionTexture.None
 }
 
 [Flags]
 public enum IsChecked
 {
     Yes = MenuOptionTexture.Checked,
-    No = MenuOptionTexture.UnChecked,
+    No = MenuOptionTexture.UnChecked
 }

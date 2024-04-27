@@ -1,6 +1,5 @@
 using GLogic.Components.Common;
 using GLogicECS.Api;
-using GLogicECS.Components.Common;
 using SDL2;
 
 namespace GLogic.Jobs.Renderer;
@@ -10,28 +9,32 @@ public sealed class LGateRenderer
     private readonly IRendererStateAccess _rendererStateAccess;
     private readonly IntPtr _renderer;
     private readonly TextureStorage _textureStorage;
+    
+    internal readonly Stack<LGateRenderInfo> LateRenderLGates;
 
     public LGateRenderer(IRendererStateAccess rendererStateAccess, IntPtr renderer, TextureStorage textureStorage)
     {
         _rendererStateAccess = rendererStateAccess;
         _renderer = renderer;
         _textureStorage = textureStorage;
+        
+        LateRenderLGates = new Stack<LGateRenderInfo>();
     }
 
-    public void RenderStaticLGate(Area rect, LGate lGate, Placement placement, bool state)
+    public void RenderStaticLGate(LGateRenderInfo info)
     {
         var sdlRect = new SDL.SDL_Rect
         {
-            x = rect.Position.X,
-            y = rect.Position.Y,
-            w = rect.Size.X, 
-            h = rect.Size.Y
+            x = info.Rect.Position.X,
+            y = info.Rect.Position.Y,
+            w = info.Rect.Size.X,
+            h = info.Rect.Size.Y
         };
-        
-        var texture = _textureStorage.GetLGateTexture(lGate, state, placement);
+
+        var texture = _textureStorage.GetLGateTexture(info.LGate, info.State, info.Placement);
         SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref sdlRect);
     }
-    
+
     public void RenderChosenLGateFromMenuOption()
     {
         switch (UserActionsHandler.ChosenMenuOption)
@@ -47,48 +50,32 @@ public sealed class LGateRenderer
             case MenuOption.Input1:
             case MenuOption.Output:
                 SDL.SDL_GetMouseState(out var x, out var y);
-                
+
                 var info = EntityService.GetDynamicLGateParamsToRender(
                     _rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(x, y)),
-                    ComponentManager.IterLGateComponents().Select(x => x.Entity)
+                    ComponentManager.IterLGateComponents()
                 );
-                
+
                 var lGate = _textureStorage.ConvertToLGate(UserActionsHandler.ChosenMenuOption);
                 var rect = new Area(info.position, EntityService.RectLGateSize)
                     .ResizeObjectPlacedOnBackgroundRelatively(
                         _rendererStateAccess.Zoom,
                         _rendererStateAccess.CameraShift
                     );
+
+                var renderInfo = new LGateRenderInfo(rect, lGate, info.placement, false);
+                RenderStaticLGate(renderInfo);
                 
-                RenderStaticLGate(rect, lGate, info.placement, false);
                 break;
             case MenuOption.Wire:
             case MenuOption.Delete:
             case MenuOption.None:
+                
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
-
-    public void RenderShiftingLGate()
-    {
-        if (!IdStructure.IsValid(UserActionsHandler.LGateToMove.Id))
-        {
-            return;
-        }
-
-        SDL.SDL_GetMouseState(out var x, out var y);
-
-        var info = EntityService.GetDynamicLGateParamsToRender(
-            _rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(x, y)), 
-            ComponentManager.IterLGateComponents().Select(x => x.Entity)
-            );
-        
-        var rect = new Area(info.position, EntityService.RectLGateSize)
-                 .ResizeObjectPlacedOnBackgroundRelatively(
-                     _rendererStateAccess.Zoom,
-                     _rendererStateAccess.CameraShift
-                 );
-    }
 }
+
+public readonly record struct LGateRenderInfo(Area Rect, LGate LGate, Placement Placement, bool State);

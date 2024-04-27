@@ -20,12 +20,12 @@ public sealed class MenuRenderer
     public const int Height = 720;
     public static IEnumerable<MenuCheckRect> MenuOptions { get; }
 
-    public void Render()
+    public void Render() //TODO
     {
         var menuRect = new SDL.SDL_Rect { x = 0, y = 0, w = Width, h = Height };
         SDL.SDL_SetRenderDrawColor(_renderer, MenuColor.r, MenuColor.g, MenuColor.b, MenuColor.a);
         SDL.SDL_RenderFillRect(_renderer, ref menuRect);
-        
+
         var i = 0;
         foreach (var menuOption in MenuOptions)
         {
@@ -34,12 +34,14 @@ public sealed class MenuRenderer
                 x = menuOption.Position.X,
                 y = menuOption.Position.Y,
                 w = menuOption.Size.X,
-                h = menuOption.Size.Y,
+                h = menuOption.Size.Y
             };
 
             var option = (MenuOption)i;
-            var texture = _textureStorage.GetMenuOptionTexture((MenuOptionT)option, UserActionsHandler.ChosenMenuOption == option);
-            
+            var texture =
+                _textureStorage.GetMenuOptionTexture((MenuOptionT)option,
+                    UserActionsHandler.ChosenMenuOption == option);
+
             SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref rect);
 
             i++;
