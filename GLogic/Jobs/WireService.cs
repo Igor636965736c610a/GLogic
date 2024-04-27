@@ -105,7 +105,7 @@ public static class WireService
             
             Debug.Assert(ComponentManager.GetEntityTypeComponent(wireComp.Entity).Type == IoType.Wire);
             
-            wireComp = wireComp with { P2 = CalculateInputConnectionPoint(type, outputs[i].hookNumber, entityPos) };
+            wireComp = wireComp with { P2 = CalculateOutputConnectionPoint(type, outputs[i].hookNumber, entityPos) };
             
             ComponentManager.UpdateWireComponent(wireComp);
             ComponentManager.UpdateTransformComponent(CalculateTransformComponentForWire(wireComp.P1, wireComp.P2).ToTransformComponent(wireComp.Entity));
@@ -159,7 +159,7 @@ public static class WireService
         inputComp.Inputs.Add(new (wire, connection.HookNumber));
 
         var outputComp = ComponentManager.GetOutputComponent(_existingConnection.Value.Entity);
-        outputComp.Outputs.Add(new (wire, connection.HookNumber));
+        outputComp.Outputs.Add(new (wire, _existingConnection.Value.HookNumber));
         
         ComponentManager.UpdateInputComponent(inputComp);
         ComponentManager.UpdateOutputComponent(outputComp);
@@ -199,7 +199,7 @@ public static class WireService
         }
 
         outputComp.Outputs.Add(new (connection.Entity, connection.HookNumber));
-        inputComp.Inputs.Add(new (_existingConnection.Value.Entity, connection.HookNumber));
+        inputComp.Inputs.Add(new (_existingConnection.Value.Entity, _existingConnection.Value.HookNumber));
         
         ComponentManager.UpdateInputComponent(inputComp);
         ComponentManager.UpdateOutputComponent(outputComp);

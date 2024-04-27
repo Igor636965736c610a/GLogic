@@ -9,6 +9,16 @@ namespace GLogic.Jobs;
 
 public static class EntityQuery
 {
+    public static IEnumerable<T> AABB_Entities<T>(IEnumerable<T> entities, Area area) where T : IAABBCompare
+    {
+        return entities.Where(entity => entity.Compare(area.ToEcsArea()));
+    }
+
+    public static IEnumerable<T> AABB_Entities<T>(IEnumerable<T> entities, Vector2Int point) where T : IAABBCompare
+    {
+        return entities.Where(entity => entity.Compare(point));
+    }
+    
     // public static IEnumerable<Entity> AABB_Entities(IEnumerable<Entity> entities, Area area)
     // {
     //     foreach (var entity in entities)
@@ -52,14 +62,4 @@ public static class EntityQuery
     //         }
     //     }
     // }
-    
-    public static IEnumerable<T> AABB_Entities<T>(IEnumerable<T> entities, Area area) where T : IAABBCompare
-    {
-        return entities.Where(entity => entity.Compare(area.ToEcsArea()));
-    }
-
-    public static IEnumerable<T> AABB_Entities<T>(IEnumerable<T> entities, Vector2Int point) where T : IAABBCompare
-    {
-        return entities.Where(entity => entity.Compare(point));
-    }
 }
