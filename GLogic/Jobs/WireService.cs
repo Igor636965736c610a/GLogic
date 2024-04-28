@@ -1,9 +1,7 @@
 using System.Diagnostics;
 using GLogic.Components.Common;
-using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
 using GLogicECS.Components;
-using GLogicECS.Components.Common;
 using GLogicECS.Components.Init;
 
 namespace GLogic.Jobs;
@@ -89,6 +87,7 @@ public static class WireService
             var wireComp = ComponentManager.GetWireComponent(inputs[i].entity);
             
             Debug.Assert(ComponentManager.GetEntityTypeComponent(wireComp.Entity).Type == IoType.Wire);
+            Debug.Assert(EntityManager.IsAlive(wireComp.Entity));
             
             wireComp = wireComp with { P1 = CalculateInputConnectionPoint(type, inputs[i].hookNumber, entityPos) };
             
@@ -104,6 +103,7 @@ public static class WireService
             var wireComp = ComponentManager.GetWireComponent(outputs[i].entity);
             
             Debug.Assert(ComponentManager.GetEntityTypeComponent(wireComp.Entity).Type == IoType.Wire);
+            Debug.Assert(EntityManager.IsAlive(wireComp.Entity));
             
             wireComp = wireComp with { P2 = CalculateOutputConnectionPoint(type, outputs[i].hookNumber, entityPos) };
             
@@ -189,17 +189,18 @@ public static class WireService
         var outputComp = ComponentManager.GetOutputComponent(connection.Entity);
         var inputComp = ComponentManager.GetInputComponent(_existingConnection.Value.Entity);
         
+        Entity wire;
         if (_existingConnection.Value.ConnectionType == ConnectionType.Input)
-        {
-            CreateWire(_existingConnection.Value, connection);
+        { 
+            wire = CreateWire(_existingConnection.Value, connection);
         }
         else
-        {
-            CreateWire(connection, _existingConnection.Value);
+        { 
+            wire = CreateWire(connection, _existingConnection.Value);
         }
 
-        outputComp.Outputs.Add(new (connection.Entity, connection.HookNumber));
-        inputComp.Inputs.Add(new (_existingConnection.Value.Entity, _existingConnection.Value.HookNumber));
+        outputComp.Outputs.Add(new (wire, connection.HookNumber));
+        inputComp.Inputs.Add(new (wire, _existingConnection.Value.HookNumber));
         
         ComponentManager.UpdateInputComponent(inputComp);
         ComponentManager.UpdateOutputComponent(outputComp);

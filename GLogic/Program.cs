@@ -26,10 +26,10 @@ const int fps = 60;
 const int desiredDelta = 1000 / fps;
 
 // var stopW = new Stopwatch();
-// for (int i = 0; i < 1000; i++)
+// for (int i = 0; i < 50; i++)
 // {
 //     stopW.Start();
-//     for (int j = 0; j < 1000; j++)
+//     for (int j = 0; j < 500; j++)
 //     {
 //         var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.Input, true);
 //         // if (i < 10)
@@ -109,20 +109,20 @@ while (!quit)
     {
         var fpss = frameCount / ((currentTime - lastTime) / 1000.0);
         Console.WriteLine($"FPS: {fpss}");
-
+    
         frameCount = 0;
         lastTime = currentTime;
     }
     var delta = SDL.SDL_GetTicks() - startLoop;
-    if (delta < desiredDelta)
-    {
-        SDL.SDL_Delay(desiredDelta - delta);
-        //Console.WriteLine($"{delta} ---- {desiredDelta}");
-    }
-    else
-    {
-        Console.WriteLine($"Performance issue : {delta} ---- {desiredDelta}");
-    }
+    // if (delta < desiredDelta)
+    // {
+    //     SDL.SDL_Delay(desiredDelta - delta);
+    //     //Console.WriteLine($"{delta} ---- {desiredDelta}");
+    // }
+    // else
+    // {
+    //     Console.WriteLine($"Performance issue : {delta} ---- {desiredDelta}");
+    // }
 }
 
 SDL.SDL_DestroyRenderer(sdlRenderer);

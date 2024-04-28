@@ -80,8 +80,6 @@ public sealed class RendererApi : IRendererConfig
         foreach (var wireComp in EntityQuery.AABB_Entities(ComponentManager.IterWireComponents(),
                      renderArea))
         {
-            var entity = wireComp.Entity;
-
             var p1 = new Vector2Int(
                 CalculateShiftRelatively(wireComp.P1.X, Zoom, CameraShift.X),
                 CalculateShiftRelatively(wireComp.P1.Y, Zoom, CameraShift.Y)

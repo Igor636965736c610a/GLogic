@@ -249,15 +249,15 @@ public sealed class UserActionsHandler
             ComponentManager.IterLGateComponents().Where(z => z.Entity.Id != LGateToMove.Id)
         );
 
-        if (info.placement == Placement.Valid)
+        switch (info.placement)
         {
-            EntityService.UpdateEntityPosition(LGateToMove, info.position);
-            WireService.UpdateConnectedWiresPosition(LGateToMove);
-        }
-
-        if (info.placement == Placement.Invalid)
-        {
-            // TODO
+            case Placement.Valid:
+                EntityService.UpdateEntityPosition(LGateToMove, info.position);
+                WireService.UpdateConnectedWiresPosition(LGateToMove);
+                break;
+            case Placement.Invalid:
+                // TODO
+                break;
         }
     }
 

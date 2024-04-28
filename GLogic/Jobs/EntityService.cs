@@ -6,7 +6,7 @@ using GLogicECS.Api;
 using GLogicECS.Components;
 using GLogicECS.Components.Common;
 using GLogicECS.Components.Init;
-using GLogicECS.Components.System;
+using GLogicECS.Components.Interfaces;
 
 namespace GLogic.Jobs;
 
@@ -126,11 +126,6 @@ public static class EntityService
             )
         );
 
-        // Debug.Assert(!IdStructure.IsValid(AnyEntityInArea(
-        //     transformComponent.Position,
-        //     ComponentManager.IterLGateComponents().Select(x => x.Entity).Where(x => x.Id != entity.Id)).Id)
-        // );
-
         ComponentManager.UpdateTransformComponent(transformComponent);
     }
 
@@ -181,7 +176,7 @@ public static class EntityService
     }
 
     private static bool GetEntityWithBiggestOverlap<T>([NotNullWhen(true)] out TransformComponent? transformComponent,
-        Area overlapArea, IEnumerable<T> entities) where T : IAABBCompare
+        Area overlapArea, IEnumerable<T> entities) where T : struct, IAABBCompare
     {
         transformComponent = null;
         var overlap = 0;
