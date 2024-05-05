@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using GLogicECS.Components.Common;
-using GLogicECS.Components.Init;
 
 namespace GLogicECS.Components.System.DoubleIndexing;
 
@@ -12,15 +11,15 @@ internal static class LGateComponentSystem
     private static readonly List<int> IdMaps = new();
     private static readonly List<LGateComponent> LGateComponents = new();
 
-    [Description("Use this only when creating a new entity in newly added index in the generations list")]
+    [Description("internal using: only when creating a new entity in newly added index in the generations list")]
     internal static void IncreaseIdMaps()
     {
         IdMaps.Add(-1);
     }
-    
+
     internal static LGateComponent Add(Entity entity)
     {
-        Console.WriteLine(EntitySystem.IsAlive(entity));
+        //Console.WriteLine(EntitySystem.IsAlive(entity));
         var index = (int)IdStructure.Index(entity.Id);
         Debug.Assert(index < IdMaps.Count);
         if (_freeBackIndexes > 0)
@@ -29,7 +28,7 @@ internal static class LGateComponentSystem
             Debug.Assert(mappedIndex >= 0);
             LGateComponents[mappedIndex] = new LGateComponent
             {
-                Entity = entity,
+                Entity = entity
             };
             IdMaps[index] = mappedIndex;
 
@@ -42,7 +41,7 @@ internal static class LGateComponentSystem
             var mappedIndex = LGateComponents.Count;
             LGateComponents.Add(new LGateComponent
             {
-                Entity = entity,
+                Entity = entity
             });
             IdMaps[index] = mappedIndex;
 
@@ -53,14 +52,14 @@ internal static class LGateComponentSystem
     internal static void Remove(Entity entity)
     {
         var index = (int)IdStructure.Index(entity.Id);
-        Debug.Assert(IsIdMapValid(IdMaps[index]));
-        if (!IdStructure.IsValid(entity.Id))
+        if (!IsIdMapValid(IdMaps[index]) || !IdStructure.IsValid(entity.Id))
         {
             return;
         }
+
         Debug.Assert(IdMaps[index] < LGateComponents.Count - _freeBackIndexes);
         Debug.Assert(IsIdMapValid(IdMaps[index]));
-        
+
         var absorbedIndex = LGateComponents.Count - _freeBackIndexes - 1;
         var componentToSwap = LGateComponents[absorbedIndex];
         var indexMapToSwap = IdMaps[index];
@@ -73,15 +72,15 @@ internal static class LGateComponentSystem
         IdMaps[index] = absorbedIndex;
 
         _freeBackIndexes++;
-        
-        Console.WriteLine($"1: {LGateComponents.Count} 2: {_freeBackIndexes}");
+
+        //Console.WriteLine($"Count: {LGateComponents.Count} Free: {_freeBackIndexes}");
     }
-    
+
     internal static LGateComponent Get(Entity entity)
     {
         var mapIndex = IdMaps[(int)IdStructure.Index(entity.Id)];
         Debug.Assert(IsIdMapValid(mapIndex));
-        
+
         return LGateComponents[mapIndex];
     }
 
@@ -95,14 +94,12 @@ internal static class LGateComponentSystem
 
     internal static IEnumerable<LGateComponent> IterLGateComponents()
     {
-        for (int i = 0; i < LGateComponents.Count - _freeBackIndexes; i++)
+        for (var i = 0; i < LGateComponents.Count - _freeBackIndexes; i++)
         {
             yield return LGateComponents[i];
         }
     }
 
     private static bool IsIdMapValid(int id)
-    {
-        return id != -1;
-    }
+        => id != -1;
 }

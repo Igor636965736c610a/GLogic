@@ -1,32 +1,32 @@
 namespace GLogicECS.Collections;
 
-public struct SmallList<T> where T : IEquatable<T>
+public struct SmallList<T> where T : struct, IEquatable<T>
 {
-    private T a;
-    private T b;
+    private T _a;
+    private T _b;
     private List<T>? _grow;
 
-    public nuint Count;
+    public int Count;
 
     public T this[int index]
     {
         get
         {
-            if (index < 0 || index >= (int)Count)
+            if (index < 0 || index >= Count)
             {
-                throw new IndexOutOfRangeException();
+                return new T();
             }
 
             return index switch
             {
-                0 => a,
-                1 => b,
+                0 => _a,
+                1 => _b,
                 _ => _grow![index - 2]
             };
         }
         set
         {
-            if (index < 0 || index >= (int)Count)
+            if (index < 0 || index >= Count)
             {
                 throw new IndexOutOfRangeException();
             }
@@ -34,10 +34,10 @@ public struct SmallList<T> where T : IEquatable<T>
             switch (index)
             {
                 case 0:
-                    a = value;
+                    _a = value;
                     break;
                 case 1:
-                    b = value;
+                    _b = value;
                     break;
                 default:
                     _grow![index - 2] = value;
@@ -51,10 +51,10 @@ public struct SmallList<T> where T : IEquatable<T>
         switch (Count++)
         {
             case 0:
-                a = element;
+                _a = element;
                 break;
             case 1:
-                b = element;
+                _b = element;
                 break;
             default:
                 _grow ??= new List<T>();
@@ -76,14 +76,15 @@ public struct SmallList<T> where T : IEquatable<T>
             return false;
         }
 
-        this[index] = this[(int)--Count];
+        this[index] = this[Count - 1];
 
+        Count--;
         return true;
     }
 
     public int IndexOf(T element)
     {
-        for (var i = 0; i < (int)Count; i++)
+        for (var i = 0; i < Count; i++)
         {
             var current = this[i];
 

@@ -6,19 +6,15 @@ namespace GLogic.Jobs.Renderer;
 
 public sealed class LGateRenderer
 {
-    private readonly IRendererStateAccess _rendererStateAccess;
     private readonly IntPtr _renderer;
+    private readonly IRendererStateAccess _rendererStateAccess;
     private readonly TextureStorage _textureStorage;
-    
-    internal readonly Stack<LGateRenderInfo> LateRenderLGates;
 
     public LGateRenderer(IRendererStateAccess rendererStateAccess, IntPtr renderer, TextureStorage textureStorage)
     {
         _rendererStateAccess = rendererStateAccess;
         _renderer = renderer;
         _textureStorage = textureStorage;
-        
-        LateRenderLGates = new Stack<LGateRenderInfo>();
     }
 
     public void RenderStaticLGate(LGateRenderInfo info)
@@ -65,12 +61,12 @@ public sealed class LGateRenderer
 
                 var renderInfo = new LGateRenderInfo(rect, lGate, info.placement, false);
                 RenderStaticLGate(renderInfo);
-                
+
                 break;
             case MenuOption.Wire:
             case MenuOption.Delete:
             case MenuOption.None:
-                
+
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

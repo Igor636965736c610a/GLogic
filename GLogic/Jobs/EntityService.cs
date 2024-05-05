@@ -12,12 +12,12 @@ namespace GLogic.Jobs;
 
 public static class EntityService
 {
-    public static Vector2Int RectLGateSize { get; }
-
     static EntityService()
     {
         RectLGateSize = new Vector2Int(100, 50);
     }
+
+    public static Vector2Int RectLGateSize { get; }
 
     public static Entity AddLGate(Vector2Int position, IoType ioType, bool value)
     {
@@ -26,14 +26,6 @@ public static class EntityService
             throw new InvalidProgramException("Invalid IoType - Wire");
         }
 
-        // if (IdStructure.IsValid(
-        //         AnyEntityInArea(position, ComponentManager
-        //             .IterLGateComponents()
-        //             .Select(x => x.Entity)).Id))
-        // {
-        //     return new Entity(IdStructure.MakeInvalidId());
-        // }
-        
         Debug.Assert(!IdStructure.IsValid(
                 AnyEntityInArea(position, ComponentManager
                     .IterLGateComponents()).Entity.Id
@@ -53,11 +45,12 @@ public static class EntityService
         var lGateComp = EntityQuery
             .AABB_Entities(lGates, point)
             .FirstOrDefault(new LGateComponent(new Entity(IdStructure.MakeInvalidId())));
-        
+
         var entityToConnect = lGateComp.Entity;
-        
+
         if (!EntityManager.IsAlive(entityToConnect))
         {
+            WireService.Reset();
             return;
         }
 
@@ -70,37 +63,52 @@ public static class EntityService
             WireService.Reset();
             return;
         }
-        
+
         WireService.Create(new Connection
         {
-            ConnectionType = hookInfo.Value.connectionType,
+            ConnectionType = hookInfo.Value.ConnectionType,
             Entity = entityToConnect,
-            HookNumber = hookInfo.Value.hookNumber,
+            HookNumber = hookInfo.Value.HookNumber
         });
     }
 
     public static void RemoveEntity(Vector2Int position)
     {
-        var lGates = ComponentManager.IterLGateComponents();
-        var lGateComp = EntityQuery
-            .AABB_Entities(lGates, position)
-            .FirstOrDefault(new LGateComponent(new Entity(IdStructure.MakeInvalidId())));
-
-        var entityToDelete = lGateComp.Entity;
+        var entityToDelete = GetEntityToDelete(position);
 
         if (!IdStructure.IsValid(entityToDelete.Id))
         {
-            var wires = ComponentManager.IterWireComponents();
-            // foreach (var wireComponent in EntityQuery.AABB_Entities(wires.Select(x => x.Entity), position))
-            // {
-            //     // TODO
-            // }
+            return;
         }
 
-        if (IdStructure.IsValid(entityToDelete.Id))
+        var type = ComponentManager.GetEntityTypeComponent(entityToDelete).Type;
+        if (type != IoType.Wire)
         {
-            EntityManager.RemoveEntity(entityToDelete);
+            var inputComp = ComponentManager.GetInputComponent(entityToDelete);
+            var outputComp = ComponentManager.GetOutputComponent(entityToDelete);
+
+            for (var i = 0; i < inputComp.Inputs.Count; i++)
+            {
+                Debug.Assert(EntityManager.IsAlive(inputComp.Inputs[i].Entity));
+                Debug.Assert(
+                    ComponentManager.GetEntityTypeComponent(inputComp.Inputs[i].Entity).Type == IoType.Wire);
+
+                WireService.RemoveFromOtherOutputs(inputComp.Inputs[i].Entity);
+                EntityManager.RemoveEntity(inputComp.Inputs[i].Entity);
+            }
+
+            for (var i = 0; i < outputComp.Outputs.Count; i++)
+            {
+                Debug.Assert(EntityManager.IsAlive(outputComp.Outputs[i].Entity));
+                Debug.Assert(ComponentManager.GetEntityTypeComponent(outputComp.Outputs[i].Entity).Type ==
+                             IoType.Wire);
+
+                WireService.RemoveFromOtherInputs(outputComp.Outputs[i].Entity);
+                EntityManager.RemoveEntity(outputComp.Outputs[i].Entity);
+            }
         }
+
+        EntityManager.RemoveEntity(entityToDelete);
     }
 
     public static void UpdateEntityPosition(Entity entity, Vector2Int newPosition)
@@ -117,12 +125,14 @@ public static class EntityService
         transformComponent.Position = newPosition;
 
         Debug.Assert(!IdStructure.IsValid(
-            EntityQuery.AABB_Entities(
-                ComponentManager.IterLGateComponents(), 
-                new Area(newPosition, RectLGateSize)
-                )
-                .Where(x => x.Entity.Id != entity.Id)
-                .FirstOrDefault(new LGateComponent(new Entity(IdStructure.MakeInvalidId()))).Entity.Id
+                EntityQuery.AABB_Entities(
+                        ComponentManager.IterLGateComponents(),
+                        new Area(newPosition, RectLGateSize)
+                    )
+                    .FirstOrDefault(
+                        x => x.Entity.Id != entity.Id,
+                        new LGateComponent(new Entity(IdStructure.MakeInvalidId()))
+                    ).Entity.Id
             )
         );
 
@@ -162,7 +172,29 @@ public static class EntityService
         return (chosenLGatePosition, placement);
     }
 
-    private static Placement GetPlacement<T>(Vector2Int position, IEnumerable<T> otherEntities) where T : struct, IAABBCompare
+    private static Entity GetEntityToDelete(Vector2Int position)
+    {
+        var lGates = ComponentManager.IterLGateComponents();
+        var lGateComp = EntityQuery
+            .AABB_Entities(lGates, position)
+            .FirstOrDefault(new LGateComponent(new Entity(IdStructure.MakeInvalidId())));
+
+        var entityToDelete = lGateComp.Entity;
+
+        if (!IdStructure.IsValid(entityToDelete.Id))
+        {
+            var wires = ComponentManager.IterWireComponents();
+            // foreach (var wireComponent in EntityQuery.AABB_Entities(wires.Select(x => x.Entity), position))
+            // {
+            //     // TODO
+            // }
+        }
+
+        return entityToDelete;
+    }
+
+    private static Placement GetPlacement<T>(Vector2Int position, IEnumerable<T> otherEntities)
+        where T : struct, IAABBCompare
     {
         var placement = Placement.Valid;
         if (IdStructure.IsValid(AnyEntityInArea(
@@ -229,34 +261,33 @@ public static class EntityService
                 Y = newY
             };
         }
-        else // (xDiff < adjustedYDiffToX)
+
+        // (xDiff < adjustedYDiffToX)
+        if (xDiff <= 10)
         {
-            if (xDiff <= 10)
+            return entityInOverlapArea.Position with
             {
-                return entityInOverlapArea.Position with
-                {
-                    Y = AdjustEntityAxis(
-                        entityInOverlapArea.Position.Y,
-                        adjustedEntityPosition.Y, RectLGateSize.Y
-                    )
-                };
-            }
-
-            var xBound = entityInOverlapArea.Position.X < adjustedEntityPosition.X
-                ? entityInOverlapArea.Position.X + RectLGateSize.X
-                : entityInOverlapArea.Position.X - RectLGateSize.X;
-
-            var newX = AdjustEntityAxis(entityInOverlapArea.Position.X, adjustedEntityPosition.X, xDiff);
-            newX = entityInOverlapArea.Position.X < adjustedEntityPosition.X
-                ? Math.Min(xBound, newX)
-                : Math.Max(xBound, newX);
-
-            return new Vector2Int
-            {
-                X = newX,
-                Y = AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, RectLGateSize.Y)
+                Y = AdjustEntityAxis(
+                    entityInOverlapArea.Position.Y,
+                    adjustedEntityPosition.Y, RectLGateSize.Y
+                )
             };
         }
+
+        var xBound = entityInOverlapArea.Position.X < adjustedEntityPosition.X
+            ? entityInOverlapArea.Position.X + RectLGateSize.X
+            : entityInOverlapArea.Position.X - RectLGateSize.X;
+
+        var newX = AdjustEntityAxis(entityInOverlapArea.Position.X, adjustedEntityPosition.X, xDiff);
+        newX = entityInOverlapArea.Position.X < adjustedEntityPosition.X
+            ? Math.Min(xBound, newX)
+            : Math.Max(xBound, newX);
+
+        return new Vector2Int
+        {
+            X = newX,
+            Y = AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, RectLGateSize.Y)
+        };
     }
 
     private static T AnyEntityInArea<T>(Vector2Int position, IEnumerable<T> entities) where T : struct, IAABBCompare

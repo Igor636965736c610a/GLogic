@@ -6,18 +6,24 @@ namespace GLogic.Jobs.Renderer;
 
 public sealed class MenuRenderer
 {
+    public const int Width = 150;
+    public const int Height = 720;
+    private static readonly SDL.SDL_Color MenuColor = new() { r = 50, g = 50, b = 50, a = 255 };
+    private readonly IntPtr _renderer;
+
+    private readonly TextureStorage _textureStorage;
+
+    static MenuRenderer()
+    {
+        MenuOptions = GetMenuOptions().ToList();
+    }
+
     public MenuRenderer(IntPtr renderer, TextureStorage textureStorage)
     {
         _textureStorage = textureStorage;
         _renderer = renderer;
     }
 
-    private readonly TextureStorage _textureStorage;
-    private readonly IntPtr _renderer;
-    private static readonly SDL.SDL_Color MenuColor = new() { r = 50, g = 50, b = 50, a = 255 };
-
-    public const int Width = 150;
-    public const int Height = 720;
     public static IEnumerable<MenuCheckRect> MenuOptions { get; }
 
     public void Render() //TODO
@@ -55,11 +61,6 @@ public sealed class MenuRenderer
             var y = 30 + 55 * i;
             yield return new MenuCheckRect(new Vector2Int(10, y), new Vector2Int(130, 55));
         }
-    }
-
-    static MenuRenderer()
-    {
-        MenuOptions = GetMenuOptions().ToList();
     }
 }
 

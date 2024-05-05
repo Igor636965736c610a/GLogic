@@ -1,4 +1,6 @@
+using GLogicECS.Collections;
 using GLogicECS.Components;
+using GLogicECS.Components.Common;
 using GLogicECS.Components.Init;
 using GLogicECS.Components.System;
 using GLogicECS.Components.System.DoubleIndexing;
@@ -18,7 +20,8 @@ public static class EntityManager
             new InitEntity(
                 init.TransformComponent,
                 init.IoType,
-                init.State
+                init.State,
+                default
             ));
 
         LGateComponentSystem.Add(entity);
@@ -28,21 +31,28 @@ public static class EntityManager
 
     public static Entity CreateEntity(InitWire init)
     {
-        var wireComponent = init.WireComponent;
-        
+        // Implement ICollection to Small List to avoid that
+        var inputs = new SmallList<ConnectionInfo>();
+        inputs.Add(new ConnectionInfo(init.Input.Entity, init.Input.HookNumber));
+        var outputs = new SmallList<ConnectionInfo>();
+        outputs.Add(new ConnectionInfo(init.Output.Entity, init.Output.HookNumber));
+
+        var initInputOutputComp = new InitInputsOutputs(
+            inputs,
+            outputs
+        );
+
         var entity = EntitySystem.CreateEntity(
             new InitEntity(
                 init.TransformComponent,
                 IoType.Wire,
-                false
+                false,
+                initInputOutputComp
             ));
 
         WireComponentSystem.Add(entity,
-            new InitWireComponent(
-                wireComponent.Increasing, 
-                wireComponent.InputHookNumber,
-                wireComponent.OutputHookNumber)
-            );
+            init.WireComponent
+        );
 
         return entity;
     }
@@ -52,10 +62,8 @@ public static class EntityManager
         LGateComponentSystem.Remove(entity);
         WireComponentSystem.Remove(entity);
         EntitySystem.RemoveEntity(entity);
-        
     }
 
     public static bool IsAlive(Entity entity)
         => EntitySystem.IsAlive(entity);
-    
 }

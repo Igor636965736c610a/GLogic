@@ -1,5 +1,5 @@
-using GLogicECS.Components;
+using GLogic.Components.Common;
 
 namespace GLogicECS.Components.Init;
 
-public record struct InitWireComponent(bool Increasing, uint InputHookNumber, uint OutputHookNumber);
+public record InitWireComponent(Vector2Int P1, Vector2Int P2);

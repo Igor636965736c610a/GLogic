@@ -11,11 +11,12 @@ namespace GLogic.Jobs;
 public sealed class UserActionsHandler
 {
     private readonly IRendererConfig _rendererConfig;
-    public static MenuOption ChosenMenuOption { get; private set; }
-    public static Entity LGateToMove { get; private set; }
-    public static bool MouseRightButtonState { get; private set; }
-    public static bool MouseLeftButtonState { get; private set; }
-    public static bool ShiftKeyState { get; private set; }
+
+    static UserActionsHandler()
+    {
+        ChosenMenuOption = MenuOption.None;
+        MouseRightButtonState = false;
+    }
 
     public UserActionsHandler(IRendererConfig rendererConfig)
     {
@@ -23,11 +24,20 @@ public sealed class UserActionsHandler
         LGateToMove = new Entity(IdStructure.MakeInvalidId());
     }
 
-    static UserActionsHandler()
+    public static MenuOption ChosenMenuOption { get; private set; }
+    public static Entity LGateToMove { get; private set; }
+    public static bool MouseRightButtonState { get; private set; }
+    public static bool MouseLeftButtonState { get; private set; }
+    public static bool ShiftKeyState { get; private set; }
+
+    #region MouseWheel
+
+    public void HandleMouseWheel(Vector2Int cursor, int wheelY)
     {
-        ChosenMenuOption = MenuOption.None;
-        MouseRightButtonState = false;
+        _rendererConfig.ChangeRelativelyToCursorZoom((float)(wheelY * 0.1), cursor);
     }
+
+    #endregion
 
     #region MouseClick
 
@@ -80,6 +90,7 @@ public sealed class UserActionsHandler
     {
         if (cursor.X <= MenuRenderer.Width)
         {
+            WireService.Reset();
             SetChosenLGate(cursor);
         }
         else if (ChosenMenuOption == MenuOption.None)
@@ -180,11 +191,11 @@ public sealed class UserActionsHandler
                 break;
             case MenuOption.Wire:
                 EntityService.AddWire(adjustedCursorPosition);
-                
+
                 break;
             case MenuOption.Delete:
                 EntityService.RemoveEntity(adjustedCursorPosition);
-                
+
                 break;
             case MenuOption.None:
                 Debug.Fail("Critical error while creating entity");
@@ -243,31 +254,17 @@ public sealed class UserActionsHandler
         {
             return;
         }
-        
+
         var info = EntityService.GetDynamicLGateParamsToRender(
             _rendererConfig.GetRelativeShiftedCursor(new Vector2Int(x, y)),
             ComponentManager.IterLGateComponents().Where(z => z.Entity.Id != LGateToMove.Id)
         );
 
-        switch (info.placement)
+        if (info.placement == Placement.Valid)
         {
-            case Placement.Valid:
-                EntityService.UpdateEntityPosition(LGateToMove, info.position);
-                WireService.UpdateConnectedWiresPosition(LGateToMove);
-                break;
-            case Placement.Invalid:
-                // TODO
-                break;
+            EntityService.UpdateEntityPosition(LGateToMove, info.position);
+            WireService.UpdateConnectedWiresPosition(LGateToMove);
         }
-    }
-
-    #endregion
-
-    #region MouseWheel
-
-    public void HandleMouseWheel(Vector2Int cursor, int wheelY)
-    {
-        _rendererConfig.ChangeRelativelyToCursorZoom((float)(wheelY * 0.1), cursor);
     }
 
     #endregion

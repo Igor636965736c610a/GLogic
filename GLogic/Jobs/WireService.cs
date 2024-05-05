@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using GLogic.Components.Common;
 using GLogicECS.Api;
 using GLogicECS.Components;
+using GLogicECS.Components.Common;
 using GLogicECS.Components.Init;
 
 namespace GLogic.Jobs;
@@ -13,6 +15,12 @@ public static class WireService
     public static void Reset()
         => _existingConnection = _existingConnection = null;
 
+    public static bool IsHookedUp([NotNullWhen(true)] out Connection? existingConnection)
+    {
+        existingConnection = _existingConnection;
+        return _existingConnection is not null && EntityManager.IsAlive(_existingConnection.Value.Entity);
+    }
+
     public static void Create(Connection connection)
     {
         Debug.Assert(EntityManager.IsAlive(connection.Entity));
@@ -22,18 +30,19 @@ public static class WireService
         {
             case ConnectionType.Input:
                 ConnectToInput(connection);
-                
+
                 return;
             case ConnectionType.Output:
                 ConnectToOutput(connection);
 
                 return;
         }
-        
+
         Reset();
     }
 
-    public static (ConnectionType connectionType, int hookNumber)? GetHookInfo(IoType ioType, Vector2Int position, Vector2Int point)
+    public static HookInfo? GetHookInfo(IoType ioType, Vector2Int position,
+        Vector2Int point)
     {
         switch (ioType)
         {
@@ -48,12 +57,13 @@ public static class WireService
                 switch (xDiff)
                 {
                     case > 0 and < 30 when yDiff is > 5 and < 23:
-                        return (ConnectionType.Input, 0);
+                        return new (ConnectionType.Input, 0);
                     case > 0 and < 30 when yDiff is > 27 and < 45:
-                        return (ConnectionType.Input, 1);
+                        return new (ConnectionType.Input, 1);
                     case > 80 and < 100 when yDiff is > 20 and < 30:
-                        return (ConnectionType.Output, 0);
+                        return new (ConnectionType.Output, 0);
                 }
+
                 break;
             case IoType.Input:
                 break;
@@ -64,8 +74,9 @@ public static class WireService
             case IoType.Wire:
                 throw new InvalidProgramException("Invalid argument");
             default:
-                throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null); 
+                throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null);
         }
+
         return null;
     }
 
@@ -74,41 +85,126 @@ public static class WireService
         Debug.Assert(EntityManager.IsAlive(entity));
 
         var type = ComponentManager.GetEntityTypeComponent(entity).Type;
-        
+
         Debug.Assert(type != IoType.Wire);
-        
+
         var entityPos = ComponentManager.GetTransformComponent(entity).Position;
-        
+
         var inputComp = ComponentManager.GetInputComponent(entity);
         var inputs = inputComp.Inputs;
 
-        for (int i = 0; i < inputs.Count; i++)
+        for (var i = 0; i < inputs.Count; i++)
         {
-            var wireComp = ComponentManager.GetWireComponent(inputs[i].entity);
-            
+            var wireComp = ComponentManager.GetWireComponent(inputs[i].Entity);
+
             Debug.Assert(ComponentManager.GetEntityTypeComponent(wireComp.Entity).Type == IoType.Wire);
             Debug.Assert(EntityManager.IsAlive(wireComp.Entity));
-            
-            wireComp = wireComp with { P1 = CalculateInputConnectionPoint(type, inputs[i].hookNumber, entityPos) };
-            
+
+            wireComp = wireComp with { P1 = CalculateInputConnectionPoint(type, inputs[i].HookNumber, entityPos) };
+
             ComponentManager.UpdateWireComponent(wireComp);
-            ComponentManager.UpdateTransformComponent(CalculateTransformComponentForWire(wireComp.P1, wireComp.P2).ToTransformComponent(wireComp.Entity));
+            ComponentManager.UpdateTransformComponent(
+                CalculateTransformComponentForWire(wireComp.P1, wireComp.P2).ToTransformComponent(wireComp.Entity)
+            );
         }
-        
+
         var outputComp = ComponentManager.GetOutputComponent(entity);
         var outputs = outputComp.Outputs;
 
-        for (int i = 0; i < outputs.Count; i++)
+        for (var i = 0; i < outputs.Count; i++)
         {
-            var wireComp = ComponentManager.GetWireComponent(outputs[i].entity);
-            
+            var wireComp = ComponentManager.GetWireComponent(outputs[i].Entity);
+
             Debug.Assert(ComponentManager.GetEntityTypeComponent(wireComp.Entity).Type == IoType.Wire);
             Debug.Assert(EntityManager.IsAlive(wireComp.Entity));
-            
-            wireComp = wireComp with { P2 = CalculateOutputConnectionPoint(type, outputs[i].hookNumber, entityPos) };
-            
+
+            wireComp = wireComp with { P2 = CalculateOutputConnectionPoint(type, outputs[i].HookNumber, entityPos) };
+
             ComponentManager.UpdateWireComponent(wireComp);
-            ComponentManager.UpdateTransformComponent(CalculateTransformComponentForWire(wireComp.P1, wireComp.P2).ToTransformComponent(wireComp.Entity));
+            ComponentManager.UpdateTransformComponent(CalculateTransformComponentForWire(wireComp.P1, wireComp.P2)
+                .ToTransformComponent(wireComp.Entity));
+        }
+    }
+
+    public static void RemoveFromOtherOutputs(Entity entity)
+    {
+        Debug.Assert(ComponentManager.GetEntityTypeComponent(entity).Type == IoType.Wire);
+        var inputComp = ComponentManager.GetInputComponent(entity);
+        for (var i = 0; i < inputComp.Inputs.Count; i++)
+        {
+            var otherSideEntity = inputComp.Inputs[i].Entity;
+
+            Debug.Assert(EntityManager.IsAlive(otherSideEntity));
+            var otherSideEntityOutputComp = ComponentManager.GetOutputComponent(otherSideEntity);
+            var success = otherSideEntityOutputComp.Outputs.Remove(new ConnectionInfo(entity, default));
+            Debug.Assert(success);
+
+            ComponentManager.UpdateOutputComponent(otherSideEntityOutputComp);
+        }
+    }
+
+    public static void RemoveFromOtherInputs(Entity entity)
+    {
+        Debug.Assert(ComponentManager.GetEntityTypeComponent(entity).Type == IoType.Wire);
+
+        var outputComp = ComponentManager.GetOutputComponent(entity);
+        for (var i = 0; i < outputComp.Outputs.Count; i++)
+        {
+            var otherSideEntity = outputComp.Outputs[i].Entity;
+
+            Debug.Assert(EntityManager.IsAlive(otherSideEntity));
+            var otherSideEntityInputComp = ComponentManager.GetInputComponent(otherSideEntity);
+            var success = otherSideEntityInputComp.Inputs.Remove(new ConnectionInfo(entity, default));
+            Debug.Assert(success);
+
+            ComponentManager.UpdateInputComponent(otherSideEntityInputComp);
+        }
+    }
+    
+    public static Vector2Int CalculateInputConnectionPoint(IoType ioType, int hookNumber, Vector2Int position)
+    {
+        switch (ioType)
+        {
+            case IoType.AND:
+            case IoType.OR:
+            case IoType.XOR:
+            case IoType.NAND:
+            case IoType.NOR:
+            case IoType.XNOR:
+            case IoType.Output:
+                return hookNumber switch
+                {
+                    0 => new Vector2Int(position.X, position.Y + (int)(EntityService.RectLGateSize.Y * 0.25)),
+                    1 => new Vector2Int(position.X, position.Y + (int)(EntityService.RectLGateSize.Y * 0.75)),
+                    _ => throw new InvalidProgramException("Wire hook number out of range")
+                };
+            case IoType.NOT:
+                return new Vector2Int(position.X, position.Y + (int)(EntityService.RectLGateSize.Y * 0.5));
+            case IoType.Wire:
+            case IoType.Input:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null);
+        }
+    }
+
+    public static Vector2Int CalculateOutputConnectionPoint(IoType ioType, int hookNumber, Vector2Int position)
+    {
+        switch (ioType)
+        {
+            case IoType.AND:
+            case IoType.OR:
+            case IoType.XOR:
+            case IoType.NAND:
+            case IoType.NOR:
+            case IoType.XNOR:
+            case IoType.NOT:
+            case IoType.Input:
+                return new Vector2Int(position.X + EntityService.RectLGateSize.X,
+                    (int)(position.Y + EntityService.RectLGateSize.Y * 0.5));
+            case IoType.Wire:
+            case IoType.Output:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null);
         }
     }
 
@@ -118,52 +214,50 @@ public static class WireService
         if (_existingConnection is null || !EntityManager.IsAlive(_existingConnection.Value.Entity))
         {
             inputComp = ComponentManager.GetInputComponent(connection.Entity);
-            
+
             if (!CanConnectToInput(connection, inputComp))
             {
+                Reset();
                 return;
             }
-            
+
             _existingConnection = connection;
-            
+
             return;
         }
-        
-        if (connection.ConnectionType == _existingConnection.Value.ConnectionType)
+
+        if (_existingConnection.Value.ConnectionType == connection.ConnectionType)
         {
+            Reset();
             return;
         }
-        
+
         if (_existingConnection.Value.Entity.Id == connection.Entity.Id)
         {
+            Reset();
             return;
         }
-        
+
         inputComp = ComponentManager.GetInputComponent(connection.Entity);
-            
+
         if (!CanConnectToInput(connection, inputComp))
         {
+            Reset();
             return;
         }
 
-        Entity wire;
-        if (_existingConnection.Value.ConnectionType == ConnectionType.Input)
-        {
-            wire = CreateWire(_existingConnection.Value, connection);
-        }
-        else
-        {
-            wire = CreateWire(connection, _existingConnection.Value);
-        }
-        
-        inputComp.Inputs.Add(new (wire, connection.HookNumber));
+        var wire = _existingConnection.Value.ConnectionType == ConnectionType.Input
+            ? CreateWire(_existingConnection.Value, connection)
+            : CreateWire(connection, _existingConnection.Value);
+
+        inputComp.Inputs.Add(new ConnectionInfo(wire, connection.HookNumber));
 
         var outputComp = ComponentManager.GetOutputComponent(_existingConnection.Value.Entity);
-        outputComp.Outputs.Add(new (wire, _existingConnection.Value.HookNumber));
-        
+        outputComp.Outputs.Add(new ConnectionInfo(wire, _existingConnection.Value.HookNumber));
+
         ComponentManager.UpdateInputComponent(inputComp);
         ComponentManager.UpdateOutputComponent(outputComp);
-        
+
         Reset();
     }
 
@@ -172,58 +266,55 @@ public static class WireService
         if (_existingConnection is null || !EntityManager.IsAlive(_existingConnection.Value.Entity))
         {
             _existingConnection = connection;
-            
+
             return;
         }
-        
-        if (connection.ConnectionType == _existingConnection.Value.ConnectionType)
+
+        if (_existingConnection.Value.ConnectionType == connection.ConnectionType)
         {
+            Reset();
             return;
         }
-        
+
         if (_existingConnection.Value.Entity.Id == connection.Entity.Id)
         {
+            Reset();
             return;
         }
 
         var outputComp = ComponentManager.GetOutputComponent(connection.Entity);
         var inputComp = ComponentManager.GetInputComponent(_existingConnection.Value.Entity);
-        
-        Entity wire;
-        if (_existingConnection.Value.ConnectionType == ConnectionType.Input)
-        { 
-            wire = CreateWire(_existingConnection.Value, connection);
-        }
-        else
-        { 
-            wire = CreateWire(connection, _existingConnection.Value);
-        }
 
-        outputComp.Outputs.Add(new (wire, connection.HookNumber));
-        inputComp.Inputs.Add(new (wire, _existingConnection.Value.HookNumber));
-        
+        var wire = _existingConnection.Value.ConnectionType == ConnectionType.Input
+            ? CreateWire(_existingConnection.Value, connection)
+            : CreateWire(connection, _existingConnection.Value);
+
+        outputComp.Outputs.Add(new ConnectionInfo(wire, connection.HookNumber));
+        inputComp.Inputs.Add(new ConnectionInfo(wire, _existingConnection.Value.HookNumber));
+
         ComponentManager.UpdateInputComponent(inputComp);
         ComponentManager.UpdateOutputComponent(outputComp);
-        
+
         Reset();
     }
-    
+
     private static bool CanConnectToInput(Connection connection, InputComponent inputComp)
     {
         Debug.Assert(EntityManager.IsAlive(inputComp.Entity));
         var inputs = inputComp.Inputs;
-        for (int i = 0; i < inputs.Count; i++)
+        for (var i = 0; i < inputs.Count; i++)
         {
-            if (!EntityManager.IsAlive(inputs[i].entity))
+            if (!EntityManager.IsAlive(inputs[i].Entity))
             {
                 continue;
             }
 
-            if (inputs[i].hookNumber == connection.HookNumber)
+            if (inputs[i].HookNumber == connection.HookNumber)
             {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -247,69 +338,20 @@ public static class WireService
 
         var p1 = CalculateInputConnectionPoint(iType, input.HookNumber, iTransform.Position);
         var p2 = CalculateOutputConnectionPoint(oType, output.HookNumber, oTransform.Position);
-        
+
         return EntityManager.CreateEntity(new InitWire(
             CalculateTransformComponentForWire(p1, p2),
             new InitWireComponent(p1, p2),
-            new ConnectionInfo(input.Entity, input.HookNumber),
-            new ConnectionInfo(output.Entity, output.HookNumber)
+            new ConnectionInfo(output.Entity, output.HookNumber),
+            new ConnectionInfo(input.Entity, input.HookNumber)
         ));
-    }
-
-    private static Vector2Int CalculateInputConnectionPoint(IoType ioType, int hookNumber, Vector2Int position)
-    {
-        switch (ioType)
-        {
-            case IoType.AND:
-            case IoType.OR:
-            case IoType.XOR:
-            case IoType.NAND:
-            case IoType.NOR:
-            case IoType.XNOR:
-            case IoType.Output:
-                return hookNumber switch
-                {
-                    0 => new Vector2Int(position.X, position.Y + (int)(EntityService.RectLGateSize.Y * 0.25)),
-                    1 => new Vector2Int(position.X, position.Y + (int)(EntityService.RectLGateSize.Y * 0.75)),
-                    _ => throw new InvalidProgramException("Wire hook number out of range")
-                };
-            case IoType.NOT:
-                return new Vector2Int(position.X, position.Y + (int)(EntityService.RectLGateSize.Y * 0.5));
-            case IoType.Wire:
-                //TODO
-                throw new Exception();
-            case IoType.Input:
-            default:
-                throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null);
-        }
-    }
-    
-    private static Vector2Int CalculateOutputConnectionPoint(IoType ioType, int hookNumber, Vector2Int position)
-    {
-        switch (ioType)
-        {
-            case IoType.AND:
-            case IoType.OR:
-            case IoType.XOR:
-            case IoType.NAND:
-            case IoType.NOR:
-            case IoType.XNOR:
-            case IoType.NOT:
-            case IoType.Input:
-                return new Vector2Int(position.X + EntityService.RectLGateSize.X, (int)(position.Y + EntityService.RectLGateSize.Y * 0.5));
-            case IoType.Wire:
-                //TODO
-                throw new Exception();
-            case IoType.Output:
-            default:
-                throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null);
-        }
     }
 
     private static InitTransformComponent CalculateTransformComponentForWire(Vector2Int p1, Vector2Int p2)
     {
-        var position = new Vector2Int(Math.Min(p1.X, p2.X) - 4, Math.Min(p1.Y, p2.Y) - 4);
-        var size = new Vector2Int(Math.Abs(p1.X - p2.X) + 4, Math.Abs(p1.Y - p2.Y) + 4);
+        const int magnification = 4;
+        var position = new Vector2Int(Math.Min(p1.X, p2.X) - magnification, Math.Min(p1.Y, p2.Y) - magnification);
+        var size = new Vector2Int(Math.Abs(p1.X - p2.X) + magnification, Math.Abs(p1.Y - p2.Y) + magnification);
 
         return new InitTransformComponent(position, size);
     }

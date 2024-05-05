@@ -19,14 +19,10 @@ public static class IdStructure
     }
 
     public static uint Index(uint entityId)
-    {
-        return entityId & EntityIndexMask;
-    }
+        => entityId & EntityIndexMask;
 
     public static byte Generation(uint entityId)
-    {
-        return (byte)((entityId >> (int)EntityIndexBits) & EntityGenerationMask);
-    }
+        => (byte)((entityId >> (int)EntityIndexBits) & EntityGenerationMask);
 
     public static uint IdWithNewGeneration(uint entityId)
     {
@@ -36,12 +32,8 @@ public static class IdStructure
     }
 
     public static bool IsValid(uint entityId)
-    {
-        return entityId != uint.MaxValue;
-    }
+        => entityId != uint.MaxValue;
 
     public static uint MakeInvalidId()
-    {
-        return uint.MaxValue;
-    }
+        => uint.MaxValue;
 }

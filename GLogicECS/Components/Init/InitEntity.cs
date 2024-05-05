@@ -1,3 +1,4 @@
 namespace GLogicECS.Components.Init;
 
-internal record InitEntity(InitTransformComponent TransformComponent, IoType IoType, bool State);
+internal record InitEntity(InitTransformComponent TransformComponent, IoType IoType, bool State,
+    InitInputsOutputs InputsOutputsSmallList);

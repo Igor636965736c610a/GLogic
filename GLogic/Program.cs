@@ -15,7 +15,7 @@ var window = SDL.SDL_CreateWindow(
     RendererApi.WindowSize.Size.X,
     RendererApi.WindowSize.Size.Y,
     SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN
-    );
+);
 
 var sdlRenderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
 var textures = new TextureStorage(sdlRenderer);
@@ -63,30 +63,30 @@ while (!quit)
         {
             case SDL.SDL_EventType.SDL_MOUSEBUTTONUP:
                 userActionHandler.HandleMouseUpPollEvent(new Vector2Int(e.button.x, e.button.y), e.button.button);
-                
+
                 break;
             case SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN:
                 userActionHandler.HandleMouseDownPollEvent(new Vector2Int(e.button.x, e.button.y), e.button.button);
-                
+
                 break;
             case SDL.SDL_EventType.SDL_KEYDOWN:
                 userActionHandler.HandleKeyDownEvent(e.key.keysym.sym);
-                
+
                 break;
             case SDL.SDL_EventType.SDL_KEYUP:
                 userActionHandler.HandleKeyUpEvent(e.key.keysym.sym);
-                
+
                 break;
             case SDL.SDL_EventType.SDL_QUIT:
                 quit = true;
-                
+
                 break;
             case SDL.SDL_EventType.SDL_MOUSEWHEEL:
             {
                 SDL.SDL_GetMouseState(out var cursorX, out var cursorY);
                 var cursor = new Vector2Int(cursorX, cursorY);
                 userActionHandler.HandleMouseWheel(cursor, e.wheel.y);
-                
+
                 break;
             }
         }
@@ -100,7 +100,7 @@ while (!quit)
 
     appRenderer.RenderEntities();
     appRenderer.RenderMenu();
-    
+
     SDL.SDL_RenderPresent(sdlRenderer);
 
     var currentTime = SDL.SDL_GetTicks();
@@ -109,20 +109,21 @@ while (!quit)
     {
         var fpss = frameCount / ((currentTime - lastTime) / 1000.0);
         Console.WriteLine($"FPS: {fpss}");
-    
+
         frameCount = 0;
         lastTime = currentTime;
     }
+
     var delta = SDL.SDL_GetTicks() - startLoop;
-    // if (delta < desiredDelta)
-    // {
-    //     SDL.SDL_Delay(desiredDelta - delta);
-    //     //Console.WriteLine($"{delta} ---- {desiredDelta}");
-    // }
-    // else
-    // {
-    //     Console.WriteLine($"Performance issue : {delta} ---- {desiredDelta}");
-    // }
+    if (delta < desiredDelta)
+    {
+        SDL.SDL_Delay(desiredDelta - delta);
+        //Console.WriteLine($"{delta} ---- {desiredDelta}");
+    }
+    else
+    {
+        Console.WriteLine($"Performance issue : {delta} ---- {desiredDelta}");
+    }
 }
 
 SDL.SDL_DestroyRenderer(sdlRenderer);

@@ -10,4 +10,10 @@ public readonly struct Vector2Int
         X = x;
         Y = y;
     }
+
+    public static bool operator ==(Vector2Int x, Vector2Int y)
+        => x.X == y.X && x.Y == y.Y;
+
+    public static bool operator !=(Vector2Int x, Vector2Int y)
+        => x.X != y.X && x.Y != y.Y;
 }

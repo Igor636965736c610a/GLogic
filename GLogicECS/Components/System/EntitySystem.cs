@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using GLogicECS.Collections;
 using GLogicECS.Components.Common;
 using GLogicECS.Components.Init;
 using GLogicECS.Components.System.DoubleIndexing;
@@ -8,9 +7,9 @@ namespace GLogicECS.Components.System;
 
 internal static class EntitySystem
 {
+    private const int MinFreeIds = 512;
     private static readonly List<byte> Generations = new();
     private static readonly Queue<uint> FreeIds = new(MinFreeIds * 2);
-    private const int MinFreeIds = 12;
 
     internal static readonly List<TransformComponent> TransformComponents = new();
     internal static readonly List<OutputComponent> OutputComponents = new();
@@ -41,23 +40,22 @@ internal static class EntitySystem
             OutputComponents[index] = new OutputComponent
             {
                 Entity = entity,
-                Outputs = new SmallList<Entity>()
+                Outputs = info.InputsOutputsSmallList.Outputs
             };
             InputComponents[index] = new InputComponent
             {
                 Entity = entity,
-                Inputs = Enumerable.Repeat(new Entity(IdStructure.MakeInvalidId()), GetInputsCount(info.IoType))
-                    .ToArray()
+                Inputs = info.InputsOutputsSmallList.Inputs
             };
             EntityTypeComponents[index] = new EntityTypeComponent
             {
                 Entity = entity,
-                Type = info.IoType,
+                Type = info.IoType
             };
             StateComponents[index] = new StateComponent
             {
                 Entity = entity,
-                State = info.State,
+                State = info.State
             };
         }
         else
@@ -70,28 +68,27 @@ internal static class EntitySystem
             {
                 Entity = entity,
                 Position = info.TransformComponent.Position,
-                Size = info.TransformComponent.Size,
+                Size = info.TransformComponent.Size
             });
             OutputComponents.Add(new OutputComponent
             {
                 Entity = entity,
-                Outputs = new SmallList<Entity>(),
+                Outputs = info.InputsOutputsSmallList.Outputs
             });
             InputComponents.Add(new InputComponent
             {
                 Entity = entity,
-                Inputs = Enumerable.Repeat(new Entity(IdStructure.MakeInvalidId()), GetInputsCount(info.IoType))
-                    .ToArray(),
+                Inputs = info.InputsOutputsSmallList.Inputs
             });
             EntityTypeComponents.Add(new EntityTypeComponent
             {
                 Entity = entity,
-                Type = info.IoType,
+                Type = info.IoType
             });
             StateComponents.Add(new StateComponent
             {
                 Entity = entity,
-                State = info.State,
+                State = info.State
             });
             LGateComponentSystem.IncreaseIdMaps();
             WireComponentSystem.IncreaseIdMaps();
@@ -122,23 +119,5 @@ internal static class EntitySystem
         var index = (int)IdStructure.Index(entity.Id);
         Debug.Assert(index < Generations.Count);
         return Generations[index] == IdStructure.Generation(entity.Id);
-    }
-
-    internal static int GetInputsCount(IoType ioType)
-    {
-        return ioType switch
-        {
-            IoType.AND => 2,
-            IoType.OR => 2,
-            IoType.NOT => 2,
-            IoType.XOR => 2,
-            IoType.NAND => 2,
-            IoType.NOR => 2,
-            IoType.XNOR => 2,
-            IoType.Input => 0,
-            IoType.Output => 2,
-            IoType.Wire => 1,
-            _ => throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null)
-        };
     }
 }

@@ -7,17 +7,17 @@ namespace GLogicECS.Components.System.DoubleIndexing;
 
 internal static class WireComponentSystem
 {
-    private static int _freeBackIndexes = 0;
+    private static int _freeBackIndexes;
 
     private static readonly List<int> IdMaps = new();
     private static readonly List<WireComponent> WireComponents = new();
 
-    [Description("Use this only when creating a new entity in newly added index in the generations list")]
+    [Description("internal using: only when creating a new entity in newly added index in the generations list")]
     internal static void IncreaseIdMaps()
     {
         IdMaps.Add(-1);
     }
-    
+
     internal static WireComponent Add(Entity entity, InitWireComponent init)
     {
         var index = (int)IdStructure.Index(entity.Id);
@@ -28,9 +28,8 @@ internal static class WireComponentSystem
             WireComponents[mappedIndex] = new WireComponent
             {
                 Entity = entity,
-                Increasing = init.Increasing,
-                InputHookNumber = init.InputHookNumber,
-                OutputHookNumber = init.OutputHookNumber,
+                P1 = init.P1,
+                P2 = init.P2
             };
             IdMaps[index] = mappedIndex;
 
@@ -44,9 +43,8 @@ internal static class WireComponentSystem
             WireComponents.Add(new WireComponent
             {
                 Entity = entity,
-                Increasing = init.Increasing,
-                InputHookNumber = init.InputHookNumber,
-                OutputHookNumber = init.OutputHookNumber,
+                P1 = init.P1,
+                P2 = init.P2
             });
             IdMaps[index] = mappedIndex;
 
@@ -61,17 +59,20 @@ internal static class WireComponentSystem
         {
             return;
         }
-        Debug.Assert(index < IdMaps.Count - _freeBackIndexes);
+
+        Debug.Assert(IdMaps[index] < IdMaps.Count - _freeBackIndexes);
         Debug.Assert(IsIdMapValid(IdMaps[index]));
 
         var absorbedIndex = WireComponents.Count - _freeBackIndexes - 1;
         var componentToSwap = WireComponents[absorbedIndex];
         var indexMapToSwap = IdMaps[index];
+        var deletingComponent = WireComponents[indexMapToSwap];
         Debug.Assert(EntitySystem.IsAlive(componentToSwap.Entity));
 
-        WireComponents[absorbedIndex] = WireComponents[indexMapToSwap];
-        IdMaps[index] = absorbedIndex;
+        WireComponents[indexMapToSwap] = componentToSwap;
+        WireComponents[absorbedIndex] = deletingComponent;
         IdMaps[(int)IdStructure.Index(componentToSwap.Entity.Id)] = indexMapToSwap;
+        IdMaps[index] = absorbedIndex;
 
         _freeBackIndexes++;
     }
@@ -80,10 +81,10 @@ internal static class WireComponentSystem
     {
         var mapIndex = IdMaps[(int)IdStructure.Index(entity.Id)];
         Debug.Assert(IsIdMapValid(mapIndex));
-        
+
         return WireComponents[mapIndex];
     }
-    
+
     internal static void Update(WireComponent wireComponent)
     {
         var mapIndex = IdMaps[(int)IdStructure.Index(wireComponent.Entity.Id)];
@@ -94,14 +95,12 @@ internal static class WireComponentSystem
 
     internal static IEnumerable<WireComponent> IterWireComponents()
     {
-        for (int i = 0; i < WireComponents.Count - _freeBackIndexes; i++)
+        for (var i = 0; i < WireComponents.Count - _freeBackIndexes; i++)
         {
             yield return WireComponents[i];
         }
     }
 
     private static bool IsIdMapValid(int id)
-    {
-        return id != -1;
-    }
+        => id != -1;
 }
