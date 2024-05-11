@@ -2,18 +2,18 @@ using System.Diagnostics;
 using GLogicECS.Api;
 using GLogicECS.Components;
 
-namespace GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates;
+namespace GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
 
-public class CircuitSimulation : ICircuitUpdate, ISimulationModifier
+public class StepWiseSimulation : ICircuitUpdate, IStepWiseSimulationModifier
 {
     private readonly Queue<Entity> _entitiesToUpdate;
     
-    public CircuitSimulation()
+    public StepWiseSimulation()
     {
         _entitiesToUpdate = new Queue<Entity>();
     }
 
-    public CircuitSimulation InitExecutionTree()
+    public StepWiseSimulation InitExecutionTree()
     {
         //TODO
         

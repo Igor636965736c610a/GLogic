@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates;
+using GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
 using GLogicECS.Components;
@@ -11,13 +12,13 @@ namespace GLogic.Jobs.Internal;
 
 public class UserActionExecutorInSimulationMode : IUserActionExecutor
 {
-    private readonly ISimulationModifier _simulationModifier;
+    private readonly IStepWiseSimulationModifier _stepWiseSimulationModifier;
     public Entity LGateToMove { get; set; }
 
     public UserActionExecutorInSimulationMode(out ICircuitUpdate circuitUpdate)
     {
-        var simulation = new CircuitSimulation().InitExecutionTree();
-        _simulationModifier = simulation;
+        var simulation = new StepWiseSimulation().InitExecutionTree();
+        _stepWiseSimulationModifier = simulation;
         LGateToMove = new Entity(IdStructure.MakeInvalidId());
         
         circuitUpdate = simulation;

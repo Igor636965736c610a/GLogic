@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using GLogic.Jobs;
 using GLogic.Jobs.Internal;
+using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Components;
@@ -30,28 +31,28 @@ var userActionHandler = new UserActionsHandler(appRenderer, defaultUserActionExe
 const int fps = 60;
 const int desiredDelta = 1000 / fps;
 
-// var stopW = new Stopwatch();
-// for (int i = 0; i < 50; i++)
-// {
-//     stopW.Start();
-//     for (int j = 0; j < 505; j++)
-//     {
-//         var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
-//         // if (i < 10)
-//         // {
-//         //     continue;
-//         // }
-//
-//         //var comp = ComponentManager.GetTransformComponent(entity).Position;
-//         //var position = new Vector2Int(comp.X + 5, comp.Y + 5);
-//         //EntityService.RemoveEntity(position);
-//     }
-//     // Console.WriteLine(stopW.Elapsed.Seconds);
-//     float x = stopW.Elapsed.Milliseconds / 1000f;
-//     Console.WriteLine($"{(i * 1000):#,0} all entities - {x:F2} milliseconds to add 1000 entities");
-//     stopW.Reset();
-// }
-// stopW.Stop();
+var stopW = new Stopwatch();
+for (int i = 0; i < 50; i++)
+{
+    stopW.Start();
+    for (int j = 0; j < 505; j++)
+    {
+        var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
+        // if (i < 10)
+        // {
+        //     continue;
+        // }
+
+        //var comp = ComponentManager.GetTransformComponent(entity).Position;
+        //var position = new Vector2Int(comp.X + 5, comp.Y + 5);
+        //EntityService.RemoveEntity(position);
+    }
+    // Console.WriteLine(stopW.Elapsed.Seconds);
+    float x = stopW.Elapsed.Milliseconds / 1000f;
+    Console.WriteLine($"{(i * 1000):#,0} all entities - {x:F2} milliseconds to add 1000 entities");
+    stopW.Reset();
+}
+stopW.Stop();
 
 var frameCount = 0;
 var startTime = SDL.SDL_GetTicks();
