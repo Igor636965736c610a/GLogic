@@ -8,9 +8,10 @@ public class StepWiseSimulation : ICircuitUpdate, IStepWiseSimulationModifier
 {
     private readonly Queue<Entity> _entitiesToUpdate;
     
-    public StepWiseSimulation()
+    public StepWiseSimulation(out IUserActionExecutor userActionExecutor)
     {
         _entitiesToUpdate = new Queue<Entity>();
+        userActionExecutor = new UserActionExecutorInStepWiseSimMode(this);
     }
 
     public StepWiseSimulation InitExecutionTree()

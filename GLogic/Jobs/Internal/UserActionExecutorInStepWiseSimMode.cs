@@ -10,19 +10,17 @@ using GLogicGlobal.Common;
 
 namespace GLogic.Jobs.Internal;
 
-public class UserActionExecutorInSimulationMode : IUserActionExecutor
+public class UserActionExecutorInStepWiseSimMode : IUserActionExecutor
 {
     private readonly IStepWiseSimulationModifier _stepWiseSimulationModifier;
-    public Entity LGateToMove { get; set; }
 
-    public UserActionExecutorInSimulationMode(out ICircuitUpdate circuitUpdate)
+    public UserActionExecutorInStepWiseSimMode(IStepWiseSimulationModifier stepWiseSimulationModifier)
     {
-        var simulation = new StepWiseSimulation().InitExecutionTree();
-        _stepWiseSimulationModifier = simulation;
+        _stepWiseSimulationModifier = stepWiseSimulationModifier;
         LGateToMove = new Entity(IdStructure.MakeInvalidId());
-        
-        circuitUpdate = simulation;
     }
+    
+    public Entity LGateToMove { get; set; }
 
     public void ClickExecute(Vector2Int adjustedCursorPosition, MenuOption chosenMenuOption)
     {
