@@ -1,6 +1,10 @@
-﻿using GLogic.Components.Common;
+﻿using System.Diagnostics;
 using GLogic.Jobs;
+using GLogic.Jobs.Internal;
+using GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates;
 using GLogic.Jobs.Renderer;
+using GLogicECS.Components;
+using GLogicGlobal.Common;
 using SDL2;
 
 // const int test = args[0] is not null ? Int32.Parse(args[0]) : 60;
@@ -20,7 +24,8 @@ var window = SDL.SDL_CreateWindow(
 var sdlRenderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
 var textures = new TextureStorage(sdlRenderer);
 var appRenderer = new RendererApi(sdlRenderer, textures);
-var userActionHandler = new UserActionsHandler(appRenderer);
+var defaultUserActionExecutor = new UserActionExecutorInSimulationMode(out ICircuitUpdate circuitUpdate);
+var userActionHandler = new UserActionsHandler(appRenderer, defaultUserActionExecutor);
 
 const int fps = 60;
 const int desiredDelta = 1000 / fps;
@@ -29,9 +34,9 @@ const int desiredDelta = 1000 / fps;
 // for (int i = 0; i < 50; i++)
 // {
 //     stopW.Start();
-//     for (int j = 0; j < 500; j++)
+//     for (int j = 0; j < 505; j++)
 //     {
-//         var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.Input, true);
+//         var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
 //         // if (i < 10)
 //         // {
 //         //     continue;

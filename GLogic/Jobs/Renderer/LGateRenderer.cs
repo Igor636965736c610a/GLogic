@@ -1,5 +1,6 @@
-using GLogic.Components.Common;
+using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogicECS.Api;
+using GLogicGlobal.Common;
 using SDL2;
 
 namespace GLogic.Jobs.Renderer;
@@ -42,9 +43,9 @@ public sealed class LGateRenderer
             case MenuOption.NAND:
             case MenuOption.NOR:
             case MenuOption.XNOR:
-            case MenuOption.Input0:
-            case MenuOption.Input1:
-            case MenuOption.Output:
+            case MenuOption.LowConstant:
+            case MenuOption.HighConstant:
+            case MenuOption.LedOutput:
                 SDL.SDL_GetMouseState(out var x, out var y);
 
                 var info = EntityService.GetDynamicLGateParamsToRender(

@@ -1,14 +1,14 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using GLogic.Components.Common;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
 using GLogicECS.Components;
 using GLogicECS.Components.Common;
 using GLogicECS.Components.Init;
 using GLogicECS.Components.Interfaces;
+using GLogicGlobal.Common;
 
-namespace GLogic.Jobs;
+namespace GLogic.Jobs.Internal.EcsStateModifiers;
 
 public static class EntityService
 {
@@ -25,7 +25,7 @@ public static class EntityService
         {
             throw new InvalidProgramException("Invalid IoType - Wire");
         }
-
+        
         Debug.Assert(!IdStructure.IsValid(
                 AnyEntityInArea(position, ComponentManager
                     .IterLGateComponents()).Entity.Id
@@ -39,7 +39,7 @@ public static class EntityService
         //Console.WriteLine(entity.Id);
     }
 
-    public static void AddWire(Vector2Int point)
+    public static Entity? AddWire(Vector2Int point)
     {
         var lGates = ComponentManager.IterLGateComponents();
         var lGateComp = EntityQuery
@@ -51,7 +51,7 @@ public static class EntityService
         if (!EntityManager.IsAlive(entityToConnect))
         {
             WireService.Reset();
-            return;
+            return null;
         }
 
         var ioType = ComponentManager.GetEntityTypeComponent(entityToConnect).Type;
@@ -61,15 +61,17 @@ public static class EntityService
         if (hookInfo is null)
         {
             WireService.Reset();
-            return;
+            return null;
         }
 
-        WireService.Create(new Connection
+        var wire = WireService.Create(new Connection
         {
             ConnectionType = hookInfo.Value.ConnectionType,
             Entity = entityToConnect,
             HookNumber = hookInfo.Value.HookNumber
         });
+
+        return wire;
     }
 
     public static void RemoveEntity(Vector2Int position)

@@ -32,8 +32,8 @@ public sealed class TextureStorage
         IoType.NAND => LGate.NAND,
         IoType.NOR => LGate.NOR,
         IoType.XNOR => LGate.XNOR,
-        IoType.Input => state ? LGate.INPUT1 : LGate.INPUT0,
-        IoType.Output => LGate.OUTPUT,
+        IoType.Constant => state ? LGate.HighConstant : LGate.LowConstant,
+        IoType.LedOutput => LGate.LedOutput,
         IoType.Wire => throw new InvalidOperationException("Accessing a non-existent texture"),
         _ => throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null)
     };
@@ -47,9 +47,9 @@ public sealed class TextureStorage
         MenuOption.NAND => LGate.NAND,
         MenuOption.NOR => LGate.NOR,
         MenuOption.XNOR => LGate.XNOR,
-        MenuOption.Input0 => LGate.INPUT0,
-        MenuOption.Input1 => LGate.INPUT1,
-        MenuOption.Output => LGate.OUTPUT,
+        MenuOption.LowConstant => LGate.LowConstant,
+        MenuOption.HighConstant => LGate.HighConstant,
+        MenuOption.LedOutput => LGate.LedOutput,
         MenuOption.Wire => throw new InvalidOperationException("Accessing a non-existent texture"),
         MenuOption.Delete => throw new InvalidOperationException("Accessing a non-existent texture"),
         MenuOption.None => throw new InvalidOperationException("Accessing a non-existent texture"),
@@ -170,9 +170,9 @@ public enum LGateTexture
     NAND = 0b0000_0100,
     NOR = 0b0000_0101,
     XNOR = 0b0000_0110,
-    INPUT0 = 0b0000_0111,
-    INPUT1 = 0b0000_1000,
-    OUTPUT = 0b0000_1001,
+    LowConstant = 0b0000_0111,
+    HighConstant = 0b0000_1000,
+    LedOutput = 0b0000_1001,
 
     // state bits: 5
     StateOff = 0b0000_0000,
@@ -203,9 +203,9 @@ public enum LGate
     NAND = LGateTexture.NAND,
     NOR = LGateTexture.NOR,
     XNOR = LGateTexture.XNOR,
-    INPUT0 = LGateTexture.INPUT0,
-    INPUT1 = LGateTexture.INPUT1,
-    OUTPUT = LGateTexture.OUTPUT
+    LowConstant = LGateTexture.LowConstant,
+    HighConstant = LGateTexture.HighConstant,
+    LedOutput = LGateTexture.LedOutput
 }
 
 [Flags]
@@ -219,9 +219,9 @@ public enum MenuOptionTexture
     NAND = 0b00_0100,
     NOR = 0b00_0101,
     XNOR = 0b00_0110,
-    Input0 = 0b00_0111,
-    Input1 = 0b00_1000,
-    Output = 0b00_1001,
+    LowConstant = 0b00_0111,
+    HighConstant = 0b00_1000,
+    LedOutput = 0b00_1001,
     Wire = 0b00_1010,
     Delete = 0b00_1011,
     None = 0b00_1111,
@@ -242,9 +242,9 @@ public enum MenuOptionT
     NAND = MenuOptionTexture.NAND,
     NOR = MenuOptionTexture.NOR,
     XNOR = MenuOptionTexture.XNOR,
-    Input0 = MenuOptionTexture.Input0,
-    Input1 = MenuOptionTexture.Input1,
-    Output = MenuOptionTexture.Output,
+    LowConstant = MenuOptionTexture.LowConstant,
+    HighConstant = MenuOptionTexture.HighConstant,
+    LedOutput = MenuOptionTexture.LedOutput,
     Wire = MenuOptionTexture.Wire,
     Delete = MenuOptionTexture.Delete,
     None = MenuOptionTexture.None

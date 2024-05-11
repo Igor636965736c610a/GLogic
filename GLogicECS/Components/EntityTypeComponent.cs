@@ -19,8 +19,8 @@ public enum IoType
     NAND,
     NOR,
     XNOR,
-    Input,
-    Output,
+    Constant,
+    LedOutput,
     //textured
 
     Wire

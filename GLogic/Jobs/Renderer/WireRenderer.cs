@@ -1,6 +1,7 @@
 using System.Diagnostics;
-using GLogic.Components.Common;
+using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogicECS.Api;
+using GLogicGlobal.Common;
 using SDL2;
 
 namespace GLogic.Jobs.Renderer;

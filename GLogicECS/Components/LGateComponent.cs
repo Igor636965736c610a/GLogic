@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using GLogic.Components.Common;
 using GLogicECS.Api;
 using GLogicECS.Components.Common;
 using GLogicECS.Components.Interfaces;
+using GLogicGlobal.Common;
 
 namespace GLogicECS.Components;
 

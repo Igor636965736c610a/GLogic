@@ -1,6 +1,6 @@
-﻿using GLogic.Components.Common;
-using GLogicECS.Api;
+﻿using GLogicECS.Api;
 using GLogicECS.Components.Common;
+using GLogicGlobal.Common;
 
 namespace GLogic.Jobs.Renderer;
 
@@ -142,9 +142,9 @@ public sealed class RendererApi : IRendererConfig
             case MenuOption.NAND:
             case MenuOption.NOR:
             case MenuOption.XNOR:
-            case MenuOption.Input0:
-            case MenuOption.Input1:
-            case MenuOption.Output:
+            case MenuOption.LowConstant:
+            case MenuOption.HighConstant:
+            case MenuOption.LedOutput:
                 _lGateRenderer.RenderChosenLGateFromMenuOption();
                 break;
             case MenuOption.Wire:

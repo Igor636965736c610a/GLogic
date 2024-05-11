@@ -1,6 +1,6 @@
-using GLogic.Components.Common;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Components.Interfaces;
+using GLogicGlobal.Common;
 
 namespace GLogic.Jobs;
 

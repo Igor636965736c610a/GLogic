@@ -19,8 +19,8 @@ public struct InputComponent
             IoType.NAND => 2,
             IoType.NOR => 2,
             IoType.XNOR => 2,
-            IoType.Input => 0,
-            IoType.Output => 2,
+            IoType.Constant => 0,
+            IoType.LedOutput => 2,
             IoType.Wire => 1,
             _ => throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null)
         };

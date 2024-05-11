@@ -2,9 +2,9 @@
 
 namespace GLogicECS.Components;
 
-public struct Entity : IEquatable<Entity>
+public readonly struct Entity : IEquatable<Entity>
 {
-    public uint Id;
+    public readonly uint Id;
 
     public Entity()
     {

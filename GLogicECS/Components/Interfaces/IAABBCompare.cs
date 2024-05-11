@@ -1,5 +1,5 @@
-using GLogic.Components.Common;
 using GLogicECS.Components.Common;
+using GLogicGlobal.Common;
 
 namespace GLogicECS.Components.Interfaces;
 

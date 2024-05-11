@@ -1,9 +1,11 @@
 using System.Diagnostics;
-using GLogic.Components.Common;
+using GLogic.Jobs.Internal;
+using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
 using GLogicECS.Components;
 using GLogicECS.Components.Common;
+using GLogicGlobal.Common;
 using SDL2;
 
 namespace GLogic.Jobs;
@@ -11,6 +13,7 @@ namespace GLogic.Jobs;
 public sealed class UserActionsHandler
 {
     private readonly IRendererConfig _rendererConfig;
+    private readonly IUserActionExecutor _userActionExecutor;
 
     static UserActionsHandler()
     {
@@ -18,14 +21,13 @@ public sealed class UserActionsHandler
         MouseRightButtonState = false;
     }
 
-    public UserActionsHandler(IRendererConfig rendererConfig)
+    public UserActionsHandler(IRendererConfig rendererConfig, IUserActionExecutor userActionExecutor)
     {
         _rendererConfig = rendererConfig;
-        LGateToMove = new Entity(IdStructure.MakeInvalidId());
+        _userActionExecutor = userActionExecutor;
     }
 
     public static MenuOption ChosenMenuOption { get; private set; }
-    public static Entity LGateToMove { get; private set; }
     public static bool MouseRightButtonState { get; private set; }
     public static bool MouseLeftButtonState { get; private set; }
     public static bool ShiftKeyState { get; private set; }
@@ -46,7 +48,7 @@ public sealed class UserActionsHandler
         switch (mouseButton)
         {
             case SDL.SDL_BUTTON_LEFT:
-                LGateToMove = new Entity(IdStructure.MakeInvalidId());
+                _userActionExecutor.LGateToMove = new Entity(IdStructure.MakeInvalidId());
                 MouseLeftButtonState = false;
                 break;
             case SDL.SDL_BUTTON_RIGHT:
@@ -93,27 +95,10 @@ public sealed class UserActionsHandler
             WireService.Reset();
             SetChosenLGate(cursor);
         }
-        else if (ChosenMenuOption == MenuOption.None)
-        {
-            MarkSomeEntity(cursor);
-        }
         else
         {
             UserActions(cursor);
         }
-    }
-
-    private void MarkSomeEntity(Vector2Int cursor)
-    {
-        var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
-
-        var markedEntity = EntityQuery.AABB_Entities(
-            ComponentManager.IterLGateComponents(),
-            adjustedCursorPosition
-        ).FirstOrDefault(new LGateComponent(new Entity(IdStructure.MakeInvalidId()))).Entity;
-
-        LGateToMove = markedEntity;
-        Console.WriteLine(LGateToMove.Id);
     }
 
     private static void SetChosenLGate(Vector2Int cursor)
@@ -148,80 +133,9 @@ public sealed class UserActionsHandler
     {
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
 
-        switch (ChosenMenuOption)
-        {
-            case MenuOption.AND:
-            case MenuOption.OR:
-            case MenuOption.NOT:
-            case MenuOption.XOR:
-            case MenuOption.NAND:
-            case MenuOption.NOR:
-            case MenuOption.XNOR:
-            case MenuOption.Output:
-                var info1 = EntityService.GetDynamicLGateParamsToRender(
-                    adjustedCursorPosition,
-                    ComponentManager.IterLGateComponents()
-                );
-
-                adjustedCursorPosition = info1.position;
-
-                if (info1.placement == Placement.Valid)
-                {
-                    EntityService.AddLGate(adjustedCursorPosition, GetIoTypeFromMenuOption(ChosenMenuOption), false);
-                }
-
-                break;
-            case MenuOption.Input0:
-            case MenuOption.Input1:
-                var info2 = EntityService.GetDynamicLGateParamsToRender(
-                    adjustedCursorPosition,
-                    ComponentManager.IterLGateComponents()
-                );
-
-                adjustedCursorPosition = info2.position;
-
-                if (info2.placement == Placement.Valid)
-                {
-                    EntityService.AddLGate(
-                        adjustedCursorPosition, GetIoTypeFromMenuOption(ChosenMenuOption),
-                        ChosenMenuOption == MenuOption.Input1
-                    );
-                }
-
-                break;
-            case MenuOption.Wire:
-                EntityService.AddWire(adjustedCursorPosition);
-
-                break;
-            case MenuOption.Delete:
-                EntityService.RemoveEntity(adjustedCursorPosition);
-
-                break;
-            case MenuOption.None:
-                Debug.Fail("Critical error while creating entity");
-                throw new InvalidProgramException("Critical error while creating entity");
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        _userActionExecutor.ClickExecute(adjustedCursorPosition, ChosenMenuOption);
     }
 
-    private IoType GetIoTypeFromMenuOption(MenuOption menuOption)
-    {
-        return menuOption switch
-        {
-            MenuOption.AND => IoType.AND,
-            MenuOption.OR => IoType.OR,
-            MenuOption.NOT => IoType.NOT,
-            MenuOption.XOR => IoType.XOR,
-            MenuOption.NAND => IoType.NAND,
-            MenuOption.NOR => IoType.NOR,
-            MenuOption.XNOR => IoType.XNOR,
-            MenuOption.Input0 => IoType.Input,
-            MenuOption.Input1 => IoType.Input,
-            MenuOption.Output => IoType.Output,
-            _ => throw new ArgumentOutOfRangeException(nameof(menuOption), menuOption, null)
-        };
-    }
 
     #endregion
 
@@ -250,21 +164,7 @@ public sealed class UserActionsHandler
     {
         SDL.SDL_GetMouseState(out var x, out var y);
 
-        if (!IdStructure.IsValid(LGateToMove.Id))
-        {
-            return;
-        }
-
-        var info = EntityService.GetDynamicLGateParamsToRender(
-            _rendererConfig.GetRelativeShiftedCursor(new Vector2Int(x, y)),
-            ComponentManager.IterLGateComponents().Where(z => z.Entity.Id != LGateToMove.Id)
-        );
-
-        if (info.placement == Placement.Valid)
-        {
-            EntityService.UpdateEntityPosition(LGateToMove, info.position);
-            WireService.UpdateConnectedWiresPosition(LGateToMove);
-        }
+        _userActionExecutor.HeldExecute(_rendererConfig.GetRelativeShiftedCursor(new Vector2Int(x, y)));
     }
 
     #endregion

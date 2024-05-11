@@ -1,12 +1,12 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using GLogic.Components.Common;
 using GLogicECS.Api;
 using GLogicECS.Components;
 using GLogicECS.Components.Common;
 using GLogicECS.Components.Init;
+using GLogicGlobal.Common;
 
-namespace GLogic.Jobs;
+namespace GLogic.Jobs.Internal.EcsStateModifiers;
 
 public static class WireService
 {
@@ -21,7 +21,7 @@ public static class WireService
         return _existingConnection is not null && EntityManager.IsAlive(_existingConnection.Value.Entity);
     }
 
-    public static void Create(Connection connection)
+    public static Entity? Create(Connection connection)
     {
         Debug.Assert(EntityManager.IsAlive(connection.Entity));
         Debug.Assert(ValidConnect(connection));
@@ -29,21 +29,21 @@ public static class WireService
         switch (connection.ConnectionType)
         {
             case ConnectionType.Input:
-                ConnectToInput(connection);
-
-                return;
+                return ConnectToInput(connection);
             case ConnectionType.Output:
-                ConnectToOutput(connection);
-
-                return;
+                return ConnectToOutput(connection);
         }
-
+        
         Reset();
+        
+        return null;
     }
 
     public static HookInfo? GetHookInfo(IoType ioType, Vector2Int position,
         Vector2Int point)
     {
+        var xDiff = point.X - position.X;
+        var yDiff = point.Y - position.Y;
         switch (ioType)
         {
             case IoType.AND:
@@ -52,8 +52,6 @@ public static class WireService
             case IoType.NAND:
             case IoType.NOR:
             case IoType.XNOR:
-                var xDiff = point.X - position.X;
-                var yDiff = point.Y - position.Y;
                 switch (xDiff)
                 {
                     case > 0 and < 30 when yDiff is > 5 and < 23:
@@ -65,9 +63,22 @@ public static class WireService
                 }
 
                 break;
-            case IoType.Input:
+            case IoType.Constant:
+                
+                
                 break;
-            case IoType.Output:
+            case IoType.LedOutput:
+                if (xDiff is > 0 and < 30)
+                {
+                    switch (yDiff)
+                    {
+                        case > 5 and < 23:
+                            return new(ConnectionType.Input, 0);
+                        case > 27 and < 45:
+                            return new(ConnectionType.Input, 1);
+                    }
+                }
+
                 break;
             case IoType.NOT:
                 break;
@@ -171,7 +182,7 @@ public static class WireService
             case IoType.NAND:
             case IoType.NOR:
             case IoType.XNOR:
-            case IoType.Output:
+            case IoType.LedOutput:
                 return hookNumber switch
                 {
                     0 => new Vector2Int(position.X, position.Y + (int)(EntityService.RectLGateSize.Y * 0.25)),
@@ -181,7 +192,7 @@ public static class WireService
             case IoType.NOT:
                 return new Vector2Int(position.X, position.Y + (int)(EntityService.RectLGateSize.Y * 0.5));
             case IoType.Wire:
-            case IoType.Input:
+            case IoType.Constant:
             default:
                 throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null);
         }
@@ -198,17 +209,17 @@ public static class WireService
             case IoType.NOR:
             case IoType.XNOR:
             case IoType.NOT:
-            case IoType.Input:
+            case IoType.Constant:
                 return new Vector2Int(position.X + EntityService.RectLGateSize.X,
                     (int)(position.Y + EntityService.RectLGateSize.Y * 0.5));
             case IoType.Wire:
-            case IoType.Output:
+            case IoType.LedOutput:
             default:
                 throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null);
         }
     }
 
-    private static void ConnectToInput(Connection connection)
+    private static Entity? ConnectToInput(Connection connection)
     {
         InputComponent inputComp;
         if (_existingConnection is null || !EntityManager.IsAlive(_existingConnection.Value.Entity))
@@ -218,24 +229,24 @@ public static class WireService
             if (!CanConnectToInput(connection, inputComp))
             {
                 Reset();
-                return;
+                return null;
             }
 
             _existingConnection = connection;
 
-            return;
+            return null;
         }
 
         if (_existingConnection.Value.ConnectionType == connection.ConnectionType)
         {
             Reset();
-            return;
+            return null;
         }
 
         if (_existingConnection.Value.Entity.Id == connection.Entity.Id)
         {
             Reset();
-            return;
+            return null;
         }
 
         inputComp = ComponentManager.GetInputComponent(connection.Entity);
@@ -243,7 +254,7 @@ public static class WireService
         if (!CanConnectToInput(connection, inputComp))
         {
             Reset();
-            return;
+            return null;
         }
 
         var wire = _existingConnection.Value.ConnectionType == ConnectionType.Input
@@ -259,27 +270,29 @@ public static class WireService
         ComponentManager.UpdateOutputComponent(outputComp);
 
         Reset();
+        
+        return wire;
     }
 
-    private static void ConnectToOutput(Connection connection)
+    private static Entity? ConnectToOutput(Connection connection)
     {
         if (_existingConnection is null || !EntityManager.IsAlive(_existingConnection.Value.Entity))
         {
             _existingConnection = connection;
 
-            return;
+            return null;
         }
 
         if (_existingConnection.Value.ConnectionType == connection.ConnectionType)
         {
             Reset();
-            return;
+            return null;
         }
 
         if (_existingConnection.Value.Entity.Id == connection.Entity.Id)
         {
             Reset();
-            return;
+            return null;
         }
 
         var outputComp = ComponentManager.GetOutputComponent(connection.Entity);
@@ -296,6 +309,8 @@ public static class WireService
         ComponentManager.UpdateOutputComponent(outputComp);
 
         Reset();
+
+        return wire;
     }
 
     private static bool CanConnectToInput(Connection connection, InputComponent inputComp)

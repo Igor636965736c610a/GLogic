@@ -1,4 +1,4 @@
-using GLogic.Components.Common;
+using GLogicGlobal.Common;
 using NetEscapades.EnumGenerators;
 using SDL2;
 
@@ -76,9 +76,9 @@ public enum MenuOption
     NAND,
     NOR,
     XNOR,
-    Input0,
-    Input1,
-    Output,
+    LowConstant,
+    HighConstant,
+    LedOutput,
     Wire,
     Delete,
     None

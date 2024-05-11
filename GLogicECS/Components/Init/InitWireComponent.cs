@@ -1,4 +1,4 @@
-using GLogic.Components.Common;
+using GLogicGlobal.Common;
 
 namespace GLogicECS.Components.Init;
 

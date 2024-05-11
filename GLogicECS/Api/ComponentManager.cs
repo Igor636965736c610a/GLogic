@@ -9,9 +9,6 @@ namespace GLogicECS.Api;
 
 public static class ComponentManager
 {
-    private const string PerformanceWarningDescription =
-        "Not optimal becouse of cashe misses and branch mispredictions. If it's possible, use 'IterLGateComponents' or 'IterWireComponents' (It is in 99% cases)";
-
     #region Get
 
     public static TransformComponent GetTransformComponent(Entity entity)
@@ -38,6 +35,9 @@ public static class ComponentManager
     #endregion
 
     #region Iter
+    
+    private const string PerformanceWarningDescription =
+        "Not optimal becouse of cashe misses and branch mispredictions. If it's possible, use 'IterLGateComponents' or 'IterWireComponents' (possible in 99% cases)";
 
     [Description(PerformanceWarningDescription)]
     public static IEnumerable<TransformComponent> IterTransformComponents()
