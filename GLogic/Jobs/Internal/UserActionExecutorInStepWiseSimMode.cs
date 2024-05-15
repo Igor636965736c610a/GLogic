@@ -10,7 +10,7 @@ using GLogicGlobal.Common;
 
 namespace GLogic.Jobs.Internal;
 
-public class UserActionExecutorInStepWiseSimMode : IUserActionExecutor
+internal sealed class UserActionExecutorInStepWiseSimMode : IUserActionExecutor
 {
     private readonly IStepWiseSimulationModifier _stepWiseSimulationModifier;
 
@@ -34,8 +34,12 @@ public class UserActionExecutorInStepWiseSimMode : IUserActionExecutor
             case MenuOption.NOR:
             case MenuOption.XNOR:
             case MenuOption.LedOutput:
-                CommonUserActionExecutor.AddLGate(adjustedCursorPosition, false, chosenMenuOption);
-
+                var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition, false, chosenMenuOption);
+                if (lGate is not null)
+                {
+                    _stepWiseSimulationModifier.AddToSimulationQueue(lGate.Value);
+                }
+                
                 break;
             case MenuOption.LowConstant:
             case MenuOption.HighConstant:
@@ -44,10 +48,28 @@ public class UserActionExecutorInStepWiseSimMode : IUserActionExecutor
                 break;
             case MenuOption.Wire:
                 var wire = EntityService.AddWire(adjustedCursorPosition);
+                if (wire is not null)
+                {
+                    _stepWiseSimulationModifier.AddToSimulationQueue(wire.Value);
+                }
                 
                 break;
             case MenuOption.Delete:
-                EntityService.RemoveEntity(adjustedCursorPosition);
+                var entityToDelete = EntityService.GetEntityToDelete(adjustedCursorPosition);
+                if (!IdStructure.IsValid(entityToDelete.Id))
+                {
+                    return;
+                }
+
+                var outputWires = ComponentManager.GetOutputComponent(entityToDelete).Outputs;
+                for (int i = 0; i < outputWires.Count; i++)
+                {
+                    Debug.Assert(EntityManager.IsAlive(outputWires[i].Entity));
+                    var wireOutput = ComponentManager.GetOutputComponent(outputWires[i].Entity);
+                    _stepWiseSimulationModifier.AddToSimulationQueue(wireOutput.Outputs[0].Entity);
+                }
+                
+                EntityService.RemoveEntity(entityToDelete);
 
                 break;
             case MenuOption.None:

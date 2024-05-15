@@ -8,7 +8,7 @@ using GLogicGlobal.Common;
 
 namespace GLogic.Jobs.Internal.EcsStateModifiers;
 
-public static class WireService
+internal static class WireService
 {
     private static Connection? _existingConnection;
 
@@ -54,9 +54,9 @@ public static class WireService
             case IoType.XNOR:
                 switch (xDiff)
                 {
-                    case > 0 and < 30 when yDiff is > 5 and < 23:
+                    case > 0 and < 30 when yDiff is > 4 and < 24:
                         return new (ConnectionType.Input, 0);
-                    case > 0 and < 30 when yDiff is > 27 and < 45:
+                    case > 0 and < 30 when yDiff is > 26 and < 46:
                         return new (ConnectionType.Input, 1);
                     case > 80 and < 100 when yDiff is > 20 and < 30:
                         return new (ConnectionType.Output, 0);
@@ -64,23 +64,37 @@ public static class WireService
 
                 break;
             case IoType.Constant:
-                
-                
+                if (xDiff is > 80 and < 100)
+                {
+                    if (yDiff is > 20 and < 30)
+                    {
+                        return new (ConnectionType.Output, 0);
+                    }
+                }
+
                 break;
             case IoType.LedOutput:
                 if (xDiff is > 0 and < 30)
                 {
                     switch (yDiff)
                     {
-                        case > 5 and < 23:
+                        case > 4 and < 24:
                             return new(ConnectionType.Input, 0);
-                        case > 27 and < 45:
+                        case > 26 and < 46:
                             return new(ConnectionType.Input, 1);
                     }
                 }
 
                 break;
             case IoType.NOT:
+                switch (xDiff)
+                {
+                    case > 0 and < 30 when yDiff is > 20 and < 30:
+                        return new (ConnectionType.Input, 0);
+                    case > 80 and < 100 when yDiff is > 20 and < 30:
+                        return new (ConnectionType.Output, 0);
+                }
+
                 break;
             case IoType.Wire:
                 throw new InvalidProgramException("Invalid argument");

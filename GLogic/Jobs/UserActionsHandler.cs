@@ -2,7 +2,6 @@ using System.Diagnostics;
 using GLogic.Jobs.Internal;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Renderer;
-using GLogicECS.Api;
 using GLogicECS.Components;
 using GLogicECS.Components.Common;
 using GLogicGlobal.Common;
@@ -13,18 +12,13 @@ namespace GLogic.Jobs;
 public sealed class UserActionsHandler
 {
     private readonly IRendererConfig _rendererConfig;
-    private readonly IUserActionExecutor _userActionExecutor;
-
-    static UserActionsHandler()
-    {
-        ChosenMenuOption = MenuOption.None;
-        MouseRightButtonState = false;
-    }
-
+    private IUserActionExecutor _userActionExecutor;
+    
     public UserActionsHandler(IRendererConfig rendererConfig, IUserActionExecutor userActionExecutor)
     {
-        _rendererConfig = rendererConfig;
+        ChosenMenuOption = MenuOption.None;
         _userActionExecutor = userActionExecutor;
+        _rendererConfig = rendererConfig;
     }
 
     public static MenuOption ChosenMenuOption { get; private set; }
@@ -34,15 +28,18 @@ public sealed class UserActionsHandler
 
     #region MouseWheel
 
+    
     public void HandleMouseWheel(Vector2Int cursor, int wheelY)
     {
         _rendererConfig.ChangeRelativelyToCursorZoom((float)(wheelY * 0.1), cursor);
     }
 
+    
     #endregion
 
     #region MouseClick
 
+    
     public void HandleMouseUpPollEvent(Vector2Int cursor, uint mouseButton)
     {
         switch (mouseButton)
@@ -141,6 +138,7 @@ public sealed class UserActionsHandler
 
     #region MouseHeld
 
+    
     public void HandleMouseHeldAction(Vector2Int relativeCursorPosition)
     {
         if (MouseRightButtonState)
@@ -167,5 +165,6 @@ public sealed class UserActionsHandler
         _userActionExecutor.HeldExecute(_rendererConfig.GetRelativeShiftedCursor(new Vector2Int(x, y)));
     }
 
+    
     #endregion
 }

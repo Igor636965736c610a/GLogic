@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using GLogic.Jobs;
+using GLogic.Jobs.AppUpdaters;
 using GLogic.Jobs.Internal;
-using GLogic.Jobs.Internal.EcsStateModifiers;
-using GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates;
 using GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Components;
@@ -14,8 +14,9 @@ using SDL2;
 SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING);
 SDL_ttf.TTF_Init();
 
+const string appName = "GLogic";
 var window = SDL.SDL_CreateWindow(
-    "GLogic",
+    appName,
     SDL.SDL_WINDOWPOS_CENTERED,
     SDL.SDL_WINDOWPOS_CENTERED,
     RendererApi.WindowSize.Size.X,
@@ -23,11 +24,21 @@ var window = SDL.SDL_CreateWindow(
     SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN
 );
 
-var sdlRenderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+// ReSharper disable once InconsistentNaming
+const int index_of_the_rendering_driver_to_initialize = -1; // -1 to initialize the first one supporting the requested flags
+
+var sdlRenderer = SDL.SDL_CreateRenderer(window, index_of_the_rendering_driver_to_initialize, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
 var textures = new TextureStorage(sdlRenderer);
 var appRenderer = new RendererApi(sdlRenderer, textures);
-var defaultSimulation = new StepWiseSimulation(out IUserActionExecutor userActionExecutor).InitExecutionTree();
+var circuitUpdater = new CircuitUpdater().InitDefault(out IUserActionExecutor userActionExecutor);
 var userActionHandler = new UserActionsHandler(appRenderer, userActionExecutor);
+
+const string SDL2GfxLib = "libSDL2_gfx-1-0-0.dll";
+
+// test
+[DllImport(SDL2GfxLib, CallingConvention = CallingConvention.Cdecl)]
+static extern int aalineRGBA(IntPtr renderer, int x1, int y1, int x2, int y2, byte r, byte g, byte b, byte a);
+// ~test
 
 const int fps = 60;
 const int desiredDelta = 1000 / fps;
@@ -58,6 +69,7 @@ const int desiredDelta = 1000 / fps;
 var frameCount = 0;
 var startTime = SDL.SDL_GetTicks();
 var lastTime = startTime;
+var i = 0;
 
 var quit = false;
 while (!quit)
@@ -102,6 +114,18 @@ while (!quit)
     SDL.SDL_GetRelativeMouseState(out var relativeX, out var relativeY);
     userActionHandler.HandleMouseHeldAction(new Vector2Int(relativeX, relativeY));
 
+    //SANDBOX CODE
+    if (i == 60)
+    {
+        i = 0;
+        circuitUpdater.CurrentUpdateCtx.Update();
+    }
+    else
+    {
+        i++;
+    }
+    //~SANDBOX CODE
+
     SDL.SDL_SetRenderDrawColor(sdlRenderer, 1, 1, 1, 255);
     SDL.SDL_RenderClear(sdlRenderer);
 
@@ -110,6 +134,7 @@ while (!quit)
 
     SDL.SDL_RenderPresent(sdlRenderer);
 
+    //SANDBOX CODE
     var currentTime = SDL.SDL_GetTicks();
     frameCount++;
     if (currentTime - lastTime >= 1000)
@@ -131,6 +156,7 @@ while (!quit)
     {
         Console.WriteLine($"Performance issue : {delta} ---- {desiredDelta}");
     }
+    //~SANDBOX CODE
 }
 
 SDL.SDL_DestroyRenderer(sdlRenderer);

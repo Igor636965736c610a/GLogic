@@ -10,7 +10,7 @@ using GLogicGlobal.Common;
 
 namespace GLogic.Jobs.Internal.EcsStateModifiers;
 
-public static class EntityService
+internal static class EntityService
 {
     static EntityService()
     {
@@ -74,20 +74,13 @@ public static class EntityService
         return wire;
     }
 
-    public static void RemoveEntity(Vector2Int position)
+    public static void RemoveEntity(Entity entity)
     {
-        var entityToDelete = GetEntityToDelete(position);
-
-        if (!IdStructure.IsValid(entityToDelete.Id))
-        {
-            return;
-        }
-
-        var type = ComponentManager.GetEntityTypeComponent(entityToDelete).Type;
+        var type = ComponentManager.GetEntityTypeComponent(entity).Type;
         if (type != IoType.Wire)
         {
-            var inputComp = ComponentManager.GetInputComponent(entityToDelete);
-            var outputComp = ComponentManager.GetOutputComponent(entityToDelete);
+            var inputComp = ComponentManager.GetInputComponent(entity);
+            var outputComp = ComponentManager.GetOutputComponent(entity);
 
             for (var i = 0; i < inputComp.Inputs.Count; i++)
             {
@@ -109,8 +102,12 @@ public static class EntityService
                 EntityManager.RemoveEntity(outputComp.Outputs[i].Entity);
             }
         }
+        else
+        {
+            //TODO
+        }
 
-        EntityManager.RemoveEntity(entityToDelete);
+        EntityManager.RemoveEntity(entity);
     }
 
     public static void UpdateEntityPosition(Entity entity, Vector2Int newPosition)
@@ -174,7 +171,7 @@ public static class EntityService
         return (chosenLGatePosition, placement);
     }
 
-    private static Entity GetEntityToDelete(Vector2Int position)
+    public static Entity GetEntityToDelete(Vector2Int position)
     {
         var lGates = ComponentManager.IterLGateComponents();
         var lGateComp = EntityQuery

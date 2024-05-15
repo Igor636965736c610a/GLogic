@@ -9,7 +9,7 @@ namespace GLogic.Jobs.Internal;
 
 internal static class CommonUserActionExecutor
 {
-    public static void AddLGate(Vector2Int adjustedCursorPosition, bool lGateValue, MenuOption chosenMenuOption)
+    public static Entity? AddLGate(Vector2Int adjustedCursorPosition, bool lGateValue, MenuOption chosenMenuOption)
     {
         var info = EntityService.GetDynamicLGateParamsToRender(
             adjustedCursorPosition,
@@ -18,10 +18,12 @@ internal static class CommonUserActionExecutor
 
         if (info.placement == Placement.Valid)
         {
-            EntityService.AddLGate(
+            return EntityService.AddLGate(
                 info.position, GetIoTypeFromMenuOption(chosenMenuOption), lGateValue
             );
         }
+
+        return null;
     }
     
     public static Entity MarkEntity(Vector2Int adjustedCursorPosition)

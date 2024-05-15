@@ -51,12 +51,12 @@ public sealed class WireRenderer
             ConnectionType.Input => (WireService.CalculateInputConnectionPoint(
                 ioTypeOutgoingLGate,
                 existingConnection.HookNumber, outgoingLGatePosition
-                ), ComponentManager.GetStateComponent(ComponentManager.GetInputComponent(existingConnection.Entity).Inputs[0].Entity).State),
+                ), false),
             
             ConnectionType.Output => (WireService.CalculateOutputConnectionPoint(
                 ioTypeOutgoingLGate,
                 existingConnection.HookNumber, outgoingLGatePosition
-                ), false),
+                ), ComponentManager.GetStateComponent(existingConnection.Entity).State),
             
             _ => throw new ArgumentOutOfRangeException()
         };
