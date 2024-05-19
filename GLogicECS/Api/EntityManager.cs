@@ -46,7 +46,7 @@ public static class EntityManager
             new InitEntity(
                 init.TransformComponent,
                 IoType.Wire,
-                false,
+                init.WireComponent.State,
                 initInputOutputComp
             ));
 

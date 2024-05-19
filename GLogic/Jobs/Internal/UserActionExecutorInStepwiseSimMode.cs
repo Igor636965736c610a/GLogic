@@ -50,7 +50,10 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
                 var wire = EntityService.AddWire(adjustedCursorPosition);
                 if (wire is not null)
                 {
-                    _stepwiseSimulationModifier.AddToSimulationQueue(wire.Value);
+                    Debug.Assert(ComponentManager.GetOutputComponent(wire.Value).Outputs.Count == 1);
+                    
+                    var outputEntity = ComponentManager.GetOutputComponent(wire.Value).Outputs[0].Entity;
+                    _stepwiseSimulationModifier.AddToSimulationQueue(outputEntity);
                 }
                 
                 break;

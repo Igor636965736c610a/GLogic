@@ -368,9 +368,11 @@ internal static class WireService
         var p1 = CalculateInputConnectionPoint(iType, input.HookNumber, iTransform.Position);
         var p2 = CalculateOutputConnectionPoint(oType, output.HookNumber, oTransform.Position);
 
+        var state = ComponentManager.GetStateComponent(output.Entity).State;
+
         return EntityManager.CreateEntity(new InitWire(
             CalculateTransformComponentForWire(p1, p2),
-            new InitWireComponent(p1, p2),
+            new InitWireComponent(p1, p2, state),
             new ConnectionInfo(output.Entity, output.HookNumber),
             new ConnectionInfo(input.Entity, input.HookNumber)
         ));
