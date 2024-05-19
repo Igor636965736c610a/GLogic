@@ -93,7 +93,7 @@ public sealed class TextureStorage
             : new SDL.SDL_Color { r = 0, g = 0, b = 0, a = 255 };
         var bgColorInvalid = new SDL.SDL_Color { r = 255, g = 0, b = 0, a = 215 };
         var bgColorValid = new SDL.SDL_Color { r = 42, g = 214, b = 56, a = 215 };
-        var bgColorNeutral = new SDL.SDL_Color { r = 26, g = 29, b = 49, a = 215 };
+        var bgColorNeutral = new SDL.SDL_Color { r = 255, g = 230, b = 230, a = 215 };
 
         AddLGateTexture(renderer, font, initArray, gate, state, Placement.Invalid, textColor, bgColorInvalid);
 

@@ -96,8 +96,9 @@ public sealed class RendererApi : IRendererConfig
                 CalculateShiftRelatively(wireComp.P2.X, Zoom, CameraShift.X),
                 CalculateShiftRelatively(wireComp.P2.Y, Zoom, CameraShift.Y)
             );
+            var state = ComponentManager.GetStateComponent(wireComp.Entity).State;
 
-            _wireRenderer.RenderStaticWire(new WireRendererInfo(p1, p2, true));
+            _wireRenderer.RenderStaticWire(new WireRendererInfo(p1, p2, state));
         }
     }
 
@@ -129,7 +130,7 @@ public sealed class RendererApi : IRendererConfig
     }
 
     public static int CalculateShiftRelatively(int value, float zoom, int shift)
-        => (int)Math.Round(value * zoom + shift, 0);
+        => (int)Math.Round(value * zoom + shift);
 
     private void RenderChosenEntity()
     {
@@ -145,7 +146,7 @@ public sealed class RendererApi : IRendererConfig
             case MenuOption.LowConstant:
             case MenuOption.HighConstant:
             case MenuOption.LedOutput:
-                _lGateRenderer.RenderChosenLGateFromMenuOption();
+                _lGateRenderer.RenderChosenLGateFromMenu(UserActionsHandler.ChosenMenuOption);
                 break;
             case MenuOption.Wire:
                 _wireRenderer.RenderChosenWireFromMenuOption();

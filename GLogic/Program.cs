@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using GLogic.Externs;
 using GLogic.Jobs;
 using GLogic.Jobs.AppUpdaters;
 using GLogic.Jobs.Internal;
-using GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
+using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Components;
 using GLogicGlobal.Common;
@@ -31,45 +32,44 @@ var sdlRenderer = SDL.SDL_CreateRenderer(window, index_of_the_rendering_driver_t
 var textures = new TextureStorage(sdlRenderer);
 var appRenderer = new RendererApi(sdlRenderer, textures);
 var circuitUpdater = new CircuitUpdater().InitDefault(out IUserActionExecutor userActionExecutor);
-var userActionHandler = new UserActionsHandler(appRenderer, userActionExecutor);
-
-const string SDL2GfxLib = "libSDL2_gfx-1-0-0.dll";
-
-// test
-[DllImport(SDL2GfxLib, CallingConvention = CallingConvention.Cdecl)]
-static extern int aalineRGBA(IntPtr renderer, int x1, int y1, int x2, int y2, byte r, byte g, byte b, byte a);
-// ~test
+var userActionHandler = new UserActionsHandler(appRenderer, circuitUpdater, userActionExecutor);
 
 const int fps = 60;
 const int desiredDelta = 1000 / fps;
 
-// var stopW = new Stopwatch();
-// for (int i = 0; i < 50; i++)
-// {
-//     stopW.Start();
-//     for (int j = 0; j < 505; j++)
-//     {
-//         var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
-//         // if (i < 10)
-//         // {
-//         //     continue;
-//         // }
-//
-//         //var comp = ComponentManager.GetTransformComponent(entity).Position;
-//         //var position = new Vector2Int(comp.X + 5, comp.Y + 5);
-//         //EntityService.RemoveEntity(position);
-//     }
-//     // Console.WriteLine(stopW.Elapsed.Seconds);
-//     float x = stopW.Elapsed.Milliseconds / 1000f;
-//     Console.WriteLine($"{(i * 1000):#,0} all entities - {x:F2} milliseconds to add 1000 entities");
-//     stopW.Reset();
-// }
-// stopW.Stop();
+#if DEBUG
+
+var stopW = new Stopwatch();
+for (int i = 0; i < 50; i++)
+{
+    stopW.Start();
+    for (int j = 0; j < 50; j++)
+    {
+        var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
+        // if (i < 10)
+        // {
+        //     continue;
+        // }
+
+        //var comp = ComponentManager.GetTransformComponent(entity).Position;
+        //var position = new Vector2Int(comp.X + 5, comp.Y + 5);
+        //EntityService.RemoveEntity(position);
+    }
+    // Console.WriteLine(stopW.Elapsed.Seconds);
+    float x = stopW.Elapsed.Milliseconds / 1000f;
+    Console.WriteLine($"{(i * 1000):#,0} all entities - {x:F2} milliseconds to add 1000 entities");
+    stopW.Reset();
+}
+stopW.Stop();
+
+#endif
 
 var frameCount = 0;
 var startTime = SDL.SDL_GetTicks();
 var lastTime = startTime;
-var i = 0;
+
+//test 
+var updateI = 0;
 
 var quit = false;
 while (!quit)
@@ -115,14 +115,14 @@ while (!quit)
     userActionHandler.HandleMouseHeldAction(new Vector2Int(relativeX, relativeY));
 
     //SANDBOX CODE
-    if (i == 60)
+    if (updateI == 60)
     {
-        i = 0;
+        updateI = 0;
         circuitUpdater.CurrentUpdateCtx.Update();
     }
     else
     {
-        i++;
+        updateI++;
     }
     //~SANDBOX CODE
 

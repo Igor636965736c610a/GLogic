@@ -7,17 +7,16 @@ using GLogicECS.Components.Common;
 
 namespace GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
 
-internal sealed class StepWiseSimulation : ICircuitUpdate, IStepWiseSimulationModifier
+internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationModifier
 {
     private readonly Queue<Entity> _entitiesToUpdate;
     
-    public StepWiseSimulation(out IUserActionExecutor userActionExecutor)
+    public StepwiseSimulation()
     {
         _entitiesToUpdate = new Queue<Entity>();
-        userActionExecutor = new UserActionExecutorInStepWiseSimMode(this);
     }
 
-    public StepWiseSimulation InitExecutionQueue()
+    public StepwiseSimulation InitExecutionQueue()
     {
         _entitiesToUpdate.Clear();
         AddFirstEntitiesToQueue();
@@ -63,7 +62,7 @@ internal sealed class StepWiseSimulation : ICircuitUpdate, IStepWiseSimulationMo
 
     public void Reset()
     {
-        throw new NotImplementedException();
+        InitExecutionQueue();
     }
 
     private void AddFirstEntitiesToQueue()

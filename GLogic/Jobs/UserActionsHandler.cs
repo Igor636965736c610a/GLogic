@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GLogic.Jobs.AppUpdaters;
 using GLogic.Jobs.Internal;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Renderer;
@@ -12,12 +13,14 @@ namespace GLogic.Jobs;
 public sealed class UserActionsHandler
 {
     private readonly IRendererConfig _rendererConfig;
+    private readonly ICircuitUpdaterConfig _circuitUpdaterConfig;
     private IUserActionExecutor _userActionExecutor;
     
-    public UserActionsHandler(IRendererConfig rendererConfig, IUserActionExecutor userActionExecutor)
+    public UserActionsHandler(IRendererConfig rendererConfig, ICircuitUpdaterConfig circuitUpdaterConfig, IUserActionExecutor userActionExecutor)
     {
         ChosenMenuOption = MenuOption.None;
         _userActionExecutor = userActionExecutor;
+        _circuitUpdaterConfig = circuitUpdaterConfig;
         _rendererConfig = rendererConfig;
     }
 
@@ -94,7 +97,7 @@ public sealed class UserActionsHandler
         }
         else
         {
-            UserActions(cursor);
+            DoUserAction(cursor);
         }
     }
 
@@ -126,7 +129,7 @@ public sealed class UserActionsHandler
         }
     }
 
-    private void UserActions(Vector2Int cursor)
+    private void DoUserAction(Vector2Int cursor)
     {
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
 

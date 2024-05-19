@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GLogic.Externs;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogicECS.Api;
 using GLogicGlobal.Common;
@@ -22,8 +23,28 @@ public sealed class WireRenderer
 
     public void RenderStaticWire(WireRendererInfo info)
     {
-        SDL.SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 0);
-        SDL.SDL_RenderDrawLine(_renderer, info.P1.X, info.P1.Y, info.P2.X, info.P2.Y);
+        SDL.SDL_Color color;
+        if (info.State)
+        {
+            color = new SDL.SDL_Color
+            {
+                r = 255,
+                g = 0,
+                b = 0,
+                a = 255,
+            };
+        }
+        else
+        {
+            color = new SDL.SDL_Color
+            {
+                r = 52,
+                g = 56,
+                b = 64,
+                a = 255,
+            };
+        }
+        SDL2Gfx.AaLineRgba(_renderer, info.P1.X, info.P1.Y, info.P2.X, info.P2.Y, color);
     }
 
     public void RenderChosenWireFromMenuOption()
@@ -70,4 +91,4 @@ public sealed class WireRenderer
     }
 }
 
-public readonly record struct WireRendererInfo(Vector2Int P1, Vector2Int P2, bool Value);
+public readonly record struct WireRendererInfo(Vector2Int P1, Vector2Int P2, bool State);

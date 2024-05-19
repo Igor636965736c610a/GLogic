@@ -2,11 +2,11 @@ using GLogic.Jobs.AppUpdaters;
 
 namespace GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
 
-internal sealed class BathSimulation : ICircuitUpdate, IBathSimulationModifier
+internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModifier
 {
-    public BathSimulation(out IUserActionExecutor userActionExecutor)
+    public InstantSimulation()
     {
-        userActionExecutor = null!; //TODO
+        //TODO
     }
     
     public ValueTask Update()

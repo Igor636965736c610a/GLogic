@@ -7,20 +7,23 @@ public sealed class CircuitUpdater : ICircuitUpdaterConfig
 {
     public CircuitUpdater InitDefault(out IUserActionExecutor userActionExecutor)
     {
-        ToStepWiseSimulation(out userActionExecutor);
+        userActionExecutor = ToStepWiseSimulation();
         
         return this;
     }
 
     public ICircuitUpdate CurrentUpdateCtx { get; private set; } = null!;
     
-    public void ToStepWiseSimulation(out IUserActionExecutor userActionExecutor)
+    public IUserActionExecutor ToStepWiseSimulation()
     {
-        CurrentUpdateCtx = new StepWiseSimulation(out userActionExecutor).InitExecutionQueue();
+        var stepwiseSimulation = new StepwiseSimulation().InitExecutionQueue();
+        CurrentUpdateCtx = stepwiseSimulation;
+        
+        return new UserActionExecutorInStepwiseSimMode(stepwiseSimulation);
     }
 
-    public void ToBathSimulation(out IUserActionExecutor userActionExecutor)
+    public IUserActionExecutor ToInstantSimulation()
     {
-        userActionExecutor = null!; //TODO
+        return null!; //TODO
     }
 }

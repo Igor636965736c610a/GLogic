@@ -4,7 +4,7 @@ namespace GLogic.Jobs.AppUpdaters;
 
 public interface ICircuitUpdaterConfig
 {
-    void ToStepWiseSimulation(out IUserActionExecutor userActionExecutor);
+    IUserActionExecutor ToStepWiseSimulation();
 
-    void ToBathSimulation(out IUserActionExecutor userActionExecutor);
+    IUserActionExecutor ToInstantSimulation();
 }

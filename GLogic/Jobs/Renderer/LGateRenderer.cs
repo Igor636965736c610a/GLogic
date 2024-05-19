@@ -32,46 +32,24 @@ public sealed class LGateRenderer
         SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref sdlRect);
     }
 
-    public void RenderChosenLGateFromMenuOption()
+    public void RenderChosenLGateFromMenu(MenuOption option)
     {
-        switch (UserActionsHandler.ChosenMenuOption)
-        {
-            case MenuOption.AND:
-            case MenuOption.OR:
-            case MenuOption.NOT:
-            case MenuOption.XOR:
-            case MenuOption.NAND:
-            case MenuOption.NOR:
-            case MenuOption.XNOR:
-            case MenuOption.LowConstant:
-            case MenuOption.HighConstant:
-            case MenuOption.LedOutput:
-                SDL.SDL_GetMouseState(out var x, out var y);
+        SDL.SDL_GetMouseState(out var x, out var y);
 
-                var info = EntityService.GetDynamicLGateParamsToRender(
-                    _rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(x, y)),
-                    ComponentManager.IterLGateComponents()
-                );
+        var info = EntityService.GetDynamicLGateParamsToRender(
+            _rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(x, y)),
+            ComponentManager.IterLGateComponents()
+        );
 
-                var lGate = _textureStorage.ConvertToLGate(UserActionsHandler.ChosenMenuOption);
-                var rect = new Area(info.position, EntityService.RectLGateSize)
-                    .ResizeObjectPlacedOnBackgroundRelatively(
-                        _rendererStateAccess.Zoom,
-                        _rendererStateAccess.CameraShift
-                    );
+        var lGate = _textureStorage.ConvertToLGate(option);
+        var rect = new Area(info.position, EntityService.RectLGateSize)
+            .ResizeObjectPlacedOnBackgroundRelatively(
+                _rendererStateAccess.Zoom,
+                _rendererStateAccess.CameraShift
+            );
 
-                var renderInfo = new LGateRenderInfo(rect, lGate, info.placement, false);
-                RenderStaticLGate(renderInfo);
-
-                break;
-            case MenuOption.Wire:
-            case MenuOption.Delete:
-            case MenuOption.None:
-
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        var renderInfo = new LGateRenderInfo(rect, lGate, info.placement, false);
+        RenderStaticLGate(renderInfo);
     }
 }
 

@@ -10,13 +10,13 @@ using GLogicGlobal.Common;
 
 namespace GLogic.Jobs.Internal;
 
-internal sealed class UserActionExecutorInStepWiseSimMode : IUserActionExecutor
+internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
 {
-    private readonly IStepWiseSimulationModifier _stepWiseSimulationModifier;
+    private readonly IStepwiseSimulationModifier _stepwiseSimulationModifier;
 
-    public UserActionExecutorInStepWiseSimMode(IStepWiseSimulationModifier stepWiseSimulationModifier)
+    public UserActionExecutorInStepwiseSimMode(IStepwiseSimulationModifier stepwiseSimulationModifier)
     {
-        _stepWiseSimulationModifier = stepWiseSimulationModifier;
+        _stepwiseSimulationModifier = stepwiseSimulationModifier;
         LGateToMove = new Entity(IdStructure.MakeInvalidId());
     }
     
@@ -37,7 +37,7 @@ internal sealed class UserActionExecutorInStepWiseSimMode : IUserActionExecutor
                 var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition, false, chosenMenuOption);
                 if (lGate is not null)
                 {
-                    _stepWiseSimulationModifier.AddToSimulationQueue(lGate.Value);
+                    _stepwiseSimulationModifier.AddToSimulationQueue(lGate.Value);
                 }
                 
                 break;
@@ -50,7 +50,7 @@ internal sealed class UserActionExecutorInStepWiseSimMode : IUserActionExecutor
                 var wire = EntityService.AddWire(adjustedCursorPosition);
                 if (wire is not null)
                 {
-                    _stepWiseSimulationModifier.AddToSimulationQueue(wire.Value);
+                    _stepwiseSimulationModifier.AddToSimulationQueue(wire.Value);
                 }
                 
                 break;
@@ -66,7 +66,7 @@ internal sealed class UserActionExecutorInStepWiseSimMode : IUserActionExecutor
                 {
                     Debug.Assert(EntityManager.IsAlive(outputWires[i].Entity));
                     var wireOutput = ComponentManager.GetOutputComponent(outputWires[i].Entity);
-                    _stepWiseSimulationModifier.AddToSimulationQueue(wireOutput.Outputs[0].Entity);
+                    _stepwiseSimulationModifier.AddToSimulationQueue(wireOutput.Outputs[0].Entity);
                 }
                 
                 EntityService.RemoveEntity(entityToDelete);
