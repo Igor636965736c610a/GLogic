@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using GLogic.Externs;
 using GLogic.Jobs;
 using GLogic.Jobs.AppUpdaters;
 using GLogic.Jobs.Internal;
@@ -40,7 +39,7 @@ const int desiredDelta = 1000 / fps;
 #if DEBUG
 
 var stopW = new Stopwatch();
-for (int i = 0; i < 50; i++)
+for (int i = 0; i < 500; i++)
 {
     stopW.Start();
     for (int j = 0; j < 50; j++)
@@ -58,8 +57,8 @@ for (int i = 0; i < 50; i++)
     // Console.WriteLine(stopW.Elapsed.Seconds);
     float x = stopW.Elapsed.Milliseconds / 1000f;
     Console.WriteLine($"{(i * 1000):#,0} all entities - {x:F2} milliseconds to add 1000 entities");
-    stopW.Reset();
 }
+Console.WriteLine(stopW.ElapsedMilliseconds);
 stopW.Stop();
 
 #endif

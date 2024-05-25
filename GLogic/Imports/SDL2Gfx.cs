@@ -1,8 +1,7 @@
-using System.Numerics;
 using System.Runtime.InteropServices;
 using SDL2;
 
-namespace GLogic.Externs;
+namespace GLogic.Imports;
 
 public static class SDL2Gfx
 {

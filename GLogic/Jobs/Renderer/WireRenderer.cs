@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using GLogic.Externs;
+using GLogic.Imports;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogicECS.Api;
 using GLogicGlobal.Common;

@@ -18,7 +18,6 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
 
     public StepwiseSimulation InitExecutionQueue()
     {
-        _entitiesToUpdate.Clear();
         AddFirstEntitiesToQueue();
         
         return this;
