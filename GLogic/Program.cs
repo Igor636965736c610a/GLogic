@@ -124,8 +124,8 @@ while (!quit)
     {
         SDL.SDL_Delay(desiredDelta - delta);
     }
-    var endTime = SDL.SDL_GetTicks();
-    time = endTime - startLoop; 
+    var endLoop = SDL.SDL_GetTicks();
+    time = endLoop - startLoop; 
     
     // FPS COUNTER
     frameCount++;
