@@ -94,10 +94,11 @@ internal static class LGateComponentSystem
 
     internal static IEnumerable<LGateComponent> IterLGateComponents()
     {
-        for (var i = 0; i < LGateComponents.Count - _freeBackIndexes; i++)
-        {
-            yield return LGateComponents[i];
-        }
+        return LGateComponents.Slice(0, LGateComponents.Count - _freeBackIndexes);
+        // for (var i = 0; i < LGateComponents.Count - _freeBackIndexes; i++)
+        // {
+        //     yield return LGateComponents[i];
+        // }
     }
 
     private static bool IsIdMapValid(int id)

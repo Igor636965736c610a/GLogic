@@ -11,9 +11,13 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
 {
     private readonly Queue<Entity> _entitiesToUpdate;
     
-    public StepwiseSimulation()
+    private uint _callInterval;
+    private uint _timeSinceLastCall;
+    
+    public StepwiseSimulation(uint callInterval)
     {
         _entitiesToUpdate = new Queue<Entity>();
+        _callInterval = callInterval;
     }
 
     public StepwiseSimulation InitExecutionQueue()
@@ -30,8 +34,14 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
         _entitiesToUpdate.Enqueue(entity);
     }
 
-    public ValueTask Update()
+    public ValueTask Update(uint deltaTime)
     {
+        _timeSinceLastCall += deltaTime;
+        if (_timeSinceLastCall < _callInterval)
+        {
+            return ValueTask.CompletedTask;
+        }
+        
         var count = _entitiesToUpdate.Count;
         while (count-- > 0)
         {
@@ -56,6 +66,8 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
             }
         }
         
+        _timeSinceLastCall = 0;
+
         return ValueTask.CompletedTask;
     }
 
@@ -106,31 +118,31 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
             case IoType.AND:
                 var andValues = GetValueFrom2Inputs(inputs);
                 
-                return andValues.Item1 && andValues.Item2;
+                return andValues.i1 && andValues.i2;
             case IoType.OR:
                 var orValues = GetValueFrom2Inputs(inputs);
                 
-                return orValues.Item1 || orValues.Item2;
+                return orValues.i1 || orValues.i2;
             case IoType.XOR:
                 var xorValues = GetValueFrom2Inputs(inputs);
                 
-                return xorValues.Item1 ^ xorValues.Item2;
+                return xorValues.i1 ^ xorValues.i2;
             case IoType.NAND:
                 var nandValues = GetValueFrom2Inputs(inputs);
                 
-                return !(nandValues.Item1 && nandValues.Item2);
+                return !(nandValues.i1 && nandValues.i2);
             case IoType.NOR:
                 var norValues = GetValueFrom2Inputs(inputs);
                 
-                return !(norValues.Item1 || norValues.Item2);
+                return !(norValues.i1 || norValues.i2);
             case IoType.XNOR:
                 var xnorValues = GetValueFrom2Inputs(inputs);
                 
-                return !(xnorValues.Item1 ^ xnorValues.Item2);
+                return !(xnorValues.i1 ^ xnorValues.i2);
             case IoType.LedOutput:
                 var ledOutputValues = GetValueFrom2Inputs(inputs);
                 
-                return ledOutputValues.Item1 && ledOutputValues.Item2;
+                return ledOutputValues.i1 && ledOutputValues.i2;
             case IoType.NOT:
                 var inputNot = inputs.Count == 1 ? ComponentManager.GetStateComponent(inputs[0].Entity).State : false;
 
@@ -146,18 +158,21 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
         }
     }
 
-    private (bool, bool) GetValueFrom2Inputs(SmallList<ConnectionInfo> inputs)
+    private (bool i1, bool i2) GetValueFrom2Inputs(SmallList<ConnectionInfo> inputs)
     {
         var i1 = inputs.Count >= 1 ? ComponentManager.GetStateComponent(inputs[0].Entity).State : false;
+        var i2 = inputs.Count >= 2 ? ComponentManager.GetStateComponent(inputs[1].Entity).State : false;
+        
+#if DEBUG
         if (inputs.Count >= 1)
         {
             Debug.Assert(EntityManager.IsAlive(inputs[0].Entity));
         }
-        var i2 = inputs.Count >= 2 ? ComponentManager.GetStateComponent(inputs[1].Entity).State : false;
         if (inputs.Count >= 2)
         {
             Debug.Assert(EntityManager.IsAlive(inputs[1].Entity));
         }
+#endif
 
         return (i1, i2);
     }

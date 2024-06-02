@@ -120,4 +120,7 @@ internal static class EntitySystem
         Debug.Assert(index < Generations.Count);
         return Generations[index] == IdStructure.Generation(entity.Id);
     }
+
+    internal static int EntitiesCount()
+        => Generations.Count;
 }

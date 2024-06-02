@@ -5,6 +5,8 @@ namespace GLogic.Jobs.AppUpdaters;
 
 public sealed class CircuitUpdater : ICircuitUpdaterConfig
 {
+    private const uint DefaultCallInterval = 1000;
+    
     public CircuitUpdater InitDefault(out IUserActionExecutor userActionExecutor)
     {
         userActionExecutor = ToStepWiseSimulation();
@@ -16,7 +18,7 @@ public sealed class CircuitUpdater : ICircuitUpdaterConfig
     
     public IUserActionExecutor ToStepWiseSimulation()
     {
-        var stepwiseSimulation = new StepwiseSimulation().InitExecutionQueue();
+        var stepwiseSimulation = new StepwiseSimulation(DefaultCallInterval).InitExecutionQueue();
         CurrentUpdateCtx = stepwiseSimulation;
         
         return new UserActionExecutorInStepwiseSimMode(stepwiseSimulation);

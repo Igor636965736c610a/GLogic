@@ -2,6 +2,6 @@ namespace GLogic.Jobs.AppUpdaters;
 
 public interface ICircuitUpdate
 { 
-    ValueTask Update();
+    ValueTask Update(uint deltaTime);
     void Reset();
 }

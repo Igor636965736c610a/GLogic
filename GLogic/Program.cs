@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
 using GLogic.Jobs;
 using GLogic.Jobs.AppUpdaters;
 using GLogic.Jobs.Internal;
@@ -8,8 +7,6 @@ using GLogic.Jobs.Renderer;
 using GLogicECS.Components;
 using GLogicGlobal.Common;
 using SDL2;
-
-// const int test = args[0] is not null ? Int32.Parse(args[0]) : 60;
 
 SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING);
 SDL_ttf.TTF_Init();
@@ -36,39 +33,37 @@ var userActionHandler = new UserActionsHandler(appRenderer, circuitUpdater, user
 const int fps = 60;
 const int desiredDelta = 1000 / fps;
 
-#if DEBUG
+//#if DEBUG
 
-var stopW = new Stopwatch();
-for (int i = 0; i < 500; i++)
-{
-    stopW.Start();
-    for (int j = 0; j < 50; j++)
-    {
-        var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
-        // if (i < 10)
-        // {
-        //     continue;
-        // }
+// var stopW = new Stopwatch();
+// for (int i = 0; i < 500; i++)
+// {
+//     stopW.Start();
+//     for (int j = 0; j < 50; j++)
+//     {
+//         var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
+//         // if (i < 10)
+//         // {
+//         //     continue;
+//         // }
+//
+//         //var comp = ComponentManager.GetTransformComponent(entity).Position;
+//         //var position = new Vector2Int(comp.X + 5, comp.Y + 5);
+//         //EntityService.RemoveEntity(position);
+//     }
+//     // Console.WriteLine(stopW.Elapsed.Seconds);
+//     float x = stopW.Elapsed.Milliseconds / 1000f;
+//     Console.WriteLine($"{(i * 1000):#,0} all entities - {x:F2} milliseconds to add 1000 entities");
+// }
+// Console.WriteLine(stopW.ElapsedMilliseconds);
+// stopW.Stop();
 
-        //var comp = ComponentManager.GetTransformComponent(entity).Position;
-        //var position = new Vector2Int(comp.X + 5, comp.Y + 5);
-        //EntityService.RemoveEntity(position);
-    }
-    // Console.WriteLine(stopW.Elapsed.Seconds);
-    float x = stopW.Elapsed.Milliseconds / 1000f;
-    Console.WriteLine($"{(i * 1000):#,0} all entities - {x:F2} milliseconds to add 1000 entities");
-}
-Console.WriteLine(stopW.ElapsedMilliseconds);
-stopW.Stop();
-
-#endif
+//#endif
 
 var frameCount = 0;
 var startTime = SDL.SDL_GetTicks();
 var lastTime = startTime;
-
-//test 
-var updateI = 0;
+uint time = 0;
 
 var quit = false;
 while (!quit)
@@ -109,21 +104,11 @@ while (!quit)
             }
         }
     }
+    
+    await circuitUpdater.CurrentUpdateCtx.Update(time);
 
     SDL.SDL_GetRelativeMouseState(out var relativeX, out var relativeY);
     userActionHandler.HandleMouseHeldAction(new Vector2Int(relativeX, relativeY));
-
-    //SANDBOX CODE
-    if (updateI == 60)
-    {
-        updateI = 0;
-        circuitUpdater.CurrentUpdateCtx.Update();
-    }
-    else
-    {
-        updateI++;
-    }
-    //~SANDBOX CODE
 
     SDL.SDL_SetRenderDrawColor(sdlRenderer, 1, 1, 1, 255);
     SDL.SDL_RenderClear(sdlRenderer);
@@ -133,31 +118,36 @@ while (!quit)
 
     SDL.SDL_RenderPresent(sdlRenderer);
 
-    //SANDBOX CODE
     var currentTime = SDL.SDL_GetTicks();
+    var delta = currentTime - startLoop;
+    if (delta < desiredDelta)
+    {
+        SDL.SDL_Delay(desiredDelta - delta);
+    }
+    var endTime = SDL.SDL_GetTicks();
+    time = endTime - startLoop; 
+    
+    // FPS COUNTER
     frameCount++;
     if (currentTime - lastTime >= 1000)
     {
-        var fpss = frameCount / ((currentTime - lastTime) / 1000.0);
-        Console.WriteLine($"FPS: {fpss}");
+        Console.WriteLine($"FPS: {frameCount / ((currentTime - lastTime) / 1000.0)}");
 
         frameCount = 0;
         lastTime = currentTime;
     }
-
-    var delta = SDL.SDL_GetTicks() - startLoop;
-    if (delta < desiredDelta)
-    {
-        SDL.SDL_Delay(desiredDelta - delta);
-        //Console.WriteLine($"{delta} ---- {desiredDelta}");
-    }
-    else
-    {
-        Console.WriteLine($"Performance issue : {delta} ---- {desiredDelta}");
-    }
-    //~SANDBOX CODE
 }
 
 SDL.SDL_DestroyRenderer(sdlRenderer);
 SDL.SDL_DestroyWindow(window);
 SDL.SDL_Quit();
+
+// if (updateI == 60)
+// {
+//     updateI = 0;
+//     await circuitUpdater.CurrentUpdateCtx.Update();
+// }
+// else
+// {
+//     updateI++;
+// }

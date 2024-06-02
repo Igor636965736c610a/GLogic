@@ -4,11 +4,12 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GLogicGlobal\GLogicGlobal.csproj"/>
-        <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta08"/>
+        <ProjectReference Include="..\GLogicGlobal\GLogicGlobal.csproj" />
+        <PackageReference Include="NetEscapades.EnumGenerators" Version="1.0.0-beta08" />
     </ItemGroup>
 
 </Project>

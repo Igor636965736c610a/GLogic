@@ -66,4 +66,7 @@ public static class EntityManager
 
     public static bool IsAlive(Entity entity)
         => EntitySystem.IsAlive(entity);
+
+    public static int EntitiesCount()
+        => EntitySystem.EntitiesCount();
 }
