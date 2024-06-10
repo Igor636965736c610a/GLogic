@@ -73,7 +73,14 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
 
     public void Reset()
     {
+        _timeSinceLastCall = 0;
+        
         InitExecutionQueue();
+    }
+
+    public void SetInterval(uint interval)
+    {
+        throw new NotImplementedException();
     }
 
     private void AddFirstEntitiesToQueue()
@@ -118,31 +125,31 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
             case IoType.AND:
                 var andValues = GetValueFrom2Inputs(inputs);
                 
-                return andValues.i1 && andValues.i2;
+                return andValues.inp1 && andValues.inp2;
             case IoType.OR:
                 var orValues = GetValueFrom2Inputs(inputs);
                 
-                return orValues.i1 || orValues.i2;
+                return orValues.inp1 || orValues.inp2;
             case IoType.XOR:
                 var xorValues = GetValueFrom2Inputs(inputs);
                 
-                return xorValues.i1 ^ xorValues.i2;
+                return xorValues.inp1 ^ xorValues.inp2;
             case IoType.NAND:
                 var nandValues = GetValueFrom2Inputs(inputs);
                 
-                return !(nandValues.i1 && nandValues.i2);
+                return !(nandValues.inp1 && nandValues.inp2);
             case IoType.NOR:
                 var norValues = GetValueFrom2Inputs(inputs);
                 
-                return !(norValues.i1 || norValues.i2);
+                return !(norValues.inp1 || norValues.inp2);
             case IoType.XNOR:
                 var xnorValues = GetValueFrom2Inputs(inputs);
                 
-                return !(xnorValues.i1 ^ xnorValues.i2);
+                return !(xnorValues.inp1 ^ xnorValues.inp2);
             case IoType.LedOutput:
                 var ledOutputValues = GetValueFrom2Inputs(inputs);
                 
-                return ledOutputValues.i1 && ledOutputValues.i2;
+                return ledOutputValues.inp1 && ledOutputValues.inp2;
             case IoType.NOT:
                 var inputNot = inputs.Count == 1 ? ComponentManager.GetStateComponent(inputs[0].Entity).State : false;
 
@@ -158,7 +165,7 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
         }
     }
 
-    private (bool i1, bool i2) GetValueFrom2Inputs(SmallList<ConnectionInfo> inputs)
+    private (bool inp1, bool inp2) GetValueFrom2Inputs(SmallList<ConnectionInfo> inputs)
     {
         var i1 = inputs.Count >= 1 ? ComponentManager.GetStateComponent(inputs[0].Entity).State : false;
         var i2 = inputs.Count >= 2 ? ComponentManager.GetStateComponent(inputs[1].Entity).State : false;

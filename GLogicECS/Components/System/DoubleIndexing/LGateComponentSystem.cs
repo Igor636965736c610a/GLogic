@@ -1,5 +1,8 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using GLogicECS.Components.Common;
 
 namespace GLogicECS.Components.System.DoubleIndexing;
@@ -94,11 +97,16 @@ internal static class LGateComponentSystem
 
     internal static IEnumerable<LGateComponent> IterLGateComponents()
     {
-        return LGateComponents.Slice(0, LGateComponents.Count - _freeBackIndexes);
-        // for (var i = 0; i < LGateComponents.Count - _freeBackIndexes; i++)
-        // {
-        //     yield return LGateComponents[i];
-        // }
+        //return LGateComponents.Slice(0, WireComponents.Count - _freeBackIndexes);
+        for (var i = 0; i < LGateComponents.Count - _freeBackIndexes; i++)
+        {
+            yield return LGateComponents[i];
+        }
+    }
+    
+    internal static Span<LGateComponent> GetSpan()
+    {
+        return CollectionsMarshal.AsSpan(LGateComponents).Slice(0, LGateComponents.Count - _freeBackIndexes);
     }
 
     private static bool IsIdMapValid(int id)

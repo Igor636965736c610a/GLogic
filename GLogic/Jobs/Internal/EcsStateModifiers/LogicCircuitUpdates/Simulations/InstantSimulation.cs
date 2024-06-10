@@ -14,7 +14,7 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
     private uint _currentFrame;
 
     private uint _callInterval;
-    private uint _timeSinceLastCall; 
+    private uint _timeSinceLastCall;
     private Task _stateUpdater;
 
     public InstantSimulation(int entitiesCount, uint callInterval)
@@ -22,8 +22,8 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
         _statesToReplace = Enumerable.Repeat(false, entitiesCount).ToList();
         _callInterval = callInterval;
         _currentFrame = 1;
-
-        InitStateUpdater();
+        
+        _stateUpdater = Task.Run(UpdateState);
     }
 
     public async ValueTask Update(uint deltaTime)
@@ -35,13 +35,27 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
         }
 
         await _stateUpdater;
-
-        var i = 0;
-        foreach (var stateComponent in ComponentManager.IterStateComponents())
+        
+        for (int i = 0; i < ComponentManager.GetLGateComponentsSpan().Length; i++)
         {
-            ComponentManager.UpdateStateComponent(stateComponent with { State = _statesToReplace[i] });
-            i++;
+            var entity = ComponentManager.GetLGateComponentsSpan()[i].Entity;
+            ComponentManager.UpdateStateComponent(ComponentManager.GetStateComponent(entity) with { State = _statesToReplace[(int)IdStructure.Index(entity.Id)] });
         }
+        for (int i = 0; i < ComponentManager.GetWireComponentsSpan().Length; i++)
+        {
+            var entity = ComponentManager.GetWireComponentsSpan()[i].Entity;
+            ComponentManager.UpdateStateComponent(ComponentManager.GetStateComponent(entity) with { State = _statesToReplace[(int)IdStructure.Index(entity.Id)] });
+        }
+        // for (int i = 0; i < ComponentManager.IterStateComponents().Count; i++)
+        // {
+        //     ComponentManager.UpdateStateComponent(ComponentManager.IterStateComponents()[i] with { State = _statesToReplace[i] });
+        // }
+        // var i = 0;
+        // foreach (var stateComponent in ComponentManager.IterStateComponents())
+        // {
+        //     ComponentManager.UpdateStateComponent(stateComponent with { State = _statesToReplace[i] });
+        //     i++;
+        // }
 
         _currentFrame++;
         _timeSinceLastCall = 0;
@@ -52,7 +66,28 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
     public void Reset()
     {
         _currentFrame++;
+        _timeSinceLastCall = 0;
+        _stateUpdater.Dispose();
         _stateUpdater = Task.Run(UpdateState);
+    }
+
+    public void IncreaseEntityStatesStorage()
+    {
+        var entitiesCount = EntityManager.EntitiesCount();
+        if (entitiesCount <= _statesToReplace.Count)
+        {
+            return;
+        }
+
+        Debug.Assert(entitiesCount - _statesToReplace.Count == 1);
+            
+        _statesToReplace.Add(false);
+        Reset();
+    }
+
+    public void SetInterval(uint interval)
+    {
+        throw new NotImplementedException();
     }
 
     private void UpdateState()
@@ -80,48 +115,51 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
             return _statesToReplace[index];
         }
 
-        var ioType = ComponentManager.GetEntityTypeComponent(stateComponent.Entity).Type;
-        var inputs = ComponentManager.GetInputComponent(stateComponent.Entity);
-        var newState = CalculateLGateValue(ioType, inputs.Inputs);
+        var newState = CalculateLGateValue(stateComponent);
         
         _statesToReplace[index] = newState;
-        ComponentManager.UpdateStateComponent(stateComponent with { Frame = _currentFrame });
 
         return newState;
     }
     
-    private bool CalculateLGateValue(IoType ioType, SmallList<ConnectionInfo> inputs)
+    private bool CalculateLGateValue(StateComponent stateComponent)
     {
+        var entity = stateComponent.Entity;
+        var ioType = ComponentManager.GetEntityTypeComponent(entity).Type;
+        var inputs = ComponentManager.GetInputComponent(entity).Inputs;
+        
+        ComponentManager.UpdateStateComponent(stateComponent with { Frame = _currentFrame });
+        
         switch (ioType)
         {
             case IoType.AND:
                 var andValues = GetValueFrom2Inputs(inputs);
                 
-                return andValues.i1 && andValues.i2;
+                return andValues.inp1 && andValues.inp2;
             case IoType.OR:
                 var orValues = GetValueFrom2Inputs(inputs);
                 
-                return orValues.i1 || orValues.i2;
+                return orValues.inp1 || orValues.inp2;
             case IoType.XOR:
                 var xorValues = GetValueFrom2Inputs(inputs);
                 
-                return xorValues.i1 ^ xorValues.i2;
+                return xorValues.inp1 ^ xorValues.inp2;
             case IoType.NAND:
                 var nandValues = GetValueFrom2Inputs(inputs);
                 
-                return !(nandValues.i1 && nandValues.i2);
+                return !(nandValues.inp1 && nandValues.inp2);
             case IoType.NOR:
                 var norValues = GetValueFrom2Inputs(inputs);
                 
-                return !(norValues.i1 || norValues.i2);
+                return !(norValues.inp1 || norValues.inp2);
             case IoType.XNOR:
                 var xnorValues = GetValueFrom2Inputs(inputs);
                 
-                return !(xnorValues.i1 ^ xnorValues.i2);
+                return !(xnorValues.inp1 ^ xnorValues.inp2);
             case IoType.LedOutput:
                 var ledOutputValues = GetValueFrom2Inputs(inputs);
                 
-                return ledOutputValues.i1 && ledOutputValues.i2;
+                return ledOutputValues.inp1 && ledOutputValues.inp2;
             case IoType.NOT:
                 var inputNot = inputs.Count == 1 ? PenetrateCircuit(ComponentManager.GetStateComponent(inputs[0].Entity)) : false;
 
@@ -131,13 +169,13 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
                 
                 return inputWire;
             case IoType.Constant:
-                throw new InvalidProgramException("Constant in tree as a leaf");
+                return ComponentManager.GetStateComponent(entity).State;
             default:
                 throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null);
         }
     }
     
-    private (bool i1, bool i2) GetValueFrom2Inputs(SmallList<ConnectionInfo> inputs)
+    private (bool inp1, bool inp2) GetValueFrom2Inputs(SmallList<ConnectionInfo> inputs)
     {
         var i1 = inputs.Count >= 1 ? PenetrateCircuit(ComponentManager.GetStateComponent(inputs[0].Entity)) : false;
         var i2 = inputs.Count >= 2 ? PenetrateCircuit(ComponentManager.GetStateComponent(inputs[1].Entity)) : false;
@@ -154,10 +192,5 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
 #endif
         
         return (i1, i2);
-    }
-
-    private void InitStateUpdater()
-    {
-        _stateUpdater = Task.Run(UpdateState);
     }
 }

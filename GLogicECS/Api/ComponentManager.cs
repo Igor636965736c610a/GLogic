@@ -40,23 +40,23 @@ public static class ComponentManager
         "Not optimal becouse of cashe misses and branch mispredictions. If it's possible, use 'IterLGateComponents' or 'IterWireComponents' (possible in 99% cases)";
 
     [Description(PerformanceWarningDescription)]
-    public static IEnumerable<TransformComponent> IterTransformComponents()
+    public static IReadOnlyList<TransformComponent> IterTransformComponents()
         => EntitySystem.TransformComponents;
 
     [Description(PerformanceWarningDescription)]
-    public static IEnumerable<EntityTypeComponent> IterEntityTypeComponents()
+    public static IReadOnlyList<EntityTypeComponent> IterEntityTypeComponents()
         => EntitySystem.EntityTypeComponents;
 
     [Description(PerformanceWarningDescription)]
-    public static IEnumerable<InputComponent> IterInputComponents()
+    public static IReadOnlyList<InputComponent> IterInputComponents()
         => EntitySystem.InputComponents;
 
     [Description(PerformanceWarningDescription)]
-    public static IEnumerable<OutputComponent> IterOutputComponents()
+    public static IReadOnlyList<OutputComponent> IterOutputComponents()
         => EntitySystem.OutputComponents;
 
     [Description(PerformanceWarningDescription)]
-    public static IEnumerable<StateComponent> IterStateComponents()
+    public static IReadOnlyList<StateComponent> IterStateComponents()
         => EntitySystem.StateComponents;
 
     public static IEnumerable<LGateComponent> IterLGateComponents()
@@ -114,6 +114,20 @@ public static class ComponentManager
     {
         Debug.Assert(EntitySystem.IsAlive(wireComponent.Entity));
         WireComponentSystem.Update(wireComponent);
+    }
+
+    #endregion
+
+    #region Spans
+
+    public static Span<LGateComponent> GetLGateComponentsSpan()
+    {
+        return LGateComponentSystem.GetSpan();
+    }
+    
+    public static Span<WireComponent> GetWireComponentsSpan()
+    {
+        return WireComponentSystem.GetSpan();
     }
 
     #endregion

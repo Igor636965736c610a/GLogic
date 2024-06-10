@@ -9,16 +9,16 @@ using GLogicGlobal.Common;
 
 namespace GLogic.Jobs.Internal;
 
-internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
+public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
 {
-    private readonly IStepwiseSimulationModifier _stepwiseSimulationModifier;
+    private readonly IInstantSimulationModifier _instantSimulationModifier;
 
-    public UserActionExecutorInStepwiseSimMode(IStepwiseSimulationModifier stepwiseSimulationModifier)
+    public UserActionExecutorInInstantSimMode(IInstantSimulationModifier instantSimulationModifier)
     {
-        _stepwiseSimulationModifier = stepwiseSimulationModifier;
+        _instantSimulationModifier = instantSimulationModifier;
         HeldEntity = new Entity(IdStructure.MakeInvalidId());
     }
-    
+
     public Entity HeldEntity { get; set; }
 
     public void ClickExecute(Vector2Int adjustedCursorPosition, MenuOption chosenMenuOption)
@@ -33,16 +33,13 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
             case MenuOption.NOR:
             case MenuOption.XNOR:
             case MenuOption.LedOutput:
-                var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition, false, chosenMenuOption);
-                if (lGate is not null)
-                {
-                    _stepwiseSimulationModifier.AddToSimulationQueue(lGate.Value);
-                }
-                
-                break;
             case MenuOption.LowConstant:
             case MenuOption.HighConstant:
-                CommonUserActionExecutor.AddLGate(adjustedCursorPosition, chosenMenuOption == MenuOption.HighConstant, chosenMenuOption);
+                var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition, chosenMenuOption == MenuOption.HighConstant, chosenMenuOption);
+                if (lGate is not null)
+                {
+                    _instantSimulationModifier.IncreaseEntityStatesStorage();
+                }
 
                 break;
             case MenuOption.Wire:
@@ -51,8 +48,7 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
                 {
                     Debug.Assert(ComponentManager.GetOutputComponent(wire.Value).Outputs.Count == 1);
                     
-                    var outputEntity = ComponentManager.GetOutputComponent(wire.Value).Outputs[0].Entity;
-                    _stepwiseSimulationModifier.AddToSimulationQueue(outputEntity);
+                    _instantSimulationModifier.IncreaseEntityStatesStorage();
                 }
                 
                 break;
@@ -62,15 +58,6 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
                 {
                     return;
                 }
-
-                var outputWires = ComponentManager.GetOutputComponent(entityToDelete).Outputs;
-                for (int i = 0; i < outputWires.Count; i++)
-                {
-                    Debug.Assert(EntityManager.IsAlive(outputWires[i].Entity));
-                    var wireOutput = ComponentManager.GetOutputComponent(outputWires[i].Entity);
-                    _stepwiseSimulationModifier.AddToSimulationQueue(wireOutput.Outputs[0].Entity);
-                }
-                
                 EntityService.RemoveEntity(entityToDelete);
 
                 break;

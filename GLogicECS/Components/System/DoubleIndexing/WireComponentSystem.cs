@@ -96,11 +96,16 @@ internal static class WireComponentSystem
 
     internal static IEnumerable<WireComponent> IterWireComponents()
     {
-        return WireComponents.Slice(0, WireComponents.Count - _freeBackIndexes);
-        // for (var i = 0; i < WireComponents.Count - _freeBackIndexes; i++)
-        // {
-        //     yield return WireComponents[i];
-        // }
+        //return WireComponents.Slice(0, WireComponents.Count - _freeBackIndexes);
+        for (var i = 0; i < WireComponents.Count - _freeBackIndexes; i++)
+        {
+            yield return WireComponents[i];
+        }
+    }
+    
+    internal static Span<WireComponent> GetSpan()
+    {
+        return CollectionsMarshal.AsSpan(WireComponents).Slice(0, WireComponents.Count - _freeBackIndexes);
     }
 
     private static bool IsIdMapValid(int id)

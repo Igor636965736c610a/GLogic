@@ -33,20 +33,21 @@ var userActionHandler = new UserActionsHandler(appRenderer, circuitUpdater, user
 const int fps = 60;
 const int desiredDelta = 1000 / fps;
 
-//#if DEBUG
 
+
+// List<Entity> XX = new List<Entity>(1000*500);
 // var stopW = new Stopwatch();
-// for (int i = 0; i < 500; i++)
+// for (int i = 0; i < 1000; i++)
 // {
 //     stopW.Start();
-//     for (int j = 0; j < 50; j++)
+//     for (int j = 0; j < 500; j++)
 //     {
 //         var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
 //         // if (i < 10)
 //         // {
 //         //     continue;
 //         // }
-//
+//         XX.Add(entity);
 //         //var comp = ComponentManager.GetTransformComponent(entity).Position;
 //         //var position = new Vector2Int(comp.X + 5, comp.Y + 5);
 //         //EntityService.RemoveEntity(position);
@@ -58,7 +59,7 @@ const int desiredDelta = 1000 / fps;
 // Console.WriteLine(stopW.ElapsedMilliseconds);
 // stopW.Stop();
 
-//#endif
+
 
 var frameCount = 0;
 var startTime = SDL.SDL_GetTicks();
@@ -95,20 +96,19 @@ while (!quit)
 
                 break;
             case SDL.SDL_EventType.SDL_MOUSEWHEEL:
-            {
                 SDL.SDL_GetMouseState(out var cursorX, out var cursorY);
+                
                 var cursor = new Vector2Int(cursorX, cursorY);
                 userActionHandler.HandleMouseWheel(cursor, e.wheel.y);
 
                 break;
-            }
         }
     }
-    
-    await circuitUpdater.CurrentUpdateCtx.Update(time);
 
     SDL.SDL_GetRelativeMouseState(out var relativeX, out var relativeY);
     userActionHandler.HandleMouseHeldAction(new Vector2Int(relativeX, relativeY));
+    
+    await circuitUpdater.CurrentUpdateCtx.Update(time);
 
     SDL.SDL_SetRenderDrawColor(sdlRenderer, 1, 1, 1, 255);
     SDL.SDL_RenderClear(sdlRenderer);
@@ -141,13 +141,3 @@ while (!quit)
 SDL.SDL_DestroyRenderer(sdlRenderer);
 SDL.SDL_DestroyWindow(window);
 SDL.SDL_Quit();
-
-// if (updateI == 60)
-// {
-//     updateI = 0;
-//     await circuitUpdater.CurrentUpdateCtx.Update();
-// }
-// else
-// {
-//     updateI++;
-// }

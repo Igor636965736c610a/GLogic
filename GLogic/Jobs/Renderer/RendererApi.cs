@@ -1,4 +1,5 @@
-﻿using GLogicECS.Api;
+﻿using System.Runtime.CompilerServices;
+using GLogicECS.Api;
 using GLogicECS.Components.Common;
 using GLogicGlobal.Common;
 
@@ -153,7 +154,6 @@ public sealed class RendererApi : IRendererConfig
                 break;
             case MenuOption.Delete:
             case MenuOption.None:
-
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -187,8 +187,6 @@ public readonly record struct Area(Vector2Int Position, Vector2Int Size)
                 Y = RendererApi.CalculateShiftRelatively(Size.Y, zoom, 0),
             }
         };
-
-    public EcsArea ToEcsArea() => new(Position, Size);
 }
 
 public interface IRendererConfig : IRendererStateAccess

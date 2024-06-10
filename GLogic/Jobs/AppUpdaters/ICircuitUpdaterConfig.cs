@@ -7,5 +7,5 @@ public interface ICircuitUpdaterConfig
     IUserActionExecutor ToStepWiseSimulation();
 
     IUserActionExecutor ToInstantSimulation();
-    //interval
+    void SetUpdateCallInterval(uint interval);
 }

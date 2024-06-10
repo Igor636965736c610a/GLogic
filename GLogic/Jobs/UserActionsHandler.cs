@@ -48,7 +48,7 @@ public sealed class UserActionsHandler
         switch (mouseButton)
         {
             case SDL.SDL_BUTTON_LEFT:
-                _userActionExecutor.LGateToMove = new Entity(IdStructure.MakeInvalidId());
+                _userActionExecutor.HeldEntity = new Entity(IdStructure.MakeInvalidId());
                 MouseLeftButtonState = false;
                 break;
             case SDL.SDL_BUTTON_RIGHT:

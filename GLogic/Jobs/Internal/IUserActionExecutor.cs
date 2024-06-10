@@ -6,7 +6,7 @@ namespace GLogic.Jobs.Internal;
 
 public interface IUserActionExecutor
 {
-    Entity LGateToMove { get; set; }
+    Entity HeldEntity { get; set; }
     void ClickExecute(Vector2Int adjustedCursorPosition, MenuOption chosenMenuOption);
     void HeldExecute(Vector2Int adjustedCursorPosition);
 }
