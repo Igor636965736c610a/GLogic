@@ -151,6 +151,27 @@ internal static class EntityService
             return (chosenLGatePosition, placement);
         }
     }
+    
+    public static Entity GetEntityToDelete(Vector2Int position)
+    {
+        var lGates = ComponentManager.IterLGateComponents();
+        var lGateComp = EntityQuery
+            .AABB_Entities(lGates, position)
+            .FirstOrDefault(new LGateComponent(new Entity(IdStructure.MakeInvalidId())));
+
+        var entityToDelete = lGateComp.Entity;
+
+        if (!IdStructure.IsValid(entityToDelete.Id))
+        {
+            var wires = ComponentManager.IterWireComponents();
+            // foreach (var wireComponent in EntityQuery.AABB_Entities(wires.Select(x => x.Entity), position))
+            // {
+            //     // TODO
+            // }
+        }
+
+        return entityToDelete;
+    }
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     private static (Vector2Int position, Placement placement) HandleShiftKeyPressed<T>(Vector2Int chosenLGatePosition,
@@ -193,27 +214,6 @@ internal static class EntityService
         return (chosenLGatePosition, placement);
     }
 
-    public static Entity GetEntityToDelete(Vector2Int position)
-    {
-        var lGates = ComponentManager.IterLGateComponents();
-        var lGateComp = EntityQuery
-            .AABB_Entities(lGates, position)
-            .FirstOrDefault(new LGateComponent(new Entity(IdStructure.MakeInvalidId())));
-
-        var entityToDelete = lGateComp.Entity;
-
-        if (!IdStructure.IsValid(entityToDelete.Id))
-        {
-            var wires = ComponentManager.IterWireComponents();
-            // foreach (var wireComponent in EntityQuery.AABB_Entities(wires.Select(x => x.Entity), position))
-            // {
-            //     // TODO
-            // }
-        }
-
-        return entityToDelete;
-    }
-
     private static Placement GetPlacement<T>(Vector2Int position, IEnumerable<T> otherEntities)
         where T : struct, IAABBCompare
     {
@@ -253,12 +253,8 @@ internal static class EntityService
         var distanceToEntityX = Math.Abs(entityInOverlapArea.Position.X - adjustedEntityPosition.X);
         var distanceToEntityY = Math.Abs(entityInOverlapArea.Position.Y - adjustedEntityPosition.Y);
         var adjustedYDistanceToEntityX = distanceToEntityY * 2;
-        
         var distanceToGridX = adjustedEntityPosition.X % 10;
-        distanceToGridX = distanceToGridX > 5 ? 10 - distanceToGridX : distanceToGridX;
-        
         var distanceToGridY = adjustedEntityPosition.Y % 10;
-        distanceToGridY = distanceToGridY > 5 ? 10 - distanceToGridY : distanceToGridY;
 
         if (distanceToEntityX > adjustedYDistanceToEntityX)
         {
