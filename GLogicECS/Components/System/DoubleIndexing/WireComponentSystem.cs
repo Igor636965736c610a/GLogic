@@ -103,7 +103,7 @@ internal static class WireComponentSystem
         }
     }
     
-    internal static Span<WireComponent> GetSpan()
+    internal static ReadOnlySpan<WireComponent> GetSpan()
     {
         return CollectionsMarshal.AsSpan(WireComponents).Slice(0, WireComponents.Count - _freeBackIndexes);
     }

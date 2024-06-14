@@ -19,7 +19,7 @@ internal static class CommonUserActionExecutor
         if (info.placement == Placement.Valid)
         {
             return EntityService.AddLGate(
-                info.position, GetIoTypeFromMenuOption(chosenMenuOption), lGateValue
+                info.position, GetLGateTypeFromMenuOption(chosenMenuOption), lGateValue
             );
         }
 
@@ -37,7 +37,7 @@ internal static class CommonUserActionExecutor
         return markedEntity;
     }
 
-    private static IoType GetIoTypeFromMenuOption(MenuOption menuOption)
+    private static IoType GetLGateTypeFromMenuOption(MenuOption menuOption)
     {
         return menuOption switch
         {

@@ -34,6 +34,6 @@ public sealed class CircuitUpdater : ICircuitUpdaterConfig
 
     public void SetUpdateCallInterval(uint interval)
     {
-        throw new NotImplementedException();
+        CurrentUpdateCtx.SetInterval(interval);
     }
 }

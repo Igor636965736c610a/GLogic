@@ -22,7 +22,6 @@ internal static class LGateComponentSystem
 
     internal static LGateComponent Add(Entity entity)
     {
-        //Console.WriteLine(EntitySystem.IsAlive(entity));
         var index = (int)IdStructure.Index(entity.Id);
         Debug.Assert(index < IdMaps.Count);
         if (_freeBackIndexes > 0)
@@ -104,7 +103,7 @@ internal static class LGateComponentSystem
         }
     }
     
-    internal static Span<LGateComponent> GetSpan()
+    internal static ReadOnlySpan<LGateComponent> GetSpan()
     {
         return CollectionsMarshal.AsSpan(LGateComponents).Slice(0, LGateComponents.Count - _freeBackIndexes);
     }

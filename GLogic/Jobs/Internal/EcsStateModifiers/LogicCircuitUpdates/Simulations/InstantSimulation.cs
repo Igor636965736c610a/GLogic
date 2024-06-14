@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using GLogic.Jobs.AppUpdaters;
 using GLogicECS.Api;
 using GLogicECS.Collections;
 using GLogicECS.Components;
@@ -46,16 +45,6 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
             var entity = ComponentManager.GetWireComponentsSpan()[i].Entity;
             ComponentManager.UpdateStateComponent(ComponentManager.GetStateComponent(entity) with { State = _statesToReplace[(int)IdStructure.Index(entity.Id)] });
         }
-        // for (int i = 0; i < ComponentManager.IterStateComponents().Count; i++)
-        // {
-        //     ComponentManager.UpdateStateComponent(ComponentManager.IterStateComponents()[i] with { State = _statesToReplace[i] });
-        // }
-        // var i = 0;
-        // foreach (var stateComponent in ComponentManager.IterStateComponents())
-        // {
-        //     ComponentManager.UpdateStateComponent(stateComponent with { State = _statesToReplace[i] });
-        //     i++;
-        // }
 
         _currentFrame++;
         _timeSinceLastCall = 0;
@@ -127,8 +116,11 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
         var entity = stateComponent.Entity;
         var ioType = ComponentManager.GetEntityTypeComponent(entity).Type;
         var inputs = ComponentManager.GetInputComponent(entity).Inputs;
-        
-        ComponentManager.UpdateStateComponent(stateComponent with { Frame = _currentFrame });
+
+        if (stateComponent.Frame != _currentFrame)
+        {
+            ComponentManager.UpdateStateComponent(stateComponent with { Frame = _currentFrame });
+        }
         
         switch (ioType)
         {
