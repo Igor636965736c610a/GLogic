@@ -18,7 +18,7 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
         _stepwiseSimulationModifier = stepwiseSimulationModifier;
         HeldEntity = new Entity(IdStructure.MakeInvalidId());
     }
-    
+
     public Entity HeldEntity { get; set; }
 
     public void ClickExecute(Vector2Int adjustedCursorPosition, MenuOption chosenMenuOption)
@@ -38,11 +38,12 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
                 {
                     _stepwiseSimulationModifier.AddToSimulationQueue(lGate.Value);
                 }
-                
+
                 break;
             case MenuOption.LowConstant:
             case MenuOption.HighConstant:
-                CommonUserActionExecutor.AddLGate(adjustedCursorPosition, chosenMenuOption == MenuOption.HighConstant, chosenMenuOption);
+                CommonUserActionExecutor.AddLGate(adjustedCursorPosition, chosenMenuOption == MenuOption.HighConstant,
+                    chosenMenuOption);
 
                 break;
             case MenuOption.Wire:
@@ -50,11 +51,11 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
                 if (wire is not null)
                 {
                     Debug.Assert(ComponentManager.GetOutputComponent(wire.Value).Outputs.Count == 1);
-                    
+
                     var outputEntity = ComponentManager.GetOutputComponent(wire.Value).Outputs[0].Entity;
                     _stepwiseSimulationModifier.AddToSimulationQueue(outputEntity);
                 }
-                
+
                 break;
             case MenuOption.Delete:
                 var entityToDelete = EntityService.GetEntityToDelete(adjustedCursorPosition);
@@ -64,32 +65,32 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
                 }
 
                 var outputWires = ComponentManager.GetOutputComponent(entityToDelete).Outputs;
-                for (int i = 0; i < outputWires.Count; i++)
+                for (var i = 0; i < outputWires.Count; i++)
                 {
                     Debug.Assert(EntityManager.IsAlive(outputWires[i].Entity));
                     var wireOutput = ComponentManager.GetOutputComponent(outputWires[i].Entity);
                     _stepwiseSimulationModifier.AddToSimulationQueue(wireOutput.Outputs[0].Entity);
                 }
-                
+
                 EntityService.RemoveEntity(entityToDelete);
 
                 break;
             case MenuOption.None:
                 HeldEntity = CommonUserActionExecutor.MarkEntity(adjustedCursorPosition);
-                
+
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public void HeldExecute(Vector2Int adjustedCursorPosition)
     {
         if (!IdStructure.IsValid(HeldEntity.Id))
         {
             return;
         }
-        
+
         var info = EntityService.GetDynamicLGateParamsToRender(
             adjustedCursorPosition,
             ComponentManager.IterLGateComponents().Where(z => z.Entity.Id != HeldEntity.Id)

@@ -28,7 +28,7 @@ public sealed class LGateRenderer
             h = info.Rect.Size.Y
         };
         var texture = _textureStorage.GetLGateTexture(info.LGate, info.State, info.Placement);
-        
+
         SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref sdlRect);
     }
 
@@ -48,7 +48,7 @@ public sealed class LGateRenderer
                 _rendererStateAccess.CameraShift
             );
         var renderInfo = new LGateRenderInfo(rect, lGate, info.placement, false);
-        
+
         RenderStaticLGate(renderInfo);
     }
 }

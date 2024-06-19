@@ -17,7 +17,7 @@ public static class EntityQuery
                 yield return entity;
             }
         }
-        
+
         // return entities.Where(entity => entity.Compare(Unsafe.As<Area, EcsArea>(ref area)));
     }
 
@@ -31,7 +31,7 @@ public static class EntityQuery
                 yield return entity;
             }
         }
-        
+
         // return entities.Where(entity => entity.Compare(point));
     }
 }

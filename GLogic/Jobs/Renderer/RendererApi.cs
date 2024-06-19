@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using GLogicECS.Api;
-using GLogicECS.Components.Common;
+﻿using GLogicECS.Api;
 using GLogicGlobal.Common;
 
 namespace GLogic.Jobs.Renderer;
@@ -179,12 +177,12 @@ public readonly record struct Area(Vector2Int Position, Vector2Int Size)
                 X = RendererApi.CalculateShiftRelatively(Position.X, zoom,
                     cameraShift.X),
                 Y = RendererApi.CalculateShiftRelatively(Position.Y, zoom,
-                    cameraShift.Y),
+                    cameraShift.Y)
             },
             Size = new Vector2Int
             {
                 X = RendererApi.CalculateShiftRelatively(Size.X, zoom, 0),
-                Y = RendererApi.CalculateShiftRelatively(Size.Y, zoom, 0),
+                Y = RendererApi.CalculateShiftRelatively(Size.Y, zoom, 0)
             }
         };
 }

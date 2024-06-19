@@ -29,7 +29,7 @@ public sealed class MenuRenderer
     public void Render()
     {
         var menuRect = new SDL.SDL_Rect { x = 0, y = 0, w = Width, h = Height };
-        
+
         SDL.SDL_SetRenderDrawColor(_renderer, MenuColor.r, MenuColor.g, MenuColor.b, MenuColor.a);
         SDL.SDL_RenderFillRect(_renderer, ref menuRect);
 

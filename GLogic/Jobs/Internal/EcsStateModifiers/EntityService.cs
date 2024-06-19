@@ -25,7 +25,7 @@ internal static class EntityService
         {
             throw new InvalidProgramException("Invalid IoType - Wire");
         }
-        
+
         Debug.Assert(!IdStructure.IsValid(
                 AnyEntityInArea(position, ComponentManager
                     .IterLGateComponents()).Entity.Id
@@ -100,11 +100,8 @@ internal static class EntityService
                 EntityManager.RemoveEntity(outputComp.Outputs[i].Entity);
             }
         }
-        else
-        {
-            //TODO
-        }
 
+        //TODO
         EntityManager.RemoveEntity(entity);
     }
 
@@ -135,23 +132,21 @@ internal static class EntityService
 
         ComponentManager.UpdateTransformComponent(transformComponent);
     }
-    
+
     public static (Vector2Int position, Placement placement) GetDynamicLGateParamsToRender<T>(Vector2Int position,
         IEnumerable<T> otherEntities) where T : struct, IAABBCompare
     {
         var chosenLGatePosition = CenterRectPositionToCursor(position);
-    
+
         if (UserActionsHandler.ShiftKeyState)
         {
             return HandleShiftKeyPressed(chosenLGatePosition, otherEntities);
         }
-        else
-        {
-            var placement = GetPlacement(chosenLGatePosition, otherEntities);
-            return (chosenLGatePosition, placement);
-        }
+
+        var placement = GetPlacement(chosenLGatePosition, otherEntities);
+        return (chosenLGatePosition, placement);
     }
-    
+
     public static Entity GetEntityToDelete(Vector2Int position)
     {
         var lGates = ComponentManager.IterLGateComponents();
@@ -179,35 +174,35 @@ internal static class EntityService
     {
         var overlapArea = GetLGateOverlapArea(chosenLGatePosition);
         var overlap = GetEntityWithBiggestOverlap(out var entityInOverlapArea, overlapArea, otherEntities);
-    
+        
+        chosenLGatePosition = new Vector2Int(
+            AdjustToGrid(chosenLGatePosition.X),
+            AdjustToGrid(chosenLGatePosition.Y)
+        );
+
         if (!overlap)
         {
             return HandleNoOverlap(chosenLGatePosition, otherEntities);
         }
-    
+        
         Debug.Assert(entityInOverlapArea.HasValue);
         chosenLGatePosition = AdjustEntityPosition(chosenLGatePosition, entityInOverlapArea.Value);
         var placement = GetPlacement(chosenLGatePosition, otherEntities);
         return (chosenLGatePosition, placement);
     }
-    
+
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     private static (Vector2Int position, Placement placement) HandleNoOverlap<T>(Vector2Int chosenLGatePosition,
         IEnumerable<T> otherEntities) where T : struct, IAABBCompare
     {
-        chosenLGatePosition = new Vector2Int(
-            AdjustToGrid(chosenLGatePosition.X),
-            AdjustToGrid(chosenLGatePosition.Y)
-        );
-    
         var overlapArea = GetLGateOverlapArea(chosenLGatePosition);
         var overlap = GetEntityWithBiggestOverlap(out var entityInOverlapArea, overlapArea, otherEntities);
-    
+
         if (!overlap)
         {
             return (chosenLGatePosition, Placement.Valid);
         }
-    
+
         Debug.Assert(entityInOverlapArea.HasValue);
         chosenLGatePosition = AdjustEntityPosition(chosenLGatePosition, entityInOverlapArea.Value);
         var placement = GetPlacement(chosenLGatePosition, otherEntities);
@@ -253,8 +248,6 @@ internal static class EntityService
         var distanceToEntityX = Math.Abs(entityInOverlapArea.Position.X - adjustedEntityPosition.X);
         var distanceToEntityY = Math.Abs(entityInOverlapArea.Position.Y - adjustedEntityPosition.Y);
         var adjustedYDistanceToEntityX = distanceToEntityY * 2;
-        var distanceToGridX = adjustedEntityPosition.X % 10;
-        var distanceToGridY = adjustedEntityPosition.Y % 10;
 
         if (distanceToEntityX > adjustedYDistanceToEntityX)
         {
@@ -284,40 +277,36 @@ internal static class EntityService
                 Y = newY
             };
         }
-        else
+
+        if (distanceToEntityX <= 10)
         {
-            if (distanceToEntityX <= 10)
+            return entityInOverlapArea.Position with
             {
-                return entityInOverlapArea.Position with
-                {
-                    Y = AdjustEntityAxis(
-                        entityInOverlapArea.Position.Y,
-                        adjustedEntityPosition.Y, RectLGateSize.Y
-                    )
-                };
-            }
-
-            var xBound = entityInOverlapArea.Position.X < adjustedEntityPosition.X
-                ? entityInOverlapArea.Position.X + RectLGateSize.X
-                : entityInOverlapArea.Position.X - RectLGateSize.X;
-
-            var newX = AdjustEntityAxis(entityInOverlapArea.Position.X, adjustedEntityPosition.X, distanceToEntityX);
-            newX = entityInOverlapArea.Position.X < adjustedEntityPosition.X
-                ? Math.Min(xBound, newX)
-                : Math.Max(xBound, newX);
-
-            return new Vector2Int
-            {
-                X = newX,
-                Y = AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, RectLGateSize.Y)
+                Y = AdjustEntityAxis(
+                    entityInOverlapArea.Position.Y,
+                    adjustedEntityPosition.Y, RectLGateSize.Y
+                )
             };
         }
+
+        var xBound = entityInOverlapArea.Position.X < adjustedEntityPosition.X
+            ? entityInOverlapArea.Position.X + RectLGateSize.X
+            : entityInOverlapArea.Position.X - RectLGateSize.X;
+
+        var newX = AdjustEntityAxis(entityInOverlapArea.Position.X, adjustedEntityPosition.X, distanceToEntityX);
+        newX = entityInOverlapArea.Position.X < adjustedEntityPosition.X
+            ? Math.Min(xBound, newX)
+            : Math.Max(xBound, newX);
+
+        return new Vector2Int
+        {
+            X = newX,
+            Y = AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, RectLGateSize.Y)
+        };
     }
-    
+
     private static int AdjustToGrid(int value)
-    {
-        return (value + 5) / 10 * 10;
-    }
+        => (value + 5) / 10 * 10;
 
     private static T AnyEntityInArea<T>(Vector2Int position, IEnumerable<T> entities) where T : struct, IAABBCompare
         => EntityQuery
@@ -327,8 +316,8 @@ internal static class EntityService
     private static Area GetLGateOverlapArea(Vector2Int position)
     {
         const int magnificationCorrectX = 20;
-        const int magnificationCorrectY = magnificationCorrectX * 2;
-        return new()
+        const int magnificationCorrectY = 20;
+        return new Area
         {
             Position = new Vector2Int(position.X - magnificationCorrectX, position.Y - magnificationCorrectY),
             Size = new Vector2Int(
@@ -337,6 +326,7 @@ internal static class EntityService
             )
         };
     }
+
     private static Vector2Int CenterRectPositionToCursor(Vector2Int position)
         => new(position.X - RectLGateSize.X / 2, position.Y - RectLGateSize.Y / 2);
 

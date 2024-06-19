@@ -31,7 +31,7 @@ public sealed class WireRenderer
                 r = 255,
                 g = 0,
                 b = 0,
-                a = 255,
+                a = 255
             };
         }
         else
@@ -41,9 +41,10 @@ public sealed class WireRenderer
                 r = 52,
                 g = 56,
                 b = 64,
-                a = 255,
+                a = 255
             };
         }
+
         SDL2Gfx.AaLineRgba(_renderer, info.P1.X, info.P1.Y, info.P2.X, info.P2.Y, color);
     }
 
@@ -65,26 +66,28 @@ public sealed class WireRenderer
         var p1 = _rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(
             RendererApi.CalculateShiftRelatively(x, _rendererStateAccess.Zoom, _rendererStateAccess.CameraShift.X),
             RendererApi.CalculateShiftRelatively(y, _rendererStateAccess.Zoom, _rendererStateAccess.CameraShift.Y)
-            ));
+        ));
 
-        (Vector2Int p2, bool value) = existingConnection.ConnectionType switch
+        (var p2, var value) = existingConnection.ConnectionType switch
         {
             ConnectionType.Input => (WireService.CalculateInputConnectionPoint(
                 ioTypeOutgoingLGate,
                 existingConnection.HookNumber, outgoingLGatePosition
-                ), false),
-            
+            ), false),
+
             ConnectionType.Output => (WireService.CalculateOutputConnectionPoint(
                 ioTypeOutgoingLGate,
                 existingConnection.HookNumber, outgoingLGatePosition
-                ), ComponentManager.GetStateComponent(existingConnection.Entity).State),
-            
+            ), ComponentManager.GetStateComponent(existingConnection.Entity).State),
+
             _ => throw new ArgumentOutOfRangeException()
         };
         p2 = new Vector2Int
         {
-            X = RendererApi.CalculateShiftRelatively(p2.X, _rendererStateAccess.Zoom, _rendererStateAccess.CameraShift.X), 
-            Y = RendererApi.CalculateShiftRelatively(p2.Y, _rendererStateAccess.Zoom, _rendererStateAccess.CameraShift.Y)
+            X = RendererApi.CalculateShiftRelatively(p2.X, _rendererStateAccess.Zoom,
+                _rendererStateAccess.CameraShift.X),
+            Y = RendererApi.CalculateShiftRelatively(p2.Y, _rendererStateAccess.Zoom,
+                _rendererStateAccess.CameraShift.Y)
         };
 
         RenderStaticWire(new WireRendererInfo(p1, p2, value));

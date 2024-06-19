@@ -12,11 +12,12 @@ namespace GLogic.Jobs;
 
 public sealed class UserActionsHandler
 {
-    private readonly IRendererConfig _rendererConfig;
     private readonly ICircuitUpdaterConfig _circuitUpdaterConfig;
-    private IUserActionExecutor _userActionExecutor;
-    
-    public UserActionsHandler(IRendererConfig rendererConfig, ICircuitUpdaterConfig circuitUpdaterConfig, IUserActionExecutor userActionExecutor)
+    private readonly IRendererConfig _rendererConfig;
+    private readonly IUserActionExecutor _userActionExecutor;
+
+    public UserActionsHandler(IRendererConfig rendererConfig, ICircuitUpdaterConfig circuitUpdaterConfig,
+        IUserActionExecutor userActionExecutor)
     {
         ChosenMenuOption = MenuOption.None;
         _userActionExecutor = userActionExecutor;
@@ -31,18 +32,15 @@ public sealed class UserActionsHandler
 
     #region MouseWheel
 
-    
     public void HandleMouseWheel(Vector2Int cursor, int wheelY)
     {
         _rendererConfig.ChangeRelativelyToCursorZoom((float)(wheelY * 0.1), cursor);
     }
 
-    
     #endregion
 
     #region MouseClick
 
-    
     public void HandleMouseUpPollEvent(Vector2Int cursor, uint mouseButton)
     {
         switch (mouseButton)
@@ -136,12 +134,10 @@ public sealed class UserActionsHandler
         _userActionExecutor.ClickExecute(adjustedCursorPosition, ChosenMenuOption);
     }
 
-
     #endregion
 
     #region MouseHeld
 
-    
     public void HandleMouseHeldAction(Vector2Int relativeCursorPosition)
     {
         if (MouseRightButtonState)
@@ -168,6 +164,5 @@ public sealed class UserActionsHandler
         _userActionExecutor.HeldExecute(_rendererConfig.GetRelativeShiftedCursor(new Vector2Int(x, y)));
     }
 
-    
     #endregion
 }

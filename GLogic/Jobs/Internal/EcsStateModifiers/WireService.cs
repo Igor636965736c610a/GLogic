@@ -33,9 +33,9 @@ internal static class WireService
             case ConnectionType.Output:
                 return ConnectToOutput(connection);
         }
-        
+
         Reset();
-        
+
         return null;
     }
 
@@ -55,11 +55,11 @@ internal static class WireService
                 switch (xDiff)
                 {
                     case > 0 and < 30 when yDiff is > 4 and < 24:
-                        return new (ConnectionType.Input, 0);
+                        return new HookInfo(ConnectionType.Input, 0);
                     case > 0 and < 30 when yDiff is > 26 and < 46:
-                        return new (ConnectionType.Input, 1);
+                        return new HookInfo(ConnectionType.Input, 1);
                     case > 80 and < 100 when yDiff is > 20 and < 30:
-                        return new (ConnectionType.Output, 0);
+                        return new HookInfo(ConnectionType.Output, 0);
                 }
 
                 break;
@@ -68,7 +68,7 @@ internal static class WireService
                 {
                     if (yDiff is > 20 and < 30)
                     {
-                        return new (ConnectionType.Output, 0);
+                        return new HookInfo(ConnectionType.Output, 0);
                     }
                 }
 
@@ -79,9 +79,9 @@ internal static class WireService
                     switch (yDiff)
                     {
                         case > 4 and < 24:
-                            return new(ConnectionType.Input, 0);
+                            return new HookInfo(ConnectionType.Input, 0);
                         case > 26 and < 46:
-                            return new(ConnectionType.Input, 1);
+                            return new HookInfo(ConnectionType.Input, 1);
                     }
                 }
 
@@ -90,9 +90,9 @@ internal static class WireService
                 switch (xDiff)
                 {
                     case > 0 and < 30 when yDiff is > 20 and < 30:
-                        return new (ConnectionType.Input, 0);
+                        return new HookInfo(ConnectionType.Input, 0);
                     case > 80 and < 100 when yDiff is > 20 and < 30:
-                        return new (ConnectionType.Output, 0);
+                        return new HookInfo(ConnectionType.Output, 0);
                 }
 
                 break;
@@ -185,7 +185,7 @@ internal static class WireService
             ComponentManager.UpdateInputComponent(otherSideEntityInputComp);
         }
     }
-    
+
     public static Vector2Int CalculateInputConnectionPoint(IoType ioType, int hookNumber, Vector2Int position)
     {
         switch (ioType)
@@ -284,7 +284,7 @@ internal static class WireService
         ComponentManager.UpdateOutputComponent(outputComp);
 
         Reset();
-        
+
         return wire;
     }
 

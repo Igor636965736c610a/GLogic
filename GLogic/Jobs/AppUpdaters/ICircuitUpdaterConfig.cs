@@ -8,4 +8,5 @@ public interface ICircuitUpdaterConfig
 
     IUserActionExecutor ToInstantSimulation();
     void SetUpdateCallInterval(uint interval);
+    void Reset();
 }

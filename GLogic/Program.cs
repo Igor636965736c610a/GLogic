@@ -1,10 +1,6 @@
-﻿using System.Diagnostics;
-using GLogic.Jobs;
+﻿using GLogic.Jobs;
 using GLogic.Jobs.AppUpdaters;
-using GLogic.Jobs.Internal;
-using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Renderer;
-using GLogicECS.Components;
 using GLogicGlobal.Common;
 using SDL2;
 
@@ -22,20 +18,20 @@ var window = SDL.SDL_CreateWindow(
 );
 
 // ReSharper disable once InconsistentNaming
-const int index_of_the_rendering_driver_to_initialize = -1; // -1 to initialize the first one supporting the requested flags
+const int
+    index_of_the_rendering_driver_to_initialize = -1; // -1 to initialize the first one supporting the requested flags
 
-var sdlRenderer = SDL.SDL_CreateRenderer(window, index_of_the_rendering_driver_to_initialize, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+var sdlRenderer = SDL.SDL_CreateRenderer(window, index_of_the_rendering_driver_to_initialize,
+    SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
 var textures = new TextureStorage(sdlRenderer);
 var appRenderer = new RendererApi(sdlRenderer, textures);
-var circuitUpdater = new CircuitUpdater().InitDefault(out IUserActionExecutor userActionExecutor);
+var circuitUpdater = new CircuitUpdater().InitDefault(out var userActionExecutor);
 var userActionHandler = new UserActionsHandler(appRenderer, circuitUpdater, userActionExecutor);
 
 const int fps = 60;
 const int desiredDelta = 1000 / fps;
 
 
-
-// List<Entity> XX = new List<Entity>(1000*500);
 // var stopW = new Stopwatch();
 // for (int i = 0; i < 1000; i++)
 // {
@@ -58,7 +54,6 @@ const int desiredDelta = 1000 / fps;
 // }
 // Console.WriteLine(stopW.ElapsedMilliseconds);
 // stopW.Stop();
-
 
 
 var frameCount = 0;
@@ -97,7 +92,7 @@ while (!quit)
                 break;
             case SDL.SDL_EventType.SDL_MOUSEWHEEL:
                 SDL.SDL_GetMouseState(out var cursorX, out var cursorY);
-                
+
                 var cursor = new Vector2Int(cursorX, cursorY);
                 userActionHandler.HandleMouseWheel(cursor, e.wheel.y);
 
@@ -107,7 +102,7 @@ while (!quit)
 
     SDL.SDL_GetRelativeMouseState(out var relativeX, out var relativeY);
     userActionHandler.HandleMouseHeldAction(new Vector2Int(relativeX, relativeY));
-    
+
     await circuitUpdater.CurrentUpdateCtx.Update(time);
 
     SDL.SDL_SetRenderDrawColor(sdlRenderer, 1, 1, 1, 255);
@@ -124,9 +119,10 @@ while (!quit)
     {
         SDL.SDL_Delay(desiredDelta - delta);
     }
+
     var endLoop = SDL.SDL_GetTicks();
-    time = endLoop - startLoop; 
-    
+    time = endLoop - startLoop;
+
     // FPS COUNTER
     frameCount++;
     if (currentTime - lastTime >= 1000)

@@ -25,7 +25,7 @@ internal static class CommonUserActionExecutor
 
         return null;
     }
-    
+
     public static Entity MarkEntity(Vector2Int adjustedCursorPosition)
     {
         var markedEntity = EntityQuery.AABB_Entities(

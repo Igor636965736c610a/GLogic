@@ -35,7 +35,8 @@ public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
             case MenuOption.LedOutput:
             case MenuOption.LowConstant:
             case MenuOption.HighConstant:
-                var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition, chosenMenuOption == MenuOption.HighConstant, chosenMenuOption);
+                var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition,
+                    chosenMenuOption == MenuOption.HighConstant, chosenMenuOption);
                 if (lGate is not null)
                 {
                     _instantSimulationModifier.IncreaseEntityStatesStorage();
@@ -47,10 +48,10 @@ public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
                 if (wire is not null)
                 {
                     Debug.Assert(ComponentManager.GetOutputComponent(wire.Value).Outputs.Count == 1);
-                    
+
                     _instantSimulationModifier.IncreaseEntityStatesStorage();
                 }
-                
+
                 break;
             case MenuOption.Delete:
                 var entityToDelete = EntityService.GetEntityToDelete(adjustedCursorPosition);
@@ -58,25 +59,26 @@ public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
                 {
                     return;
                 }
+
                 EntityService.RemoveEntity(entityToDelete);
 
                 break;
             case MenuOption.None:
                 HeldEntity = CommonUserActionExecutor.MarkEntity(adjustedCursorPosition);
-                
+
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public void HeldExecute(Vector2Int adjustedCursorPosition)
     {
         if (!IdStructure.IsValid(HeldEntity.Id))
         {
             return;
         }
-        
+
         var info = EntityService.GetDynamicLGateParamsToRender(
             adjustedCursorPosition,
             ComponentManager.IterLGateComponents().Where(z => z.Entity.Id != HeldEntity.Id)
