@@ -175,16 +175,11 @@ internal static class EntityService
         var overlapArea = GetLGateOverlapArea(chosenLGatePosition);
         var overlap = GetEntityWithBiggestOverlap(out var entityInOverlapArea, overlapArea, otherEntities);
         
-        chosenLGatePosition = new Vector2Int(
-            AdjustToGrid(chosenLGatePosition.X),
-            AdjustToGrid(chosenLGatePosition.Y)
-        );
-
         if (!overlap)
         {
             return HandleNoOverlap(chosenLGatePosition, otherEntities);
         }
-        
+
         Debug.Assert(entityInOverlapArea.HasValue);
         chosenLGatePosition = AdjustEntityPosition(chosenLGatePosition, entityInOverlapArea.Value);
         var placement = GetPlacement(chosenLGatePosition, otherEntities);
@@ -195,6 +190,11 @@ internal static class EntityService
     private static (Vector2Int position, Placement placement) HandleNoOverlap<T>(Vector2Int chosenLGatePosition,
         IEnumerable<T> otherEntities) where T : struct, IAABBCompare
     {
+        chosenLGatePosition = new Vector2Int(
+            AdjustToGrid(chosenLGatePosition.X),
+            AdjustToGrid(chosenLGatePosition.Y)
+        );
+        
         var overlapArea = GetLGateOverlapArea(chosenLGatePosition);
         var overlap = GetEntityWithBiggestOverlap(out var entityInOverlapArea, overlapArea, otherEntities);
 
@@ -267,6 +267,7 @@ internal static class EntityService
                 : entityInOverlapArea.Position.Y - RectLGateSize.Y;
 
             var newY = AdjustEntityAxis(entityInOverlapArea.Position.Y, adjustedEntityPosition.Y, distanceToEntityY);
+            newY = AdjustToGrid(newY);
             newY = entityInOverlapArea.Position.Y < adjustedEntityPosition.Y
                 ? Math.Min(yBound, newY)
                 : Math.Max(yBound, newY);
@@ -294,6 +295,7 @@ internal static class EntityService
             : entityInOverlapArea.Position.X - RectLGateSize.X;
 
         var newX = AdjustEntityAxis(entityInOverlapArea.Position.X, adjustedEntityPosition.X, distanceToEntityX);
+        newX = AdjustToGrid(newX);
         newX = entityInOverlapArea.Position.X < adjustedEntityPosition.X
             ? Math.Min(xBound, newX)
             : Math.Max(xBound, newX);
