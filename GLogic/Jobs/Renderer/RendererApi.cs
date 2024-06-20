@@ -11,6 +11,7 @@ public sealed class RendererApi : IRendererConfig
     private readonly MenuRenderer _menuRenderer;
     private readonly TextureStorage _textureStorage;
     private readonly WireRenderer _wireRenderer;
+    private readonly BackgroundRenderer _backgroundRenderer;
 
     private float _zoom;
 
@@ -26,6 +27,7 @@ public sealed class RendererApi : IRendererConfig
         _wireRenderer = new WireRenderer(this, renderer, textureStorage);
         _menuRenderer = new MenuRenderer(renderer, textureStorage);
         _textureStorage = new TextureStorage(renderer);
+        _backgroundRenderer = new BackgroundRenderer(this, renderer);
         _zoom = 1f;
     }
 
@@ -78,6 +80,11 @@ public sealed class RendererApi : IRendererConfig
     public void RenderMenu()
     {
         _menuRenderer.Render();
+    }
+
+    public void RenderGrid()
+    {
+        _backgroundRenderer.RenderBackgroundGrid();
     }
 
     private void RenderBackgroundEntities()

@@ -4,14 +4,13 @@ using GLogicECS.Collections;
 using GLogicECS.Components;
 using GLogicECS.Components.Common;
 
-namespace GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
+namespace GLogic.Jobs.Internal.EcsStateModifiers.Simulations;
 
 internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModifier
 {
     private readonly List<(bool state, uint frame)> _statesToReplace;
 
-    private readonly uint _callInterval;
-
+    private uint _callInterval;
     private uint _currentFrame;
     private Task _stateUpdater;
     private uint _timeSinceLastCall;
@@ -69,7 +68,7 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
 
     public void SetInterval(uint interval)
     {
-        throw new NotImplementedException();
+        _callInterval = interval;
     }
 
     public void IncreaseEntityStatesStorage()
@@ -98,7 +97,7 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
         }
     }
 
-    private bool PenetrateCircuit(Entity entity) //Entity instead of stateComp and frameCount i local list 
+    private bool PenetrateCircuit(Entity entity)
     {
         Debug.Assert(EntityManager.IsAlive(entity));
 

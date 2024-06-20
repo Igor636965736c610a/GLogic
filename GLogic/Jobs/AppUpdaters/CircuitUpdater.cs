@@ -1,5 +1,5 @@
 using GLogic.Jobs.Internal;
-using GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
+using GLogic.Jobs.Internal.EcsStateModifiers.Simulations;
 using GLogicECS.Api;
 
 namespace GLogic.Jobs.AppUpdaters;
@@ -37,7 +37,7 @@ public sealed class CircuitUpdater : ICircuitUpdaterConfig
 
     public CircuitUpdater InitDefault(out IUserActionExecutor userActionExecutor)
     {
-        userActionExecutor = ToInstantSimulation();
+        userActionExecutor = ToStepWiseSimulation();
 
         return this;
     }

@@ -1,6 +1,9 @@
-﻿using GLogic.Jobs;
+﻿using System.Diagnostics;
+using GLogic.Jobs;
 using GLogic.Jobs.AppUpdaters;
+using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Renderer;
+using GLogicECS.Components;
 using GLogicGlobal.Common;
 using SDL2;
 
@@ -33,17 +36,16 @@ const int desiredDelta = 1000 / fps;
 
 
 // var stopW = new Stopwatch();
-// for (int i = 0; i < 1000; i++)
+// for (int i = 0; i < 500; i++)
 // {
 //     stopW.Start();
-//     for (int j = 0; j < 500; j++)
+//     for (int j = 0; j < 1000; j++)
 //     {
 //         var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
 //         // if (i < 10)
 //         // {
 //         //     continue;
 //         // }
-//         XX.Add(entity);
 //         //var comp = ComponentManager.GetTransformComponent(entity).Position;
 //         //var position = new Vector2Int(comp.X + 5, comp.Y + 5);
 //         //EntityService.RemoveEntity(position);
@@ -62,6 +64,7 @@ var lastTime = startTime;
 uint time = 0;
 
 var quit = false;
+
 while (!quit)
 {
     var startLoop = SDL.SDL_GetTicks();
@@ -108,6 +111,7 @@ while (!quit)
     SDL.SDL_SetRenderDrawColor(sdlRenderer, 1, 1, 1, 255);
     SDL.SDL_RenderClear(sdlRenderer);
 
+    appRenderer.RenderGrid();
     appRenderer.RenderEntities();
     appRenderer.RenderMenu();
 
@@ -116,7 +120,7 @@ while (!quit)
     var currentTime = SDL.SDL_GetTicks();
     var delta = currentTime - startLoop;
     if (delta < desiredDelta)
-    {
+    { 
         SDL.SDL_Delay(desiredDelta - delta);
     }
 

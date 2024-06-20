@@ -119,10 +119,7 @@ public sealed class UserActionsHandler
                 {
                     ChosenMenuOption = (MenuOption)i;
                 }
-
-                Console.WriteLine(ChosenMenuOption.ToStringFast());
             }
-
             i++;
         }
     }

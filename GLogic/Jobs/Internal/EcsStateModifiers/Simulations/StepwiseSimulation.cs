@@ -4,13 +4,13 @@ using GLogicECS.Collections;
 using GLogicECS.Components;
 using GLogicECS.Components.Common;
 
-namespace GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
+namespace GLogic.Jobs.Internal.EcsStateModifiers.Simulations;
 
 internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationModifier
 {
     private readonly Queue<Entity> _entitiesToUpdate;
-
-    private readonly uint _callInterval;
+    
+    private uint _callInterval;
     private uint _timeSinceLastCall;
 
     public StepwiseSimulation(uint callInterval)
@@ -65,7 +65,7 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
 
     public void SetInterval(uint interval)
     {
-        throw new NotImplementedException();
+        _callInterval = interval;
     }
 
     public void AddToSimulationQueue(Entity entity)

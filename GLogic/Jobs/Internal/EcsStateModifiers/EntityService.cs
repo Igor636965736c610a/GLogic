@@ -26,11 +26,11 @@ internal static class EntityService
             throw new InvalidProgramException("Invalid IoType - Wire");
         }
 
-        Debug.Assert(!IdStructure.IsValid(
-                AnyEntityInArea(position, ComponentManager
-                    .IterLGateComponents()).Entity.Id
-            )
-        );
+        // Debug.Assert(!IdStructure.IsValid(
+        //         AnyEntityInArea(position, ComponentManager
+        //             .IterLGateComponents()).Entity.Id
+        //     )
+        // );
 
         var initTransformComponent = new InitTransformComponent(position, RectLGateSize);
         var initLGate = new InitLGate(initTransformComponent, ioType, value);

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using GLogic.Jobs.Internal.EcsStateModifiers;
-using GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
+using GLogic.Jobs.Internal.EcsStateModifiers.Simulations;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
 using GLogicECS.Components;

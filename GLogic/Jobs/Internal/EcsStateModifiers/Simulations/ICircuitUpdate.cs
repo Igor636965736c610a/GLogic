@@ -1,4 +1,4 @@
-namespace GLogic.Jobs.Internal.EcsStateModifiers.LogicCircuitUpdates.Simulations;
+namespace GLogic.Jobs.Internal.EcsStateModifiers.Simulations;
 
 public interface ICircuitUpdate
 {
