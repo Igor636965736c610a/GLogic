@@ -14,7 +14,7 @@ public sealed class BackgroundRenderer
         _rendererStateAccess = rendererStateAccess;
     }
 
-    public void RenderBackgroundGrid()
+    public void RenderGrid()
     {
         SDL.SDL_SetRenderDrawColor(_renderer, 39, 39, 39, 0);
 
@@ -27,13 +27,12 @@ public sealed class BackgroundRenderer
         var thickLineX = firstLineX / factor;
         for (int i = firstLineX % factor; i < RendererApi.WindowSize.Size.X; i += factor)
         {
-            var a = thickLineX % 5 == 0 ? (byte)220 : (byte)90;
             var gridLineColor = new SDL.SDL_Color
             {
                 r = 39,
                 g = 39,
                 b = 39,
-                a = a
+                a = thickLineX % 5 == 0 ? (byte)220 : (byte)90
             };
             
             SDL2Gfx.AaLineRgba(_renderer, i, 0, i, RendererApi.WindowSize.Size.Y, gridLineColor);
@@ -44,13 +43,12 @@ public sealed class BackgroundRenderer
         var thickLineY = firstLineY / factor;
         for (int i = firstLineY % factor; i < RendererApi.WindowSize.Size.Y; i += factor)
         {
-            var a = thickLineY % 5 == 0 ? (byte)220 : (byte)90;
             var gridLineColor = new SDL.SDL_Color
             {
                 r = 39,
                 g = 39,
                 b = 39,
-                a = a
+                a = thickLineY % 5 == 0 ? (byte)220 : (byte)90
             };
             
             SDL2Gfx.AaLineRgba(_renderer, 0, i, RendererApi.WindowSize.Size.X, i, gridLineColor);

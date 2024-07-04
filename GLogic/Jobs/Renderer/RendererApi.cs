@@ -84,7 +84,7 @@ public sealed class RendererApi : IRendererConfig
 
     public void RenderGrid()
     {
-        _backgroundRenderer.RenderBackgroundGrid();
+        _backgroundRenderer.RenderGrid();
     }
 
     private void RenderBackgroundEntities()

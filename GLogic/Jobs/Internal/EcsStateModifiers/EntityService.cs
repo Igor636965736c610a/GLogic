@@ -34,6 +34,7 @@ internal static class EntityService
 
         var initTransformComponent = new InitTransformComponent(position, RectLGateSize);
         var initLGate = new InitLGate(initTransformComponent, ioType, value);
+        
         return EntityManager.CreateEntity(initLGate);
     }
 

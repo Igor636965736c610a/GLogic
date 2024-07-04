@@ -39,7 +39,7 @@ const int desiredDelta = 1000 / fps;
 // for (int i = 0; i < 500; i++)
 // {
 //     stopW.Start();
-//     for (int j = 0; j < 1000; j++)
+//     for (int j = 0; j < 500; j++)
 //     {
 //         var entity = EntityService.AddLGate(new Vector2Int(i * (EntityService.RectLGateSize.X + 5), j * (EntityService.RectLGateSize.Y + 5)), IoType.NOR, true);
 //         // if (i < 10)
