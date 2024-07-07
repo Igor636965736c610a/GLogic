@@ -31,11 +31,8 @@ public static class EntityManager
 
     public static Entity CreateEntity(InitWire init)
     {
-        // Implement ICollection to Small List to avoid that
-        var inputs = new SmallList<ConnectionInfo>();
-        inputs.Add(new ConnectionInfo(init.Input.Entity, init.Input.HookNumber));
-        var outputs = new SmallList<ConnectionInfo>();
-        outputs.Add(new ConnectionInfo(init.Output.Entity, init.Output.HookNumber));
+        var inputs = new SmallList<ConnectionInfo> { new ConnectionInfo(init.Input.Entity, init.Input.HookNumber) };
+        var outputs = new SmallList<ConnectionInfo> { new ConnectionInfo(init.Output.Entity, init.Output.HookNumber) };
 
         var initInputOutputComp = new InitInputsOutputs(
             inputs,
