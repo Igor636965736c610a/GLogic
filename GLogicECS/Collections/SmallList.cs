@@ -1,12 +1,24 @@
+using System.Collections;
+using System.Runtime.InteropServices;
+
 namespace GLogicECS.Collections;
 
-public struct SmallList<T> where T : struct, IEquatable<T>
+public struct SmallList<T> : ICollection<T> where T : struct, IEquatable<T>
 {
     private T _a;
     private T _b;
     private List<T>? _grow;
 
-    public int Count;
+    public SmallList()
+    {
+        _a = default;
+        _b = default;
+        _grow = null;
+        Count = 0;
+    }
+
+    public int Count { get; private set; }
+    public bool IsReadOnly { get; } = false;
 
     public T this[int index]
     {
@@ -63,6 +75,51 @@ public struct SmallList<T> where T : struct, IEquatable<T>
         }
     }
 
+    public void Clear()
+    {
+        Count = 0;
+    }
+
+    public bool Contains(T item)
+    {
+        for (var i = 0; i < Count; i++)
+        {
+            var current = this[i];
+
+            if (current!.Equals(item))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        var lenght = array.Length - arrayIndex;
+        
+        if (lenght > Count)
+        {
+            throw new ArgumentOutOfRangeException("To long destination array offset");
+        }
+
+        if (lenght > 0)
+        {
+            array[arrayIndex] = _a;
+        } else return;
+
+        if (lenght > 1)
+        {
+            array[arrayIndex + 1] = _b;
+        } else return;
+
+        if (lenght > 2)
+        {
+            _grow!.CopyTo(array, arrayIndex + 2);
+        }
+    }
+
     public bool Remove(T element)
     {
         if (Count == 0)
@@ -96,4 +153,30 @@ public struct SmallList<T> where T : struct, IEquatable<T>
 
         return -1;
     }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        if (Count > 0)
+        {
+            yield return _a;
+        }
+
+        if (Count > 1)
+        {
+            yield return _b;
+        }
+
+        if (_grow is null)
+        {
+            yield break;
+        }
+
+        foreach (var t in _grow)
+        {
+            yield return t;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => GetEnumerator();
 }
