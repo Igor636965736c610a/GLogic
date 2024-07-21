@@ -1,5 +1,4 @@
 using GLogic.Data;
-using GLogic.Extensions;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogicECS.Api;
 using GLogicGlobal.Common;
@@ -22,7 +21,7 @@ public sealed class LGateRenderer
 
     public void RenderStaticLGate(LGateRenderInfo info)
     {
-        var sdlRect = new SDL.SDL_Rect().FromArea(info.Rect);
+        SDL.SDL_Rect sdlRect = info.Rect;
         var texture = _textureStorage.GetLGateTexture(info.LGate, info.State, info.Placement);
 
         SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref sdlRect);

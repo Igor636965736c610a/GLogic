@@ -1,7 +1,4 @@
 using GLogic.Data;
-using GLogic.Extensions;
-using GLogicGlobal.Common;
-using NetEscapades.EnumGenerators;
 using SDL2;
 
 namespace GLogic.Jobs.Renderer;
@@ -27,7 +24,7 @@ public sealed class LayoutRenderer
 
     private void RenderLeftPanel()
     {
-        var menuRect = new SDL.SDL_Rect().FromArea(_layoutArrangement.LeftPanelRect);
+        SDL.SDL_Rect menuRect = _layoutArrangement.LeftPanelRect;
 
         SDL.SDL_SetRenderDrawColor(_renderer, MenuColor.r, MenuColor.g, MenuColor.b, MenuColor.a);
         SDL.SDL_RenderFillRect(_renderer, ref menuRect);
@@ -35,7 +32,7 @@ public sealed class LayoutRenderer
         var i = 0;
         foreach (var menuOption in _layoutArrangement.LeftPanelOptions)
         {
-            var rect = new SDL.SDL_Rect().FromArea(menuOption);
+            SDL.SDL_Rect rect = menuOption;
 
             var option = (LeftPanelOptions)i;
             var texture =

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using GLogic.Data;
 using GLogic.Imports;
 using GLogic.Jobs.Internal.EcsStateModifiers;
@@ -45,6 +46,32 @@ public sealed class WireRenderer
                 a = 255
             };
         }
+        
+        // double angle = Math.Atan2(info.P2.Y - info.P1.Y, info.P2.X - info.P1.X);
+        // int dx = (int)(2 / 2.0 * Math.Sin(angle));
+        // int dy = (int)(2 / 2.0 * Math.Cos(angle));
+        //
+        // int[] vx = new int[4] { info.P1.X + dx, info.P2.X + dx, info.P2.X - dx, info.P1.X - dx };
+        // int[] vy = new int[4] { info.P1.Y - dy, info.P2.Y - dy, info.P2.Y + dy, info.P1.Y + dy };
+        // GCHandle handleVx = GCHandle.Alloc(vx, GCHandleType.Pinned);
+        // GCHandle handleVy = GCHandle.Alloc(vy, GCHandleType.Pinned);
+        //
+        // try
+        // {
+        //     IntPtr vxPtr = handleVx.AddrOfPinnedObject();
+        //     IntPtr vyPtr = handleVy.AddrOfPinnedObject();
+        //
+        //     SDL2Gfx.filledPolygonRGBA(_renderer, vxPtr, vyPtr, 4, 
+        //         color.r, 
+        //         color.g, 
+        //         color.b, 
+        //         color.a);
+        // }
+        // finally
+        // {
+        //     handleVx.Free();
+        //     handleVy.Free();
+        // }
 
         SDL2Gfx.AaLineRgba(_renderer, info.P1.X, info.P1.Y, info.P2.X, info.P2.Y, color);
     }

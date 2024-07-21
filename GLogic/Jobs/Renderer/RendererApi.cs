@@ -1,6 +1,7 @@
 ﻿using GLogic.Data;
 using GLogicECS.Api;
 using GLogicGlobal.Common;
+using SDL2;
 
 namespace GLogic.Jobs.Renderer;
 
@@ -191,6 +192,14 @@ public readonly record struct Area(Vector2Int Position, Vector2Int Size)
                 Y = RendererApi.CalculateShiftRelatively(Size.Y, zoom, 0)
             }
         };
+    
+    public static implicit operator SDL.SDL_Rect(Area area) => new()
+    {
+        x = area.Position.X,
+        y = area.Position.Y,
+        w = area.Size.X,
+        h = area.Size.Y,
+    };
 }
 
 public interface IRendererConfig : IRendererStateAccess

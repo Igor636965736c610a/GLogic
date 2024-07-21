@@ -33,7 +33,7 @@ var appRenderer = new RendererApi(sdlRenderer, layoutArrangement, textures);
 var circuitUpdater = new CircuitUpdater().InitDefault(out var userActionExecutor);
 var userActionHandler = new UserActionsHandler(appRenderer, circuitUpdater, userActionExecutor, layoutArrangement);
 
-const int fps = 60;
+const int fps = AppSettings.Fps;
 const int desiredDelta = 1000 / fps;
 
 
