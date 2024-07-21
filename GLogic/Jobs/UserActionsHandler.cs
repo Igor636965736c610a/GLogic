@@ -94,7 +94,9 @@ public sealed class UserActionsHandler
                 
                 break;
             case UIComponent.TopPanel:
-                break;
+                
+                
+                //break;
             case UIComponent.WorkingArea:
                 DoUserAction(cursor);
                 
