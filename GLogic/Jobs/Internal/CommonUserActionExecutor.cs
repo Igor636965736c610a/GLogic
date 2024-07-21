@@ -1,3 +1,4 @@
+using GLogic.Data;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
@@ -9,7 +10,7 @@ namespace GLogic.Jobs.Internal;
 
 internal static class CommonUserActionExecutor
 {
-    public static Entity? AddLGate(Vector2Int adjustedCursorPosition, bool lGateValue, MenuOption chosenMenuOption)
+    public static Entity? AddLGate(Vector2Int adjustedCursorPosition, bool lGateValue, LeftPanelOptions chosenLeftPanelOptions)
     {
         var info = EntityService.GetDynamicLGateParamsToRender(
             adjustedCursorPosition,
@@ -19,7 +20,7 @@ internal static class CommonUserActionExecutor
         if (info.placement == Placement.Valid)
         {
             return EntityService.AddLGate(
-                info.position, GetLGateTypeFromMenuOption(chosenMenuOption), lGateValue
+                info.position, GetLGateTypeFromMenuOption(chosenLeftPanelOptions), lGateValue
             );
         }
 
@@ -37,21 +38,21 @@ internal static class CommonUserActionExecutor
         return markedEntity;
     }
 
-    private static IoType GetLGateTypeFromMenuOption(MenuOption menuOption)
+    private static IoType GetLGateTypeFromMenuOption(LeftPanelOptions leftPanelOptions)
     {
-        return menuOption switch
+        return leftPanelOptions switch
         {
-            MenuOption.AND => IoType.AND,
-            MenuOption.OR => IoType.OR,
-            MenuOption.NOT => IoType.NOT,
-            MenuOption.XOR => IoType.XOR,
-            MenuOption.NAND => IoType.NAND,
-            MenuOption.NOR => IoType.NOR,
-            MenuOption.XNOR => IoType.XNOR,
-            MenuOption.LowConstant => IoType.Constant,
-            MenuOption.HighConstant => IoType.Constant,
-            MenuOption.LedOutput => IoType.LedOutput,
-            _ => throw new ArgumentOutOfRangeException(nameof(menuOption), menuOption, null)
+            LeftPanelOptions.AND => IoType.AND,
+            LeftPanelOptions.OR => IoType.OR,
+            LeftPanelOptions.NOT => IoType.NOT,
+            LeftPanelOptions.XOR => IoType.XOR,
+            LeftPanelOptions.NAND => IoType.NAND,
+            LeftPanelOptions.NOR => IoType.NOR,
+            LeftPanelOptions.XNOR => IoType.XNOR,
+            LeftPanelOptions.LowConstant => IoType.Constant,
+            LeftPanelOptions.HighConstant => IoType.Constant,
+            LeftPanelOptions.LedOutput => IoType.LedOutput,
+            _ => throw new ArgumentOutOfRangeException(nameof(leftPanelOptions), leftPanelOptions, null)
         };
     }
 }

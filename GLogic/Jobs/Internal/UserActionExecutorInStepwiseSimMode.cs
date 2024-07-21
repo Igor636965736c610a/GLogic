@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GLogic.Data;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Internal.EcsStateModifiers.Simulations;
 using GLogic.Jobs.Renderer;
@@ -21,32 +22,32 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
 
     public Entity HeldEntity { get; set; }
 
-    public void ClickExecute(Vector2Int adjustedCursorPosition, MenuOption chosenMenuOption)
+    public void ClickExecute(Vector2Int adjustedCursorPosition, LeftPanelOptions chosenLeftPanelOptions)
     {
-        switch (chosenMenuOption)
+        switch (chosenLeftPanelOptions)
         {
-            case MenuOption.AND:
-            case MenuOption.OR:
-            case MenuOption.NOT:
-            case MenuOption.XOR:
-            case MenuOption.NAND:
-            case MenuOption.NOR:
-            case MenuOption.XNOR:
-            case MenuOption.LedOutput:
-                var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition, false, chosenMenuOption);
+            case LeftPanelOptions.AND:
+            case LeftPanelOptions.OR:
+            case LeftPanelOptions.NOT:
+            case LeftPanelOptions.XOR:
+            case LeftPanelOptions.NAND:
+            case LeftPanelOptions.NOR:
+            case LeftPanelOptions.XNOR:
+            case LeftPanelOptions.LedOutput:
+                var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition, false, chosenLeftPanelOptions);
                 if (lGate is not null)
                 {
                     _stepwiseSimulationModifier.AddToSimulationQueue(lGate.Value);
                 }
 
                 break;
-            case MenuOption.LowConstant:
-            case MenuOption.HighConstant:
-                CommonUserActionExecutor.AddLGate(adjustedCursorPosition, chosenMenuOption == MenuOption.HighConstant,
-                    chosenMenuOption);
+            case LeftPanelOptions.LowConstant:
+            case LeftPanelOptions.HighConstant:
+                CommonUserActionExecutor.AddLGate(adjustedCursorPosition, chosenLeftPanelOptions == LeftPanelOptions.HighConstant,
+                    chosenLeftPanelOptions);
 
                 break;
-            case MenuOption.Wire:
+            case LeftPanelOptions.Wire:
                 var wire = EntityService.AddWire(adjustedCursorPosition);
                 if (wire is not null)
                 {
@@ -57,7 +58,7 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
                 }
 
                 break;
-            case MenuOption.Delete:
+            case LeftPanelOptions.Delete:
                 var entityToDelete = EntityService.GetEntityToDelete(adjustedCursorPosition);
                 if (!IdStructure.IsValid(entityToDelete.Id))
                 {
@@ -75,7 +76,7 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
                 EntityService.RemoveEntity(entityToDelete);
 
                 break;
-            case MenuOption.None:
+            case LeftPanelOptions.None:
                 HeldEntity = CommonUserActionExecutor.MarkEntity(adjustedCursorPosition);
 
                 break;

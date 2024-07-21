@@ -1,3 +1,5 @@
+using GLogic.Data;
+using GLogic.Extensions;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogicECS.Api;
 using GLogicGlobal.Common;
@@ -20,19 +22,13 @@ public sealed class LGateRenderer
 
     public void RenderStaticLGate(LGateRenderInfo info)
     {
-        var sdlRect = new SDL.SDL_Rect
-        {
-            x = info.Rect.Position.X,
-            y = info.Rect.Position.Y,
-            w = info.Rect.Size.X,
-            h = info.Rect.Size.Y
-        };
+        var sdlRect = new SDL.SDL_Rect().FromArea(info.Rect);
         var texture = _textureStorage.GetLGateTexture(info.LGate, info.State, info.Placement);
 
         SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref sdlRect);
     }
 
-    public void RenderChosenLGateFromMenu(MenuOption option)
+    public void RenderChosenLGateFromMenu(LeftPanelOptions option)
     {
         SDL.SDL_GetMouseState(out var x, out var y);
 

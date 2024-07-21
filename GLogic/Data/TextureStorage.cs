@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
-using GLogic.Jobs.Renderer;
 using GLogicECS.Components;
 using NetEscapades.EnumGenerators;
 using SDL2;
 
-namespace GLogic.Jobs;
+namespace GLogic.Data;
 
 public sealed class TextureStorage
 {
@@ -38,22 +37,22 @@ public sealed class TextureStorage
         _ => throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null)
     };
 
-    public LGate ConvertToLGate(MenuOption menuOption) => menuOption switch
+    public LGate ConvertToLGate(LeftPanelOptions leftPanelOptions) => leftPanelOptions switch
     {
-        MenuOption.AND => LGate.AND,
-        MenuOption.OR => LGate.OR,
-        MenuOption.NOT => LGate.NOT,
-        MenuOption.XOR => LGate.XOR,
-        MenuOption.NAND => LGate.NAND,
-        MenuOption.NOR => LGate.NOR,
-        MenuOption.XNOR => LGate.XNOR,
-        MenuOption.LowConstant => LGate.LowConstant,
-        MenuOption.HighConstant => LGate.HighConstant,
-        MenuOption.LedOutput => LGate.LedOutput,
-        MenuOption.Wire => throw new InvalidOperationException("Accessing a non-existent texture"),
-        MenuOption.Delete => throw new InvalidOperationException("Accessing a non-existent texture"),
-        MenuOption.None => throw new InvalidOperationException("Accessing a non-existent texture"),
-        _ => throw new ArgumentOutOfRangeException(nameof(menuOption), menuOption, null)
+        LeftPanelOptions.AND => LGate.AND,
+        LeftPanelOptions.OR => LGate.OR,
+        LeftPanelOptions.NOT => LGate.NOT,
+        LeftPanelOptions.XOR => LGate.XOR,
+        LeftPanelOptions.NAND => LGate.NAND,
+        LeftPanelOptions.NOR => LGate.NOR,
+        LeftPanelOptions.XNOR => LGate.XNOR,
+        LeftPanelOptions.LowConstant => LGate.LowConstant,
+        LeftPanelOptions.HighConstant => LGate.HighConstant,
+        LeftPanelOptions.LedOutput => LGate.LedOutput,
+        LeftPanelOptions.Wire => throw new InvalidOperationException("Accessing a non-existent texture"),
+        LeftPanelOptions.Delete => throw new InvalidOperationException("Accessing a non-existent texture"),
+        LeftPanelOptions.None => throw new InvalidOperationException("Accessing a non-existent texture"),
+        _ => throw new ArgumentOutOfRangeException(nameof(leftPanelOptions), leftPanelOptions, null)
     };
 
     private LGateTexture GetLGateTextureIndex(LGate g, bool state, Placement placement)

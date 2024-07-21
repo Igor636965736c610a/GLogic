@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GLogic.Data;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Internal.EcsStateModifiers.Simulations;
 using GLogic.Jobs.Renderer;
@@ -21,29 +22,29 @@ public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
 
     public Entity HeldEntity { get; set; }
 
-    public void ClickExecute(Vector2Int adjustedCursorPosition, MenuOption chosenMenuOption)
+    public void ClickExecute(Vector2Int adjustedCursorPosition, LeftPanelOptions chosenLeftPanelOptions)
     {
-        switch (chosenMenuOption)
+        switch (chosenLeftPanelOptions)
         {
-            case MenuOption.AND:
-            case MenuOption.OR:
-            case MenuOption.NOT:
-            case MenuOption.XOR:
-            case MenuOption.NAND:
-            case MenuOption.NOR:
-            case MenuOption.XNOR:
-            case MenuOption.LedOutput:
-            case MenuOption.LowConstant:
-            case MenuOption.HighConstant:
+            case LeftPanelOptions.AND:
+            case LeftPanelOptions.OR:
+            case LeftPanelOptions.NOT:
+            case LeftPanelOptions.XOR:
+            case LeftPanelOptions.NAND:
+            case LeftPanelOptions.NOR:
+            case LeftPanelOptions.XNOR:
+            case LeftPanelOptions.LedOutput:
+            case LeftPanelOptions.LowConstant:
+            case LeftPanelOptions.HighConstant:
                 var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition,
-                    chosenMenuOption == MenuOption.HighConstant, chosenMenuOption);
+                    chosenLeftPanelOptions == LeftPanelOptions.HighConstant, chosenLeftPanelOptions);
                 if (lGate is not null)
                 {
                     _instantSimulationModifier.IncreaseEntityStatesStorage();
                 }
 
                 break;
-            case MenuOption.Wire:
+            case LeftPanelOptions.Wire:
                 var wire = EntityService.AddWire(adjustedCursorPosition);
                 if (wire is not null)
                 {
@@ -53,7 +54,7 @@ public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
                 }
 
                 break;
-            case MenuOption.Delete:
+            case LeftPanelOptions.Delete:
                 var entityToDelete = EntityService.GetEntityToDelete(adjustedCursorPosition);
                 if (!IdStructure.IsValid(entityToDelete.Id))
                 {
@@ -63,7 +64,7 @@ public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
                 EntityService.RemoveEntity(entityToDelete);
 
                 break;
-            case MenuOption.None:
+            case LeftPanelOptions.None:
                 HeldEntity = CommonUserActionExecutor.MarkEntity(adjustedCursorPosition);
 
                 break;

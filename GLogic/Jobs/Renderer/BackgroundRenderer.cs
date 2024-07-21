@@ -1,3 +1,4 @@
+using GLogic.Data;
 using GLogic.Imports;
 using SDL2;
 
@@ -16,7 +17,7 @@ public sealed class BackgroundRenderer
 
     public void RenderGrid()
     {
-        SDL.SDL_SetRenderDrawColor(_renderer, 39, 39, 39, 0);
+        SDL.SDL_SetRenderDrawColor(_renderer, 39, 39, 39, 0); //TODO
 
         var factor = (int)Math.Round(10 * _rendererStateAccess.Zoom);
         var firstLineX =
@@ -25,7 +26,7 @@ public sealed class BackgroundRenderer
             RendererApi.CalculateShiftRelatively(10, _rendererStateAccess.Zoom, _rendererStateAccess.CameraShift.Y);
         
         var thickLineX = firstLineX / factor;
-        for (int i = firstLineX % factor; i < RendererApi.WindowSize.Size.X; i += factor)
+        for (int i = firstLineX % factor; i < AppSettings.WindowSize.X; i += factor)
         {
             var gridLineColor = new SDL.SDL_Color
             {
@@ -35,13 +36,13 @@ public sealed class BackgroundRenderer
                 a = thickLineX % 5 == 0 ? (byte)220 : (byte)90
             };
             
-            SDL2Gfx.AaLineRgba(_renderer, i, 0, i, RendererApi.WindowSize.Size.Y, gridLineColor);
+            SDL2Gfx.AaLineRgba(_renderer, i, 0, i, AppSettings.WindowSize.Y, gridLineColor);
 
             thickLineX--;
         }
 
         var thickLineY = firstLineY / factor;
-        for (int i = firstLineY % factor; i < RendererApi.WindowSize.Size.Y; i += factor)
+        for (int i = firstLineY % factor; i < AppSettings.WindowSize.Y; i += factor)
         {
             var gridLineColor = new SDL.SDL_Color
             {
@@ -51,7 +52,7 @@ public sealed class BackgroundRenderer
                 a = thickLineY % 5 == 0 ? (byte)220 : (byte)90
             };
             
-            SDL2Gfx.AaLineRgba(_renderer, 0, i, RendererApi.WindowSize.Size.X, i, gridLineColor);
+            SDL2Gfx.AaLineRgba(_renderer, 0, i, AppSettings.WindowSize.X, i, gridLineColor);
 
             thickLineY--;
         }

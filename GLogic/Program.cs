@@ -1,9 +1,7 @@
-﻿using System.Diagnostics;
+﻿using GLogic.Data;
 using GLogic.Jobs;
 using GLogic.Jobs.AppUpdaters;
-using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Renderer;
-using GLogicECS.Components;
 using GLogicGlobal.Common;
 using SDL2;
 
@@ -15,8 +13,8 @@ var window = SDL.SDL_CreateWindow(
     appName,
     SDL.SDL_WINDOWPOS_CENTERED,
     SDL.SDL_WINDOWPOS_CENTERED,
-    RendererApi.WindowSize.Size.X,
-    RendererApi.WindowSize.Size.Y,
+    AppSettings.WindowSize.X,
+    AppSettings.WindowSize.Y,
     SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN
 );
 
@@ -24,12 +22,16 @@ var window = SDL.SDL_CreateWindow(
 const int
     index_of_the_rendering_driver_to_initialize = -1; // -1 to initialize the first one supporting the requested flags
 
-var sdlRenderer = SDL.SDL_CreateRenderer(window, index_of_the_rendering_driver_to_initialize,
-    SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+var sdlRenderer = SDL.SDL_CreateRenderer(
+    window, 
+    index_of_the_rendering_driver_to_initialize,
+    SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED
+    );
 var textures = new TextureStorage(sdlRenderer);
-var appRenderer = new RendererApi(sdlRenderer, textures);
+var layoutArrangement = new LayoutArrangement();
+var appRenderer = new RendererApi(sdlRenderer, layoutArrangement, textures);
 var circuitUpdater = new CircuitUpdater().InitDefault(out var userActionExecutor);
-var userActionHandler = new UserActionsHandler(appRenderer, circuitUpdater, userActionExecutor);
+var userActionHandler = new UserActionsHandler(appRenderer, circuitUpdater, userActionExecutor, layoutArrangement);
 
 const int fps = 60;
 const int desiredDelta = 1000 / fps;

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GLogic.Data;
 using GLogic.Jobs.AppUpdaters;
 using GLogic.Jobs.Internal;
 using GLogic.Jobs.Internal.EcsStateModifiers;
@@ -7,40 +8,37 @@ using GLogicECS.Components;
 using GLogicECS.Components.Common;
 using GLogicGlobal.Common;
 using SDL2;
+// ReSharper disable InconsistentNaming
 
 namespace GLogic.Jobs;
 
 public sealed class UserActionsHandler
 {
-    private readonly ICircuitUpdaterConfig _circuitUpdaterConfig;
     private readonly IRendererConfig _rendererConfig;
+    private readonly ICircuitUpdaterConfig _circuitUpdaterConfig;
     private readonly IUserActionExecutor _userActionExecutor;
+    private readonly LayoutArrangement _layoutArrangement;
 
     public UserActionsHandler(IRendererConfig rendererConfig, ICircuitUpdaterConfig circuitUpdaterConfig,
-        IUserActionExecutor userActionExecutor)
+        IUserActionExecutor userActionExecutor, LayoutArrangement layoutArrangement)
     {
-        ChosenMenuOption = MenuOption.None;
+        ChosenLeftPanelOptions = LeftPanelOptions.None;
         _userActionExecutor = userActionExecutor;
         _circuitUpdaterConfig = circuitUpdaterConfig;
         _rendererConfig = rendererConfig;
+        _layoutArrangement = layoutArrangement;
     }
 
-    public static MenuOption ChosenMenuOption { get; private set; }
+    public static LeftPanelOptions ChosenLeftPanelOptions { get; private set; }
     public static bool MouseRightButtonState { get; private set; }
     public static bool MouseLeftButtonState { get; private set; }
     public static bool ShiftKeyState { get; private set; }
-
-    #region MouseWheel
 
     public void HandleMouseWheel(Vector2Int cursor, int wheelY)
     {
         _rendererConfig.ChangeRelativelyToCursorZoom((float)(wheelY * 0.1), cursor);
     }
-
-    #endregion
-
-    #region MouseClick
-
+    
     public void HandleMouseUpPollEvent(Vector2Int cursor, uint mouseButton)
     {
         switch (mouseButton)
@@ -88,21 +86,28 @@ public sealed class UserActionsHandler
 
     private void LeftClickDown(Vector2Int cursor)
     {
-        if (cursor.X <= MenuRenderer.Width)
+        switch (GetUIComponent(cursor))
         {
-            WireService.Reset();
-            SetChosenLGate(cursor);
-        }
-        else
-        {
-            DoUserAction(cursor);
+            case UIComponent.LeftPanel:
+                WireService.Reset();
+                SetChosenLGate(cursor);
+                
+                break;
+            case UIComponent.TopPanel:
+                break;
+            case UIComponent.WorkingArea:
+                DoUserAction(cursor);
+                
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
-    private static void SetChosenLGate(Vector2Int cursor)
+    private void SetChosenLGate(Vector2Int cursor)
     {
         var i = 0;
-        foreach (var option in MenuRenderer.MenuOptions)
+        foreach (var option in _layoutArrangement.LeftPanelOptions)
         {
             if (
                 cursor.X >= option.Position.X
@@ -111,13 +116,13 @@ public sealed class UserActionsHandler
                 && cursor.Y < option.Position.Y + option.Size.Y
             )
             {
-                if (ChosenMenuOption == (MenuOption)i)
+                if (ChosenLeftPanelOptions == (LeftPanelOptions)i)
                 {
-                    ChosenMenuOption = MenuOption.None;
+                    ChosenLeftPanelOptions = LeftPanelOptions.None;
                 }
                 else
                 {
-                    ChosenMenuOption = (MenuOption)i;
+                    ChosenLeftPanelOptions = (LeftPanelOptions)i;
                 }
             }
             i++;
@@ -128,12 +133,8 @@ public sealed class UserActionsHandler
     {
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
 
-        _userActionExecutor.ClickExecute(adjustedCursorPosition, ChosenMenuOption);
+        _userActionExecutor.ClickExecute(adjustedCursorPosition, ChosenLeftPanelOptions);
     }
-
-    #endregion
-
-    #region MouseHeld
 
     public void HandleMouseHeldAction(Vector2Int relativeCursorPosition)
     {
@@ -161,5 +162,28 @@ public sealed class UserActionsHandler
         _userActionExecutor.HeldExecute(_rendererConfig.GetRelativeShiftedCursor(new Vector2Int(x, y)));
     }
 
-    #endregion
+    private UIComponent GetUIComponent(Vector2Int cursor)
+    {
+        if (cursor.X <= _layoutArrangement.LeftPanelRect.Size.X)
+        {
+            return UIComponent.LeftPanel;
+        }
+
+        else if (cursor.Y <= _layoutArrangement.TopPanelRect.Size.Y)
+        {
+            return UIComponent.TopPanel;
+        }
+
+        else
+        {
+            return UIComponent.WorkingArea;
+        }
+    }
+
+    private enum UIComponent
+    {
+        LeftPanel,
+        TopPanel,
+        WorkingArea
+    }
 }

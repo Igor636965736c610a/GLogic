@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using GLogic.Data;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
 using GLogicECS.Components;

@@ -1,14 +1,14 @@
-﻿using GLogicECS.Api;
+﻿using GLogic.Data;
+using GLogicECS.Api;
 using GLogicGlobal.Common;
 
 namespace GLogic.Jobs.Renderer;
 
 public sealed class RendererApi : IRendererConfig
 {
-    public static readonly Area WindowSize;
     public static readonly Area RenderArea;
     private readonly LGateRenderer _lGateRenderer;
-    private readonly MenuRenderer _menuRenderer;
+    private readonly LayoutRenderer _layoutRenderer;
     private readonly TextureStorage _textureStorage;
     private readonly WireRenderer _wireRenderer;
     private readonly BackgroundRenderer _backgroundRenderer;
@@ -17,15 +17,14 @@ public sealed class RendererApi : IRendererConfig
 
     static RendererApi()
     {
-        WindowSize = new Area(new Vector2Int(0, 0), new Vector2Int(1280, 720));
         RenderArea = new Area(new Vector2Int(-200, -200), new Vector2Int(1680, 1120));
     }
 
-    public RendererApi(IntPtr renderer, TextureStorage textureStorage)
+    public RendererApi(IntPtr renderer, LayoutArrangement layoutArrangement, TextureStorage textureStorage)
     {
         _lGateRenderer = new LGateRenderer(this, renderer, textureStorage);
         _wireRenderer = new WireRenderer(this, renderer, textureStorage);
-        _menuRenderer = new MenuRenderer(renderer, textureStorage);
+        _layoutRenderer = new LayoutRenderer(renderer, layoutArrangement, textureStorage);
         _textureStorage = new TextureStorage(renderer);
         _backgroundRenderer = new BackgroundRenderer(this, renderer);
         _zoom = 1f;
@@ -79,7 +78,7 @@ public sealed class RendererApi : IRendererConfig
 
     public void RenderMenu()
     {
-        _menuRenderer.Render();
+        _layoutRenderer.Render();
     }
 
     public void RenderGrid()
@@ -140,25 +139,25 @@ public sealed class RendererApi : IRendererConfig
 
     private void RenderChosenEntity()
     {
-        switch (UserActionsHandler.ChosenMenuOption)
+        switch (UserActionsHandler.ChosenLeftPanelOptions)
         {
-            case MenuOption.AND:
-            case MenuOption.OR:
-            case MenuOption.NOT:
-            case MenuOption.XOR:
-            case MenuOption.NAND:
-            case MenuOption.NOR:
-            case MenuOption.XNOR:
-            case MenuOption.LowConstant:
-            case MenuOption.HighConstant:
-            case MenuOption.LedOutput:
-                _lGateRenderer.RenderChosenLGateFromMenu(UserActionsHandler.ChosenMenuOption);
+            case LeftPanelOptions.AND:
+            case LeftPanelOptions.OR:
+            case LeftPanelOptions.NOT:
+            case LeftPanelOptions.XOR:
+            case LeftPanelOptions.NAND:
+            case LeftPanelOptions.NOR:
+            case LeftPanelOptions.XNOR:
+            case LeftPanelOptions.LowConstant:
+            case LeftPanelOptions.HighConstant:
+            case LeftPanelOptions.LedOutput:
+                _lGateRenderer.RenderChosenLGateFromMenu(UserActionsHandler.ChosenLeftPanelOptions);
                 break;
-            case MenuOption.Wire:
+            case LeftPanelOptions.Wire:
                 _wireRenderer.RenderChosenWireFromMenuOption();
                 break;
-            case MenuOption.Delete:
-            case MenuOption.None:
+            case LeftPanelOptions.Delete:
+            case LeftPanelOptions.None:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
