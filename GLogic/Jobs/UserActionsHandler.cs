@@ -98,7 +98,7 @@ public sealed class UserActionsHandler
                 
                 //break;
             case UIComponent.WorkingArea:
-                DoUserAction(cursor);
+                ClickUserAction(cursor);
                 
                 break;
             default:
@@ -131,7 +131,7 @@ public sealed class UserActionsHandler
         }
     }
 
-    private void DoUserAction(Vector2Int cursor)
+    private void ClickUserAction(Vector2Int cursor)
     {
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
 
