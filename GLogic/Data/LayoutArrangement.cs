@@ -1,6 +1,4 @@
 using GLogic.Data.Panels;
-using GLogic.Jobs.Renderer;
-using GLogicGlobal.Common;
 using NetEscapades.EnumGenerators;
 
 namespace GLogic.Data;
@@ -18,7 +16,7 @@ public sealed class LayoutArrangement
 }
 
 [EnumExtensions]
-public enum LeftPanelOptions
+public enum LeftPanelOption
 {
     AND,
     OR,

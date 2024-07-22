@@ -38,22 +38,22 @@ public sealed class TextureStorage
         _ => throw new ArgumentOutOfRangeException(nameof(ioType), ioType, null)
     };
 
-    public LGate ConvertToLGate(LeftPanelOptions leftPanelOptions) => leftPanelOptions switch
+    public LGate ConvertToLGate(LeftPanelOption leftPanelOption) => leftPanelOption switch
     {
-        LeftPanelOptions.AND => LGate.AND,
-        LeftPanelOptions.OR => LGate.OR,
-        LeftPanelOptions.NOT => LGate.NOT,
-        LeftPanelOptions.XOR => LGate.XOR,
-        LeftPanelOptions.NAND => LGate.NAND,
-        LeftPanelOptions.NOR => LGate.NOR,
-        LeftPanelOptions.XNOR => LGate.XNOR,
-        LeftPanelOptions.LowConstant => LGate.LowConstant,
-        LeftPanelOptions.HighConstant => LGate.HighConstant,
-        LeftPanelOptions.LedOutput => LGate.LedOutput,
-        LeftPanelOptions.Wire => throw new InvalidOperationException("Accessing a non-existent texture"),
-        LeftPanelOptions.Delete => throw new InvalidOperationException("Accessing a non-existent texture"),
-        LeftPanelOptions.None => throw new InvalidOperationException("Accessing a non-existent texture"),
-        _ => throw new ArgumentOutOfRangeException(nameof(leftPanelOptions), leftPanelOptions, null)
+        LeftPanelOption.AND => LGate.AND,
+        LeftPanelOption.OR => LGate.OR,
+        LeftPanelOption.NOT => LGate.NOT,
+        LeftPanelOption.XOR => LGate.XOR,
+        LeftPanelOption.NAND => LGate.NAND,
+        LeftPanelOption.NOR => LGate.NOR,
+        LeftPanelOption.XNOR => LGate.XNOR,
+        LeftPanelOption.LowConstant => LGate.LowConstant,
+        LeftPanelOption.HighConstant => LGate.HighConstant,
+        LeftPanelOption.LedOutput => LGate.LedOutput,
+        LeftPanelOption.Wire => throw new InvalidOperationException("Accessing a non-existent texture"),
+        LeftPanelOption.Delete => throw new InvalidOperationException("Accessing a non-existent texture"),
+        LeftPanelOption.None => throw new InvalidOperationException("Accessing a non-existent texture"),
+        _ => throw new ArgumentOutOfRangeException(nameof(leftPanelOption), leftPanelOption, null)
     };
 
     private LGateTexture GetLGateTextureIndex(LGate g, bool state, Placement placement)

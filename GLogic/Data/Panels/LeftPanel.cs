@@ -16,7 +16,7 @@ public sealed class LeftPanel
 
     private static IEnumerable<Area> GetLeftPanelOptions()
     {
-        for (var i = 0; i < Enum.GetNames(typeof(LeftPanelOptions)).Length - 1; i++)
+        for (var i = 0; i < Enum.GetNames(typeof(LeftPanelOption)).Length - 1; i++)
         {
             var y = 30 + 55 * i;
             yield return new Area(new Vector2Int(10, y), new Vector2Int(130, 55));

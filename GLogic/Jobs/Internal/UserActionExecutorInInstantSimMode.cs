@@ -22,29 +22,29 @@ public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
 
     public Entity HeldEntity { get; set; }
 
-    public void ClickExecute(Vector2Int adjustedCursorPosition, LeftPanelOptions chosenLeftPanelOptions)
+    public void ClickExecute(Vector2Int adjustedCursorPosition, LeftPanelOption chosenLeftPanelOption)
     {
-        switch (chosenLeftPanelOptions)
+        switch (chosenLeftPanelOption)
         {
-            case LeftPanelOptions.AND:
-            case LeftPanelOptions.OR:
-            case LeftPanelOptions.NOT:
-            case LeftPanelOptions.XOR:
-            case LeftPanelOptions.NAND:
-            case LeftPanelOptions.NOR:
-            case LeftPanelOptions.XNOR:
-            case LeftPanelOptions.LedOutput:
-            case LeftPanelOptions.LowConstant:
-            case LeftPanelOptions.HighConstant:
+            case LeftPanelOption.AND:
+            case LeftPanelOption.OR:
+            case LeftPanelOption.NOT:
+            case LeftPanelOption.XOR:
+            case LeftPanelOption.NAND:
+            case LeftPanelOption.NOR:
+            case LeftPanelOption.XNOR:
+            case LeftPanelOption.LedOutput:
+            case LeftPanelOption.LowConstant:
+            case LeftPanelOption.HighConstant:
                 var lGate = CommonUserActionExecutor.AddLGate(adjustedCursorPosition,
-                    chosenLeftPanelOptions == LeftPanelOptions.HighConstant, chosenLeftPanelOptions);
+                    chosenLeftPanelOption == LeftPanelOption.HighConstant, chosenLeftPanelOption);
                 if (lGate is not null)
                 {
                     _instantSimulationModifier.IncreaseEntityStatesStorage();
                 }
 
                 break;
-            case LeftPanelOptions.Wire:
+            case LeftPanelOption.Wire:
                 var wire = EntityService.AddWire(adjustedCursorPosition);
                 if (wire is not null)
                 {
@@ -54,7 +54,7 @@ public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
                 }
 
                 break;
-            case LeftPanelOptions.Delete:
+            case LeftPanelOption.Delete:
                 var entityToDelete = EntityService.GetEntityToDelete(adjustedCursorPosition);
                 if (!IdStructure.IsValid(entityToDelete.Id))
                 {
@@ -64,7 +64,7 @@ public sealed class UserActionExecutorInInstantSimMode : IUserActionExecutor
                 EntityService.RemoveEntity(entityToDelete);
 
                 break;
-            case LeftPanelOptions.None:
+            case LeftPanelOption.None:
                 HeldEntity = CommonUserActionExecutor.MarkEntity(adjustedCursorPosition);
 
                 break;

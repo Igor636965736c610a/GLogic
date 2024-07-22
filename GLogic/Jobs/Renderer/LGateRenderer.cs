@@ -27,7 +27,7 @@ public sealed class LGateRenderer
         SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref sdlRect);
     }
 
-    public void RenderChosenLGateFromMenu(LeftPanelOptions option)
+    public void RenderChosenLGateFromMenu(LeftPanelOption option)
     {
         SDL.SDL_GetMouseState(out var x, out var y);
 

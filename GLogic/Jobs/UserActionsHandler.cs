@@ -22,14 +22,14 @@ public sealed class UserActionsHandler
     public UserActionsHandler(IRendererConfig rendererConfig, ICircuitUpdaterConfig circuitUpdaterConfig,
         IUserActionExecutor userActionExecutor, LayoutArrangement layoutArrangement)
     {
-        ChosenLeftPanelOptions = LeftPanelOptions.None;
+        ChosenLeftPanelOption = LeftPanelOption.None;
         _userActionExecutor = userActionExecutor;
         _circuitUpdaterConfig = circuitUpdaterConfig;
         _rendererConfig = rendererConfig;
         _layoutArrangement = layoutArrangement;
     }
 
-    public static LeftPanelOptions ChosenLeftPanelOptions { get; private set; }
+    public static LeftPanelOption ChosenLeftPanelOption { get; private set; }
     public static bool MouseRightButtonState { get; private set; }
     public static bool MouseLeftButtonState { get; private set; }
     public static bool ShiftKeyState { get; private set; }
@@ -118,13 +118,13 @@ public sealed class UserActionsHandler
                 && cursor.Y < option.Position.Y + option.Size.Y
             )
             {
-                if (ChosenLeftPanelOptions == (LeftPanelOptions)i)
+                if (ChosenLeftPanelOption == (LeftPanelOption)i)
                 {
-                    ChosenLeftPanelOptions = LeftPanelOptions.None;
+                    ChosenLeftPanelOption = LeftPanelOption.None;
                 }
                 else
                 {
-                    ChosenLeftPanelOptions = (LeftPanelOptions)i;
+                    ChosenLeftPanelOption = (LeftPanelOption)i;
                 }
             }
             i++;
@@ -135,7 +135,7 @@ public sealed class UserActionsHandler
     {
         var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
 
-        _userActionExecutor.ClickExecute(adjustedCursorPosition, ChosenLeftPanelOptions);
+        _userActionExecutor.ClickExecute(adjustedCursorPosition, ChosenLeftPanelOption);
     }
 
     public void HandleMouseHeldAction(Vector2Int relativeCursorPosition)

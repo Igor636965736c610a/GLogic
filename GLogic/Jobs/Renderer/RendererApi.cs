@@ -140,25 +140,25 @@ public sealed class RendererApi : IRendererConfig
 
     private void RenderChosenEntity()
     {
-        switch (UserActionsHandler.ChosenLeftPanelOptions)
+        switch (UserActionsHandler.ChosenLeftPanelOption)
         {
-            case LeftPanelOptions.AND:
-            case LeftPanelOptions.OR:
-            case LeftPanelOptions.NOT:
-            case LeftPanelOptions.XOR:
-            case LeftPanelOptions.NAND:
-            case LeftPanelOptions.NOR:
-            case LeftPanelOptions.XNOR:
-            case LeftPanelOptions.LowConstant:
-            case LeftPanelOptions.HighConstant:
-            case LeftPanelOptions.LedOutput:
-                _lGateRenderer.RenderChosenLGateFromMenu(UserActionsHandler.ChosenLeftPanelOptions);
+            case LeftPanelOption.AND:
+            case LeftPanelOption.OR:
+            case LeftPanelOption.NOT:
+            case LeftPanelOption.XOR:
+            case LeftPanelOption.NAND:
+            case LeftPanelOption.NOR:
+            case LeftPanelOption.XNOR:
+            case LeftPanelOption.LowConstant:
+            case LeftPanelOption.HighConstant:
+            case LeftPanelOption.LedOutput:
+                _lGateRenderer.RenderChosenLGateFromMenu(UserActionsHandler.ChosenLeftPanelOption);
                 break;
-            case LeftPanelOptions.Wire:
+            case LeftPanelOption.Wire:
                 _wireRenderer.RenderChosenWireFromMenuOption();
                 break;
-            case LeftPanelOptions.Delete:
-            case LeftPanelOptions.None:
+            case LeftPanelOption.Delete:
+            case LeftPanelOption.None:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

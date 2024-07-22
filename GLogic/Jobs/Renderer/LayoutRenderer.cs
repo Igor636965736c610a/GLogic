@@ -34,10 +34,10 @@ public sealed class LayoutRenderer
         {
             SDL.SDL_Rect rect = menuOption;
 
-            var option = (LeftPanelOptions)i;
+            var option = (LeftPanelOption)i;
             var texture =
                 _textureStorage.GetLeftPanelOptionTexture((LeftPanelOptionT)option,
-                    UserActionsHandler.ChosenLeftPanelOptions == option);
+                    UserActionsHandler.ChosenLeftPanelOption == option);
 
             SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref rect);
 

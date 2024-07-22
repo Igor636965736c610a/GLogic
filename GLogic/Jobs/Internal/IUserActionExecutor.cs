@@ -8,6 +8,6 @@ namespace GLogic.Jobs.Internal;
 public interface IUserActionExecutor
 {
     Entity HeldEntity { get; set; }
-    void ClickExecute(Vector2Int adjustedCursorPosition, LeftPanelOptions chosenLeftPanelOptions);
+    void ClickExecute(Vector2Int adjustedCursorPosition, LeftPanelOption chosenLeftPanelOption);
     void HeldExecute(Vector2Int adjustedCursorPosition);
 }
