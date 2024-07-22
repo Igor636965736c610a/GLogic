@@ -18,4 +18,7 @@ public static class SDL2Gfx
     public static extern int filledPolygonRGBA(IntPtr renderer, 
         IntPtr vx, IntPtr vy, int n, 
         byte r, byte g, byte b, byte a);
+    
+    [DllImport(SDL2GfxLib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int thickLineRGBA(IntPtr renderer, int x1, int y1, int x2, int y2, uint width, uint r, uint g, uint b, uint a);
 }

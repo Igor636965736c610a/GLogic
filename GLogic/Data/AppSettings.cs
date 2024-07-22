@@ -5,6 +5,7 @@ namespace GLogic.Data;
 
 public static class AppSettings
 {
+    public const string AppName = "GLogic";
     public static readonly Vector2Int WindowSize;
     public const int Fps = 60;
 

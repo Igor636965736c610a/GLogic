@@ -65,6 +65,11 @@ internal sealed class InstantSimulation : ICircuitUpdate, IInstantSimulationModi
         _stateUpdater.Dispose();
         _stateUpdater = Task.Run(UpdateState);
     }
+    
+    public void TerminateBackgroundUpdater()
+    {
+        _stateUpdater.Dispose();
+    }
 
     public void SetInterval(uint interval)
     {

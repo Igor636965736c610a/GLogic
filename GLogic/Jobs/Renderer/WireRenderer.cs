@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using GLogic.Data;
 using GLogic.Imports;
 using GLogic.Jobs.Internal.EcsStateModifiers;
@@ -47,6 +46,8 @@ public sealed class WireRenderer
             };
         }
         
+        SDL2Gfx.AaLineRgba(_renderer, info.P1.X, info.P1.Y, info.P2.X, info.P2.Y, color);
+        
         // double angle = Math.Atan2(info.P2.Y - info.P1.Y, info.P2.X - info.P1.X);
         // int dx = (int)(2 / 2.0 * Math.Sin(angle));
         // int dy = (int)(2 / 2.0 * Math.Cos(angle));
@@ -73,7 +74,8 @@ public sealed class WireRenderer
         //     handleVy.Free();
         // }
 
-        SDL2Gfx.AaLineRgba(_renderer, info.P1.X, info.P1.Y, info.P2.X, info.P2.Y, color);
+        //SDL2Gfx.thickLineRGBA(_renderer, info.P1.X, info.P1.Y, info.P2.X, info.P2.Y, 2, color.r, color.g, color.b,
+        //    color.a);
     }
 
     public void RenderChosenWireFromMenuOption()

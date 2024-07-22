@@ -8,19 +8,20 @@ namespace GLogic.Data;
 public sealed class TextureStorage
 {
     private readonly ImmutableArray<IntPtr> _lGateTextures;
-    private readonly ImmutableArray<IntPtr> _menuTextures;
+    private readonly ImmutableArray<IntPtr> _leftPanelOptionTextures;
+    private readonly ImmutableArray<IntPtr> _topPanelOptionTextures;
 
     public TextureStorage(IntPtr renderer)
     {
         _lGateTextures = InitLGateTextures(renderer).ToImmutableArray();
-        _menuTextures = InitMenuTextures(renderer).ToImmutableArray();
+        _leftPanelOptionTextures = InitLeftPanelOptionTextures(renderer).ToImmutableArray();
     }
 
     public IntPtr GetLGateTexture(LGate lGate, bool state, Placement placement)
         => _lGateTextures[(int)GetLGateTextureIndex(lGate, state, placement)];
 
-    public IntPtr GetMenuOptionTexture(MenuOptionT menuOption, bool isChecked)
-        => _menuTextures[(int)GetMenuOptionTextureIndex(menuOption, isChecked)];
+    public IntPtr GetLeftPanelOptionTexture(LeftPanelOptionT leftPanelOption, bool isChecked)
+        => _leftPanelOptionTextures[(int)GetLeftPanelOptionTextureIndex(leftPanelOption, isChecked)];
 
     public LGate ConvertToLGate(IoType ioType, bool state) => ioType switch
     {
@@ -62,8 +63,8 @@ public sealed class TextureStorage
             | (int)placement
         );
 
-    private MenuOptionTexture GetMenuOptionTextureIndex(MenuOptionT mo, bool isChecked)
-        => (MenuOptionTexture)(
+    private LeftPanelOptionTexture GetLeftPanelOptionTextureIndex(LeftPanelOptionT mo, bool isChecked)
+        => (LeftPanelOptionTexture)(
             (int)mo
             | (int)(isChecked ? IsChecked.Yes : IsChecked.No)
         );
@@ -111,22 +112,22 @@ public sealed class TextureStorage
         SDL.SDL_FreeSurface(surface);
     }
 
-    private IntPtr[] InitMenuTextures(IntPtr renderer)
+    private IntPtr[] InitLeftPanelOptionTextures(IntPtr renderer)
     {
         var font = SDL_ttf.TTF_OpenFont("Oswald-Light.ttf", 100);
         var initArray = new IntPtr[0b11_1111];
 
         var chosenOptionTextColor = new SDL.SDL_Color { r = 255, g = 0, b = 0, a = 255 };
         var standardOptionTextColor = new SDL.SDL_Color { r = 0, g = 0, b = 0, a = 255 };
-        for (var i = 0; i < Enum.GetNames(typeof(MenuOptionT)).Length; i++)
+        for (var i = 0; i < Enum.GetNames(typeof(LeftPanelOptionT)).Length; i++)
         {
             var bgColor = i % 2 == 0
                 ? new SDL.SDL_Color { r = 75, g = 75, b = 75, a = 255 }
                 : new SDL.SDL_Color { r = 100, g = 100, b = 100, a = 255 };
 
-            AddMenuOptionTexture(renderer, font, initArray, (MenuOptionT)i, true, chosenOptionTextColor, bgColor);
+            AddLeftPanelOptionTexture(renderer, font, initArray, (LeftPanelOptionT)i, true, chosenOptionTextColor, bgColor);
 
-            AddMenuOptionTexture(renderer, font, initArray, (MenuOptionT)i, false, standardOptionTextColor, bgColor);
+            AddLeftPanelOptionTexture(renderer, font, initArray, (LeftPanelOptionT)i, false, standardOptionTextColor, bgColor);
         }
 
         SDL_ttf.TTF_CloseFont(font);
@@ -134,12 +135,12 @@ public sealed class TextureStorage
         return initArray;
     }
 
-    private void AddMenuOptionTexture(IntPtr renderer, IntPtr font, IntPtr[] initArray, MenuOptionT menuOption,
+    private void AddLeftPanelOptionTexture(IntPtr renderer, IntPtr font, IntPtr[] initArray, LeftPanelOptionT leftPanelOption,
         bool isChecked, SDL.SDL_Color textColor, SDL.SDL_Color bgColor)
     {
-        var surface = SDL_ttf.TTF_RenderText_Shaded(font, menuOption.ToStringFast(), textColor, bgColor);
+        var surface = SDL_ttf.TTF_RenderText_Shaded(font, leftPanelOption.ToStringFast(), textColor, bgColor);
         var texture = SDL.SDL_CreateTextureFromSurface(renderer, surface);
-        var index = (int)GetMenuOptionTextureIndex(menuOption, isChecked);
+        var index = (int)GetLeftPanelOptionTextureIndex(leftPanelOption, isChecked);
         initArray[index] = texture;
         SDL.SDL_FreeSurface(surface);
     }
@@ -151,7 +152,7 @@ public sealed class TextureStorage
             SDL.SDL_DestroyTexture(texture);
         }
 
-        foreach (var texture in _menuTextures)
+        foreach (var texture in _leftPanelOptionTextures)
         {
             SDL.SDL_DestroyTexture(texture);
         }
@@ -208,7 +209,7 @@ public enum LGate
 }
 
 [Flags]
-public enum MenuOptionTexture
+public enum LeftPanelOptionTexture
 {
     // option bits 0-4
     AND = 0b00_0000,
@@ -232,26 +233,26 @@ public enum MenuOptionTexture
 
 [Flags]
 [EnumExtensions]
-public enum MenuOptionT
+public enum LeftPanelOptionT
 {
-    AND = MenuOptionTexture.AND,
-    OR = MenuOptionTexture.OR,
-    NOT = MenuOptionTexture.NOT,
-    XOR = MenuOptionTexture.XOR,
-    NAND = MenuOptionTexture.NAND,
-    NOR = MenuOptionTexture.NOR,
-    XNOR = MenuOptionTexture.XNOR,
-    LowConstant = MenuOptionTexture.LowConstant,
-    HighConstant = MenuOptionTexture.HighConstant,
-    LedOutput = MenuOptionTexture.LedOutput,
-    Wire = MenuOptionTexture.Wire,
-    Delete = MenuOptionTexture.Delete,
-    None = MenuOptionTexture.None
+    AND = LeftPanelOptionTexture.AND,
+    OR = LeftPanelOptionTexture.OR,
+    NOT = LeftPanelOptionTexture.NOT,
+    XOR = LeftPanelOptionTexture.XOR,
+    NAND = LeftPanelOptionTexture.NAND,
+    NOR = LeftPanelOptionTexture.NOR,
+    XNOR = LeftPanelOptionTexture.XNOR,
+    LowConstant = LeftPanelOptionTexture.LowConstant,
+    HighConstant = LeftPanelOptionTexture.HighConstant,
+    LedOutput = LeftPanelOptionTexture.LedOutput,
+    Wire = LeftPanelOptionTexture.Wire,
+    Delete = LeftPanelOptionTexture.Delete,
+    None = LeftPanelOptionTexture.None
 }
 
 [Flags]
 public enum IsChecked
 {
-    Yes = MenuOptionTexture.Checked,
-    No = MenuOptionTexture.UnChecked
+    Yes = LeftPanelOptionTexture.Checked,
+    No = LeftPanelOptionTexture.UnChecked
 }

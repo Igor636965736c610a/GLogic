@@ -63,6 +63,11 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
         InitExecutionQueue();
     }
 
+    public void TerminateBackgroundUpdater()
+    {
+        // synchronous simulation
+    }
+
     public void SetInterval(uint interval)
     {
         _callInterval = interval;

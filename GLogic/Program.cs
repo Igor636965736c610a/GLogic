@@ -8,9 +8,8 @@ using SDL2;
 SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING);
 SDL_ttf.TTF_Init();
 
-const string appName = "GLogic";
 var window = SDL.SDL_CreateWindow(
-    appName,
+    AppSettings.AppName,
     SDL.SDL_WINDOWPOS_CENTERED,
     SDL.SDL_WINDOWPOS_CENTERED,
     AppSettings.WindowSize.X,

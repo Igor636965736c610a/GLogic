@@ -109,7 +109,7 @@ public sealed class UserActionsHandler
     private void SetChosenLGate(Vector2Int cursor)
     {
         var i = 0;
-        foreach (var option in _layoutArrangement.LeftPanelOptions)
+        foreach (var option in _layoutArrangement.LeftPanel.Options)
         {
             if (
                 cursor.X >= option.Position.X
@@ -166,12 +166,12 @@ public sealed class UserActionsHandler
 
     private UIComponent GetUIComponent(Vector2Int cursor)
     {
-        if (cursor.X <= _layoutArrangement.LeftPanelRect.Size.X)
+        if (cursor.X <= _layoutArrangement.LeftPanel.Rect.Size.X)
         {
             return UIComponent.LeftPanel;
         }
 
-        else if (cursor.Y <= _layoutArrangement.TopPanelRect.Size.Y)
+        else if (cursor.Y <= _layoutArrangement.TopPanel.Rect.Size.Y)
         {
             return UIComponent.TopPanel;
         }

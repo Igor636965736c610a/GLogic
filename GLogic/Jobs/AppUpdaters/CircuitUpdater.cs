@@ -35,6 +35,11 @@ public sealed class CircuitUpdater : ICircuitUpdaterConfig
         CurrentUpdateCtx.Reset();
     }
 
+    public void TerminateBackgroundUpdater()
+    {
+        CurrentUpdateCtx.TerminateBackgroundUpdater();
+    }
+
     public CircuitUpdater InitDefault(out IUserActionExecutor userActionExecutor)
     {
         userActionExecutor = ToStepWiseSimulation();

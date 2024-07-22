@@ -24,24 +24,34 @@ public sealed class LayoutRenderer
 
     private void RenderLeftPanel()
     {
-        SDL.SDL_Rect menuRect = _layoutArrangement.LeftPanelRect;
+        SDL.SDL_Rect leftPanelRect = _layoutArrangement.LeftPanel.Rect;
 
         SDL.SDL_SetRenderDrawColor(_renderer, MenuColor.r, MenuColor.g, MenuColor.b, MenuColor.a);
-        SDL.SDL_RenderFillRect(_renderer, ref menuRect);
+        SDL.SDL_RenderFillRect(_renderer, ref leftPanelRect);
 
         var i = 0;
-        foreach (var menuOption in _layoutArrangement.LeftPanelOptions)
+        foreach (var menuOption in _layoutArrangement.LeftPanel.Options)
         {
             SDL.SDL_Rect rect = menuOption;
 
             var option = (LeftPanelOptions)i;
             var texture =
-                _textureStorage.GetMenuOptionTexture((MenuOptionT)option,
+                _textureStorage.GetLeftPanelOptionTexture((LeftPanelOptionT)option,
                     UserActionsHandler.ChosenLeftPanelOptions == option);
 
             SDL.SDL_RenderCopy(_renderer, texture, (nint)null, ref rect);
 
             i++;
         }
+    }
+
+    private void RenderTopPanel()
+    {
+        SDL.SDL_Rect topPanelRect = _layoutArrangement.TopPanel.Rect;
+        
+        SDL.SDL_SetRenderDrawColor(_renderer, MenuColor.r, MenuColor.g, MenuColor.b, MenuColor.a);
+        SDL.SDL_RenderFillRect(_renderer, ref topPanelRect);
+        
+        
     }
 }
