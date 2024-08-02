@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using GLogic.Data;
+using GLogic.Data.Panels;
+using GLogic.Data.TextureStorage;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Internal.EcsStateModifiers.Simulations;
 using GLogic.Jobs.Renderer;
@@ -97,7 +99,7 @@ internal sealed class UserActionExecutorInStepwiseSimMode : IUserActionExecutor
             ComponentManager.IterLGateComponents().Where(z => z.Entity.Id != HeldEntity.Id)
         );
 
-        if (info.placement != Placement.Valid)
+        if (info.placement != LGatePlacementF.Valid)
         {
             return;
         }

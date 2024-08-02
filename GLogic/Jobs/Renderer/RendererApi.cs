@@ -1,4 +1,6 @@
 ﻿using GLogic.Data;
+using GLogic.Data.Panels;
+using GLogic.Data.TextureStorage;
 using GLogicECS.Api;
 using GLogicGlobal.Common;
 using SDL2;
@@ -10,7 +12,7 @@ public sealed class RendererApi : IRendererConfig
     public static readonly Area RenderArea;
     private readonly LGateRenderer _lGateRenderer;
     private readonly LayoutRenderer _layoutRenderer;
-    private readonly TextureStorage _textureStorage;
+    private readonly TextureStorageProvider _textureStorageProvider;
     private readonly WireRenderer _wireRenderer;
     private readonly BackgroundRenderer _backgroundRenderer;
 
@@ -21,12 +23,12 @@ public sealed class RendererApi : IRendererConfig
         RenderArea = new Area(new Vector2Int(-200, -200), new Vector2Int(1680, 1120));
     }
 
-    public RendererApi(IntPtr renderer, LayoutArrangement layoutArrangement, TextureStorage textureStorage)
+    public RendererApi(IntPtr renderer, LayoutArrangement layoutArrangement, TextureStorageProvider textureStorageProvider)
     {
-        _lGateRenderer = new LGateRenderer(this, renderer, textureStorage);
-        _wireRenderer = new WireRenderer(this, renderer, textureStorage);
-        _layoutRenderer = new LayoutRenderer(renderer, layoutArrangement, textureStorage);
-        _textureStorage = new TextureStorage(renderer);
+        _lGateRenderer = new LGateRenderer(this, renderer, textureStorageProvider.LGateTextureStorage);
+        _wireRenderer = new WireRenderer(this, renderer, textureStorageProvider);
+        _layoutRenderer = new LayoutRenderer(renderer, layoutArrangement, textureStorageProvider.LeftPanelTextureStorage);
+        _textureStorageProvider = new TextureStorageProvider(renderer);
         _backgroundRenderer = new BackgroundRenderer(this, renderer);
         _zoom = 1f;
     }
@@ -126,10 +128,8 @@ public sealed class RendererApi : IRendererConfig
 
             var typeComponent = ComponentManager.GetEntityTypeComponent(entity);
             var stateComponent = ComponentManager.GetStateComponent(entity);
-            var lGate = _textureStorage.ConvertToLGate(typeComponent.Type, stateComponent.State);
 
-            var renderInfo = new LGateRenderInfo(rect, lGate, Placement.Neutral, stateComponent.State);
-            _lGateRenderer.RenderStaticLGate(renderInfo);
+            _lGateRenderer.RenderStaticLGate(rect, typeComponent.Type, LGatePlacementF.Neutral, stateComponent.State);
         }
 
         RenderChosenEntity();

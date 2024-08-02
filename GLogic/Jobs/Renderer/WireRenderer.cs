@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using GLogic.Data;
+using GLogic.Data.TextureStorage;
 using GLogic.Imports;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogicECS.Api;
@@ -15,7 +16,7 @@ public sealed class WireRenderer
     private readonly IRendererStateAccess _rendererStateAccess;
     //private readonly TextureStorage _textureStorage;
 
-    public WireRenderer(IRendererStateAccess rendererStateAccess, IntPtr renderer, TextureStorage textureStorage)
+    public WireRenderer(IRendererStateAccess rendererStateAccess, IntPtr renderer, TextureStorageProvider textureStorageProvider)
     {
         _rendererStateAccess = rendererStateAccess;
         _renderer = renderer;

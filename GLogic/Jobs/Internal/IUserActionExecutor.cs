@@ -1,4 +1,5 @@
 using GLogic.Data;
+using GLogic.Data.Panels;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Components;
 using GLogicGlobal.Common;

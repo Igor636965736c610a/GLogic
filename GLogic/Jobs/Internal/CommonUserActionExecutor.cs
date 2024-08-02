@@ -1,4 +1,6 @@
 using GLogic.Data;
+using GLogic.Data.Panels;
+using GLogic.Data.TextureStorage;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
@@ -17,7 +19,7 @@ internal static class CommonUserActionExecutor
             ComponentManager.IterLGateComponents()
         );
 
-        if (info.placement == Placement.Valid)
+        if (info.placement == LGatePlacementF.Valid)
         {
             return EntityService.AddLGate(
                 info.position, GetLGateTypeFromMenuOption(chosenLeftPanelOption), lGateValue

@@ -1,4 +1,5 @@
 ﻿using GLogic.Data;
+using GLogic.Data.TextureStorage;
 using GLogic.Jobs;
 using GLogic.Jobs.AppUpdaters;
 using GLogic.Jobs.Renderer;
@@ -26,7 +27,7 @@ var sdlRenderer = SDL.SDL_CreateRenderer(
     index_of_the_rendering_driver_to_initialize,
     SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED
     );
-var textures = new TextureStorage(sdlRenderer);
+var textures = new TextureStorageProvider(sdlRenderer);
 var layoutArrangement = new LayoutArrangement();
 var appRenderer = new RendererApi(sdlRenderer, layoutArrangement, textures);
 var circuitUpdater = new CircuitUpdater().InitDefault(out var userActionExecutor);
@@ -34,7 +35,6 @@ var userActionHandler = new UserActionsHandler(appRenderer, circuitUpdater, user
 
 const int fps = AppSettings.Fps;
 const int desiredDelta = 1000 / fps;
-
 
 // var stopW = new Stopwatch();
 // for (int i = 0; i < 500; i++)
@@ -65,7 +65,6 @@ var lastTime = startTime;
 uint time = 0;
 
 var quit = false;
-
 while (!quit)
 {
     var startLoop = SDL.SDL_GetTicks();

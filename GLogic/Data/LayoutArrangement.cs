@@ -14,21 +14,3 @@ public sealed class LayoutArrangement
     public LeftPanel LeftPanel { get; }
     public TopPanel TopPanel { get; }
 }
-
-[EnumExtensions]
-public enum LeftPanelOption
-{
-    AND,
-    OR,
-    NOT,
-    XOR,
-    NAND,
-    NOR,
-    XNOR,
-    LowConstant,
-    HighConstant,
-    LedOutput,
-    Wire,
-    Delete,
-    None
-}

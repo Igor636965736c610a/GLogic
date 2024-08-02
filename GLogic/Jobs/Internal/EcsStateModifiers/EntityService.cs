@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using GLogic.Data;
+using GLogic.Data.TextureStorage;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
 using GLogicECS.Components;
@@ -135,7 +136,7 @@ internal static class EntityService
         ComponentManager.UpdateTransformComponent(transformComponent);
     }
 
-    public static (Vector2Int position, Placement placement) GetDynamicLGateParamsToRender<T>(Vector2Int position,
+    public static (Vector2Int position, LGatePlacementF placement) GetDynamicLGateParamsToRender<T>(Vector2Int position,
         IEnumerable<T> otherEntities) where T : struct, IAABBCompare
     {
         var chosenLGatePosition = CenterRectPositionToCursor(position);
@@ -171,7 +172,7 @@ internal static class EntityService
     }
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-    private static (Vector2Int position, Placement placement) HandleShiftKeyPressed<T>(Vector2Int chosenLGatePosition,
+    private static (Vector2Int position, LGatePlacementF placement) HandleShiftKeyPressed<T>(Vector2Int chosenLGatePosition,
         IEnumerable<T> otherEntities) where T : struct, IAABBCompare
     {
         var overlapArea = GetLGateOverlapArea(chosenLGatePosition);
@@ -189,7 +190,7 @@ internal static class EntityService
     }
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-    private static (Vector2Int position, Placement placement) HandleNoOverlap<T>(Vector2Int chosenLGatePosition,
+    private static (Vector2Int position, LGatePlacementF placement) HandleNoOverlap<T>(Vector2Int chosenLGatePosition,
         IEnumerable<T> otherEntities) where T : struct, IAABBCompare
     {
         chosenLGatePosition = new Vector2Int(
@@ -202,7 +203,7 @@ internal static class EntityService
 
         if (!overlap)
         {
-            return (chosenLGatePosition, Placement.Valid);
+            return (chosenLGatePosition, LGatePlacementF.Valid);
         }
 
         Debug.Assert(entityInOverlapArea.HasValue);
@@ -211,15 +212,15 @@ internal static class EntityService
         return (chosenLGatePosition, placement);
     }
 
-    private static Placement GetPlacement<T>(Vector2Int position, IEnumerable<T> otherEntities)
+    private static LGatePlacementF GetPlacement<T>(Vector2Int position, IEnumerable<T> otherEntities)
         where T : struct, IAABBCompare
     {
-        var placement = Placement.Valid;
+        var placement = LGatePlacementF.Valid;
         if (IdStructure.IsValid(AnyEntityInArea(
                 position, otherEntities).GetEntity().Id)
            )
         {
-            placement = Placement.Invalid;
+            placement = LGatePlacementF.Invalid;
         }
 
         return placement;

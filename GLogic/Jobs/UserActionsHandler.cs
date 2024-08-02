@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using GLogic.Data;
+using GLogic.Data.Panels;
 using GLogic.Jobs.AppUpdaters;
 using GLogic.Jobs.Internal;
 using GLogic.Jobs.Internal.EcsStateModifiers;
@@ -108,27 +109,13 @@ public sealed class UserActionsHandler
 
     private void SetChosenLGate(Vector2Int cursor)
     {
-        var i = 0;
-        foreach (var option in _layoutArrangement.LeftPanel.Options)
+        var option = _layoutArrangement.LeftPanel.GetClickedOption(cursor);
+        if (option is null)
         {
-            if (
-                cursor.X >= option.Position.X
-                && cursor.X <= option.Position.X + option.Size.X
-                && cursor.Y >= option.Position.Y
-                && cursor.Y < option.Position.Y + option.Size.Y
-            )
-            {
-                if (ChosenLeftPanelOption == (LeftPanelOption)i)
-                {
-                    ChosenLeftPanelOption = LeftPanelOption.None;
-                }
-                else
-                {
-                    ChosenLeftPanelOption = (LeftPanelOption)i;
-                }
-            }
-            i++;
+            return;
         }
+        
+        ChosenLeftPanelOption = ChosenLeftPanelOption == option ? LeftPanelOption.None : option.Value;
     }
 
     private void LeftClickUserAction(Vector2Int cursor)
