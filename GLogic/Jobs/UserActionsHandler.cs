@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using GLogic.Data;
 using GLogic.Data.Panels;
+using GLogic.Data.State;
 using GLogic.Jobs.AppUpdaters;
 using GLogic.Jobs.Internal;
 using GLogic.Jobs.Internal.EcsStateModifiers;
@@ -17,23 +18,17 @@ public sealed class UserActionsHandler
 {
     private readonly IRendererConfig _rendererConfig;
     private readonly ICircuitUpdaterConfig _circuitUpdaterConfig;
-    private readonly IUserActionExecutor _userActionExecutor;
     private readonly LayoutArrangement _layoutArrangement;
+    private IUserActionExecutor _userActionExecutor;
 
     public UserActionsHandler(IRendererConfig rendererConfig, ICircuitUpdaterConfig circuitUpdaterConfig,
         IUserActionExecutor userActionExecutor, LayoutArrangement layoutArrangement)
     {
-        ChosenLeftPanelOption = LeftPanelOption.None;
         _userActionExecutor = userActionExecutor;
         _circuitUpdaterConfig = circuitUpdaterConfig;
         _rendererConfig = rendererConfig;
         _layoutArrangement = layoutArrangement;
     }
-
-    public static LeftPanelOption ChosenLeftPanelOption { get; private set; }
-    public static bool MouseRightButtonState { get; private set; }
-    public static bool MouseLeftButtonState { get; private set; }
-    public static bool ShiftKeyState { get; private set; }
 
     public void HandleMouseWheel(Vector2Int cursor, int wheelY)
     {
@@ -46,10 +41,10 @@ public sealed class UserActionsHandler
         {
             case SDL.SDL_BUTTON_LEFT:
                 _userActionExecutor.HeldEntity = new Entity(IdStructure.MakeInvalidId());
-                MouseLeftButtonState = false;
+                InputState.MouseLeftButtonState = false;
                 break;
             case SDL.SDL_BUTTON_RIGHT:
-                MouseRightButtonState = false;
+                InputState.MouseRightButtonState = false;
                 break;
         }
     }
@@ -58,13 +53,13 @@ public sealed class UserActionsHandler
     {
         switch (mouseButton)
         {
-            case SDL.SDL_BUTTON_LEFT when !MouseRightButtonState:
+            case SDL.SDL_BUTTON_LEFT when !InputState.MouseRightButtonState:
                 LeftClickDown(cursor);
-
-                MouseLeftButtonState = true;
+                
+                InputState.MouseLeftButtonState = true;
                 break;
             case SDL.SDL_BUTTON_RIGHT:
-                MouseRightButtonState = true;
+                InputState.MouseRightButtonState = true;
                 break;
         }
     }
@@ -73,7 +68,7 @@ public sealed class UserActionsHandler
     {
         if (key == SDL.SDL_Keycode.SDLK_LSHIFT)
         {
-            ShiftKeyState = true;
+            InputState.ShiftKeyState = true;
         }
     }
 
@@ -81,7 +76,7 @@ public sealed class UserActionsHandler
     {
         if (key == SDL.SDL_Keycode.SDLK_LSHIFT)
         {
-            ShiftKeyState = false;
+            InputState.ShiftKeyState = false;
         }
     }
 
@@ -91,15 +86,17 @@ public sealed class UserActionsHandler
         {
             case UIComponent.LeftPanel:
                 WireService.Reset();
-                SetChosenLGate(cursor);
+                LeftPanelClickExecute(cursor);
                 
                 break;
             case UIComponent.TopPanel:
+                WireService.Reset();
                 
-                
-                //break;
+                TopPanelClickExecute(cursor);
+                break;
             case UIComponent.WorkingArea:
-                LeftClickUserAction(cursor);
+                var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
+                _userActionExecutor.ClickExecute(adjustedCursorPosition, MenuState.ChosenLGate);
                 
                 break;
             default:
@@ -107,7 +104,7 @@ public sealed class UserActionsHandler
         }
     }
 
-    private void SetChosenLGate(Vector2Int cursor)
+    private void LeftPanelClickExecute(Vector2Int cursor)
     {
         var option = _layoutArrangement.LeftPanel.GetClickedOption(cursor);
         if (option is null)
@@ -115,23 +112,49 @@ public sealed class UserActionsHandler
             return;
         }
         
-        ChosenLeftPanelOption = ChosenLeftPanelOption == option ? LeftPanelOption.None : option.Value;
+        MenuState.ChosenLGate = MenuState.ChosenLGate == option ? LeftPanelOption.None : option.Value;
     }
 
-    private void LeftClickUserAction(Vector2Int cursor)
+    private void TopPanelClickExecute(Vector2Int cursor)
     {
-        var adjustedCursorPosition = _rendererConfig.GetRelativeShiftedCursor(cursor);
+        var option = _layoutArrangement.TopPanel.GetClickedOption(cursor);
+        if (option is null)
+        {
+            return;
+        }
 
-        _userActionExecutor.ClickExecute(adjustedCursorPosition, ChosenLeftPanelOption);
+        switch (option)
+        {
+            case TopPanelOption.Reset:
+                _circuitUpdaterConfig.Reset();
+                
+                break;
+            case TopPanelOption.InstantSim:
+                _circuitUpdaterConfig.TerminateBackgroundUpdater();
+                {
+                    var userActionExecutor = _circuitUpdaterConfig.ToInstantSimulation();
+                    _userActionExecutor = userActionExecutor;
+                }
+                break;
+            case TopPanelOption.StepwiseSim:
+                _circuitUpdaterConfig.TerminateBackgroundUpdater();
+                {
+                    var userActionExecutor = _circuitUpdaterConfig.ToStepWiseSimulation();
+                    _userActionExecutor = userActionExecutor;
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
-
+    
     public void HandleMouseHeldAction(Vector2Int relativeCursorPosition)
     {
-        if (MouseRightButtonState)
+        if (InputState.MouseRightButtonState)
         {
             HandleMouseRightHeldAction(relativeCursorPosition);
         }
-        else if (MouseLeftButtonState)
+        else if (InputState.MouseLeftButtonState)
         {
             HandleMouseLeftHeldAction();
         }
@@ -139,7 +162,7 @@ public sealed class UserActionsHandler
 
     private void HandleMouseRightHeldAction(Vector2Int relativeCursorPosition)
     {
-        Debug.Assert(MouseRightButtonState);
+        Debug.Assert(InputState.MouseRightButtonState);
 
         _rendererConfig.ShiftCamera(relativeCursorPosition);
     }

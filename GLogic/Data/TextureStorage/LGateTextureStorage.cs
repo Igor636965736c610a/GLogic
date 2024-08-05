@@ -125,7 +125,7 @@ public enum LGateTextureF
     HighConstant = 0b0000_1000,
     LedOutput = 0b0000_1001,
 
-    // state bits: 5
+    // state bit: 5
     StateOff = 0b0000_0000,
     StateOn = 0b0001_0000,
 

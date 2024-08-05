@@ -13,8 +13,8 @@ public sealed class LeftPanelTextureStorage
         _leftPanelOptionTextures = InitLeftPanelOptionTextures(renderer).ToImmutableArray();
     }
 
-    public IntPtr GetLeftPanelOptionTexture(LeftPanelOptF leftPanelOpt, bool isChecked)
-        => _leftPanelOptionTextures[(int)GetLeftPanelOptionTextureIndex(leftPanelOpt, isChecked)];
+    public IntPtr GetLeftPanelOptionTexture(LeftPanelOptF opt, bool isChecked)
+        => _leftPanelOptionTextures[(int)GetLeftPanelOptionTextureIndex(opt, isChecked)];
     
     private IntPtr[] InitLeftPanelOptionTextures(IntPtr renderer)
     {
@@ -30,7 +30,6 @@ public sealed class LeftPanelTextureStorage
                 : new SDL.SDL_Color { r = 100, g = 100, b = 100, a = 255 };
 
             AddLeftPanelOptionTexture(renderer, font, initArray, (LeftPanelOptF)i, true, chosenOptionTextColor, bgColor);
-
             AddLeftPanelOptionTexture(renderer, font, initArray, (LeftPanelOptF)i, false, standardOptionTextColor, bgColor);
         }
 
@@ -49,10 +48,10 @@ public sealed class LeftPanelTextureStorage
         SDL.SDL_FreeSurface(surface);
     }
     
-    private LeftPanelOptTextureF GetLeftPanelOptionTextureIndex(LeftPanelOptF mo, bool isChecked)
+    private LeftPanelOptTextureF GetLeftPanelOptionTextureIndex(LeftPanelOptF opt, bool isChecked)
         => (LeftPanelOptTextureF)(
-            (int)mo
-            | (int)(isChecked ? LeftPanelOptCheckStatusF.Yes : LeftPanelOptCheckStatusF.No)
+            (int)opt
+            | (int)(isChecked ? LeftPanelOptCheckStatusF.Checked : LeftPanelOptCheckStatusF.UnChecked)
         );
     
     ~LeftPanelTextureStorage()
@@ -79,9 +78,9 @@ public enum LeftPanelOptTextureF
     LedOutput = 0b00_1001,
     Wire = 0b00_1010,
     Delete = 0b00_1011,
-    None = 0b00_1111,
+    None = 0b00_1110,
 
-    // state bits 6
+    // state bit 6
     UnChecked = 0b00_0000,
     Checked = 0b10_0000
 }
@@ -108,6 +107,6 @@ public enum LeftPanelOptF
 [Flags]
 public enum LeftPanelOptCheckStatusF
 {
-    Yes = LeftPanelOptTextureF.Checked,
-    No = LeftPanelOptTextureF.UnChecked
+    Checked = LeftPanelOptTextureF.Checked,
+    UnChecked = LeftPanelOptTextureF.UnChecked
 }

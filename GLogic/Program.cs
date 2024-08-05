@@ -1,4 +1,5 @@
 ﻿using GLogic.Data;
+using GLogic.Data.State;
 using GLogic.Data.TextureStorage;
 using GLogic.Jobs;
 using GLogic.Jobs.AppUpdaters;
@@ -68,6 +69,7 @@ var quit = false;
 while (!quit)
 {
     var startLoop = SDL.SDL_GetTicks();
+    InputState.UpdateCursorPosition();
 
     while (SDL.SDL_PollEvent(out var e) != 0)
     {
@@ -94,17 +96,13 @@ while (!quit)
 
                 break;
             case SDL.SDL_EventType.SDL_MOUSEWHEEL:
-                SDL.SDL_GetMouseState(out var cursorX, out var cursorY);
-
-                var cursor = new Vector2Int(cursorX, cursorY);
-                userActionHandler.HandleMouseWheel(cursor, e.wheel.y);
+                userActionHandler.HandleMouseWheel(InputState.CursorPosition, e.wheel.y);
 
                 break;
         }
     }
 
-    SDL.SDL_GetRelativeMouseState(out var relativeX, out var relativeY);
-    userActionHandler.HandleMouseHeldAction(new Vector2Int(relativeX, relativeY));
+    userActionHandler.HandleMouseHeldAction(InputState.RelativeCursorPosition);
 
     await circuitUpdater.CurrentUpdateCtx.Update(time);
 

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using GLogic.Data;
+using GLogic.Data.State;
 using GLogic.Data.TextureStorage;
 using GLogic.Jobs.Renderer;
 using GLogicECS.Api;
@@ -141,7 +142,7 @@ internal static class EntityService
     {
         var chosenLGatePosition = CenterRectPositionToCursor(position);
 
-        if (UserActionsHandler.ShiftKeyState)
+        if (InputState.ShiftKeyState)
         {
             return HandleShiftKeyPressed(chosenLGatePosition, otherEntities);
         }

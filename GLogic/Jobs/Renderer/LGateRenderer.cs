@@ -1,5 +1,6 @@
 using GLogic.Data;
 using GLogic.Data.Panels;
+using GLogic.Data.State;
 using GLogic.Data.TextureStorage;
 using GLogic.Jobs.Internal.EcsStateModifiers;
 using GLogicECS.Api;
@@ -40,10 +41,8 @@ public sealed class LGateRenderer
 
     public void RenderChosenLGateFromMenu(LeftPanelOption option)
     {
-        SDL.SDL_GetMouseState(out var x, out var y);
-
         var info = EntityService.GetDynamicLGateParamsToRender(
-            _rendererStateAccess.GetRelativeShiftedCursor(new Vector2Int(x, y)),
+            _rendererStateAccess.GetRelativeShiftedCursor(InputState.CursorPosition),
             ComponentManager.IterLGateComponents()
         );
         

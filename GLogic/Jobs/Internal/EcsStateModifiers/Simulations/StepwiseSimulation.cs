@@ -60,6 +60,23 @@ internal sealed class StepwiseSimulation : ICircuitUpdate, IStepwiseSimulationMo
     {
         _timeSinceLastCall = 0;
 
+        foreach (var lGateComp in ComponentManager.IterLGateComponents())
+        {
+            var type = ComponentManager.GetEntityTypeComponent(lGateComp.Entity).Type;
+            if (type == IoType.Constant) continue;
+            
+            var stateComp = ComponentManager.GetStateComponent(lGateComp.Entity);
+            stateComp = stateComp with { State = false };
+            ComponentManager.UpdateStateComponent(stateComp);
+        }
+
+        foreach (var wireComp in ComponentManager.IterWireComponents())
+        {
+            var stateComp = ComponentManager.GetStateComponent(wireComp.Entity);
+            stateComp = stateComp with { State = false };
+            ComponentManager.UpdateStateComponent(stateComp);
+        }
+        
         InitExecutionQueue();
     }
 

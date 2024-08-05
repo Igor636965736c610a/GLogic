@@ -14,6 +14,22 @@ public sealed class TopPanel
     public IEnumerable<PanelOption<TopPanelOption>> Options { get; init; }
     public Area Rect { get; }
 
+    public TopPanelOption? GetClickedOption(Vector2Int cursor)
+    {
+        foreach (var (optionRect, option) in Options)
+        {
+            if (cursor.X >= optionRect.Position.X
+                && cursor.X <= optionRect.Position.X + optionRect.Size.X
+                && cursor.Y >= optionRect.Position.Y
+                && cursor.Y < optionRect.Position.Y + optionRect.Size.Y)
+            {
+                return option;
+            }
+        }
+
+        return null;
+    }
+    
     private IEnumerable<PanelOption<TopPanelOption>> InitTopPanelOptions()
     {
         return new List<PanelOption<TopPanelOption>>()
@@ -21,40 +37,40 @@ public sealed class TopPanel
             new(
                 new Area(
                     new Vector2Int(
-                        AppSettings.WindowSize.X - 250,
+                        AppSettings.WindowSize.X - 350,
                         20),
                     new Vector2Int(
-                        AppSettings.WindowSize.X - 200,
+                        100,
                         60)
                 ),
-                TopPanelOption.ResetButton),
+                TopPanelOption.Reset),
             new(
                 new Area(
                     new Vector2Int(
-                        AppSettings.WindowSize.X - 400,
+                        AppSettings.WindowSize.X - 600,
                         20),
                     new Vector2Int(
-                        AppSettings.WindowSize.X - 300,
+                        200,
                         60)
                 ),
-                TopPanelOption.ToInstantSimButton),
+                TopPanelOption.InstantSim),
             new(
                 new Area(
                     new Vector2Int(
-                        AppSettings.WindowSize.X - 500,
+                        AppSettings.WindowSize.X - 850,
                         20),
                     new Vector2Int(
-                        AppSettings.WindowSize.X - 400,
+                        200,
                         60)
                     ),
-                TopPanelOption.ToStepwiseSimButton)
+                TopPanelOption.StepwiseSim)
         };
     }
 }
 
 public enum TopPanelOption
 {
-    ResetButton,
-    ToInstantSimButton,
-    ToStepwiseSimButton,
+    Reset,
+    InstantSim,
+    StepwiseSim,
 }

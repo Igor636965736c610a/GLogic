@@ -1,5 +1,6 @@
 ﻿using GLogic.Data;
 using GLogic.Data.Panels;
+using GLogic.Data.State;
 using GLogic.Data.TextureStorage;
 using GLogicECS.Api;
 using GLogicGlobal.Common;
@@ -27,7 +28,7 @@ public sealed class RendererApi : IRendererConfig
     {
         _lGateRenderer = new LGateRenderer(this, renderer, textureStorageProvider.LGateTextureStorage);
         _wireRenderer = new WireRenderer(this, renderer, textureStorageProvider);
-        _layoutRenderer = new LayoutRenderer(renderer, layoutArrangement, textureStorageProvider.LeftPanelTextureStorage);
+        _layoutRenderer = new LayoutRenderer(renderer, layoutArrangement, textureStorageProvider.LeftPanelTextureStorage, textureStorageProvider.TopPanelTextureStorage);
         _textureStorageProvider = new TextureStorageProvider(renderer);
         _backgroundRenderer = new BackgroundRenderer(this, renderer);
         _zoom = 1f;
@@ -140,7 +141,7 @@ public sealed class RendererApi : IRendererConfig
 
     private void RenderChosenEntity()
     {
-        switch (UserActionsHandler.ChosenLeftPanelOption)
+        switch (MenuState.ChosenLGate)
         {
             case LeftPanelOption.AND:
             case LeftPanelOption.OR:
@@ -152,7 +153,7 @@ public sealed class RendererApi : IRendererConfig
             case LeftPanelOption.LowConstant:
             case LeftPanelOption.HighConstant:
             case LeftPanelOption.LedOutput:
-                _lGateRenderer.RenderChosenLGateFromMenu(UserActionsHandler.ChosenLeftPanelOption);
+                _lGateRenderer.RenderChosenLGateFromMenu(MenuState.ChosenLGate);
                 break;
             case LeftPanelOption.Wire:
                 _wireRenderer.RenderChosenWireFromMenuOption();

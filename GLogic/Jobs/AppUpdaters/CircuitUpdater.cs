@@ -13,6 +13,7 @@ public sealed class CircuitUpdater : ICircuitUpdaterConfig
     {
         var stepwiseSimulation = new StepwiseSimulation(DefaultCallInterval).InitExecutionQueue();
         CurrentUpdateCtx = stepwiseSimulation;
+        CurrentUpdateCtx.Reset();
 
         return new UserActionExecutorInStepwiseSimMode(stepwiseSimulation);
     }
